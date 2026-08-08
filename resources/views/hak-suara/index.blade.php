@@ -1,23 +1,18 @@
-@php $page_title = 'Hak Suara'; @endphp
-<x-app-layout>
+@php
+    $page_title = 'Hak Suara';
+    $page_description = 'Daftar pemilih yang berhak memberikan suara';
+@endphp
+<x-app-layout :page_title="$page_title" :page_description="$page_description">
+    <x-slot name="actions">
+        <button onclick="openImportModal()" class="bg-green-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center gap-2 text-sm">
+            <i class="fas fa-file-import"></i> Import Excel
+        </button>
+        <button onclick="openSidebar('add')" class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
+            <i class="fas fa-plus"></i> Tambah
+        </button>
+    </x-slot>
+
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-accent">Kelola Hak Suara</h1>
-                <p class="text-gray-500 mt-1">Daftar pemilih yang berhak memberikan suara</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <a href="{{ route('hak-suara.download-sample') }}" class="bg-gray-100 text-accent px-4 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center gap-2 text-sm">
-                    <i class="fas fa-download"></i> Download Sample
-                </a>
-                <button onclick="openImportModal()" class="bg-green-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center gap-2 text-sm">
-                    <i class="fas fa-file-import"></i> Import Excel
-                </button>
-                <button onclick="openSidebar('add')" class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
-                    <i class="fas fa-plus"></i> Tambah
-                </button>
-            </div>
-        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -132,17 +127,20 @@
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 mb-2">Import dari Excel</h3>
                 <p class="text-sm text-gray-500 mb-6">Upload file Excel (.xlsx/.xlsx) dengan format: kolom A = No, kolom B = Nama</p>
+                <a href="{{ route('hak-suara.download-sample') }}" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-accent mb-4 transition-colors">
+                    <i class="fas fa-download"></i> Download Sample
+                </a>
                 <form action="{{ route('hak-suara.import') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <label class="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-400 hover:border-green-500 hover:text-green-600 cursor-pointer transition-all mb-4">
-                        <span>Pilih file Excel</span>
-                        <input type="file" name="file_excel" required accept=".xls,.xlsx" class="hidden" onchange="this.parentElement.querySelector('span').textContent = this.files[0].name">
-                    </label>
-                    <div class="flex gap-3 justify-center">
-                        <button type="button" onclick="closeImportModal()" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">Batal</button>
-                        <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 transition-colors">Import</button>
-                    </div>
-                </form>
+                     @csrf
+                     <label class="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-400 hover:border-green-500 hover:text-green-600 cursor-pointer transition-all mb-4">
+                         <span>Pilih file Excel</span>
+                         <input type="file" name="file_excel" required accept=".xls,.xlsx" class="hidden" onchange="this.parentElement.querySelector('span').textContent = this.files[0].name">
+                     </label>
+                     <div class="flex gap-3 justify-center">
+                         <button type="button" onclick="closeImportModal()" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">Batal</button>
+                         <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 transition-colors">Import</button>
+                     </div>
+                 </form>
             </div>
         </div>
     </div>

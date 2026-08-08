@@ -1,15 +1,15 @@
-@php $page_title = 'Konfigurasi Admin'; @endphp
-<x-app-layout>
+@php
+    $page_title = 'Konfigurasi Admin';
+    $page_description = 'Kelola akun administrator sistem';
+@endphp
+<x-app-layout :page_title="$page_title" :page_description="$page_description">
+    <x-slot name="actions">
+        <button onclick="openSidebar('add')" class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
+            <i class="fas fa-plus"></i> Tambah Admin
+        </button>
+    </x-slot>
+
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-accent">Konfigurasi Admin</h1>
-                <p class="text-gray-500 mt-1">Kelola akun administrator sistem</p>
-            </div>
-            <button onclick="openSidebar('add')" class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
-                <i class="fas fa-plus"></i> Tambah Admin
-            </button>
-        </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="p-6 border-b border-gray-100">

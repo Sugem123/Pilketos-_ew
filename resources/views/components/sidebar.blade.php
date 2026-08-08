@@ -38,15 +38,6 @@
             Kelola Hak Suara
         </a>
 
-        <a href="{{ route('laporan.index') }}"
-            class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ $currentRoute === 'laporan.index' ? 'bg-accent text-secondary' : 'text-accent hover:bg-gray-100' }}">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 448 512">
-                <path
-                    d="M160 80c0-26.5 21.5-48 48-48l32 0c26.5 0 48 21.5 48 48l0 352c0 26.5-21.5 48-48 48l-32 0c-26.5 0-48-21.5-48-48l0-352zM0 272c0-26.5 21.5-48 48-48l32 0c26.5 0 48 21.5 48 48l0 160c0 26.5-21.5 48-48 48l-32 0c-26.5 0-48-21.5-48-48L0 272zM368 96l32 0c26.5 0 48 21.5 48 48l0 288c0 26.5-21.5 48-48 48l-32 0c-26.5 0-48-21.5-48-48l0-288c0-26.5 21.5-48 48-48z" />
-            </svg>
-            Laporan
-        </a>
-
         <a href="{{ route('tokens.index') }}"
             class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ str_starts_with($currentRoute, 'tokens') ? 'bg-accent text-secondary' : 'text-accent hover:bg-gray-100' }}">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 640 640">

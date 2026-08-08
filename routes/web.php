@@ -6,7 +6,6 @@ use App\Http\Controllers\CalonController;
 use App\Http\Controllers\CheckTokenController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HakSuaraController;
-use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\TokenController;
 use App\Http\Controllers\VotingController;
 use Illuminate\Support\Facades\Route;
@@ -42,8 +41,6 @@ Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
     Route::post('/admin-config', [AdminConfigController::class, 'store'])->name('admin-config.store');
     Route::put('/admin-config/{user}', [AdminConfigController::class, 'update'])->name('admin-config.update');
     Route::delete('/admin-config/{user}', [AdminConfigController::class, 'destroy'])->name('admin-config.destroy');
-
-    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
 
     Route::get('/tokens', [TokenController::class, 'index'])->name('tokens.index');
     Route::post('/tokens', [TokenController::class, 'store'])->name('tokens.store');

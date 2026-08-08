@@ -1,13 +1,16 @@
+@props(['page_title' => 'Dashboard', 'page_description' => null])
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $page_title ?? 'Dashboard' }} | Pilketos v2.0</title>
+    <title>{{ $page_title }} | Pilketos v2.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://kit.fontawesome.com/35d8865ade.js" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
     <link rel="icon" type="image/x-icon" href="{{ asset('img/logo.png') }}" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -20,7 +23,9 @@
         @include('components.sidebar')
 
         <div class="flex-1 flex flex-col overflow-hidden lg:ml-64">
-            @include('components.topbar')
+            <x-topbar :page_title="$page_title" :page_description="$page_description">
+                {{ $actions ?? '' }}
+            </x-topbar>
 
             <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
                 <x-notifications />
@@ -30,5 +35,35 @@
     </div>
 
     <x-confirm-modal />
+
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const notyf = new Notyf({
+                duration: 4000,
+                position: { x: 'right', y: 'top' },
+                dismissible: true,
+                types: [
+                    {
+                        type: 'success',
+                        background: '#2f2575',
+                        icon: false
+                    },
+                    {
+                        type: 'error',
+                        background: '#dc2626',
+                        icon: false
+                    }
+                ]
+            });
+
+            @if(session('success'))
+                notyf.success('{{ session('success') }}');
+            @endif
+            @if(session('error'))
+                notyf.error('{{ session('error') }}');
+            @endif
+        });
+    </script>
 </body>
 </html>

@@ -83,9 +83,9 @@ class HakSuaraController extends Controller
 
     public function downloadSample()
     {
-        $file = base_path('../originals/public/sample_hak_suara.xlsx');
+        $file = public_path('downloads/sample_hak_suara.xlsx');
         if (file_exists($file)) {
-            return response()->download($file);
+            return response()->download($file, 'sample_hak_suara.xlsx');
         }
 
         return redirect()->route('hak-suara.index')->with('error', 'File sample tidak ditemukan.');

@@ -1,16 +1,16 @@
-@php $page_title = 'Display Token'; @endphp
-<x-app-layout>
+@php
+    $page_title = 'Display Token';
+    $page_description = 'Kelola token untuk akses halaman voting';
+@endphp
+<x-app-layout :page_title="$page_title" :page_description="$page_description">
+    <x-slot name="actions">
+        <button onclick="openSidebar('add')"
+            class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
+            <i class="fas fa-plus"></i> Tambah Token
+        </button>
+    </x-slot>
+
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-accent">Voting Token</h1>
-                <p class="text-gray-500 mt-1">Kelola token untuk akses halaman voting</p>
-            </div>
-            <button onclick="openSidebar('add')"
-                class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
-                <i class="fas fa-plus"></i> Tambah Token
-            </button>
-        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

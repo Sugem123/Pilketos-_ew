@@ -1,15 +1,15 @@
-@php $page_title = 'Data Calon'; @endphp
-<x-app-layout>
+@php
+    $page_title = 'Data Calon';
+    $page_description = 'Kelola data calon ketua OSIS';
+@endphp
+<x-app-layout :page_title="$page_title" :page_description="$page_description">
+    <x-slot name="actions">
+        <button onclick="openSidebar('add')" class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
+            <i class="fas fa-plus"></i> Tambah Calon
+        </button>
+    </x-slot>
+
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-accent">Data Calon Ketua OSIS</h1>
-                <p class="text-gray-500 mt-1">Kelola data calon ketua OSIS</p>
-            </div>
-            <button onclick="openSidebar('add')" class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
-                <i class="fas fa-plus"></i> Tambah Calon
-            </button>
-        </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="p-6 border-b border-gray-100 flex items-center justify-between">
