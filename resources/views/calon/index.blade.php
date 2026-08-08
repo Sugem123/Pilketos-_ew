@@ -1,84 +1,133 @@
 @php
     $page_title = 'Data Calon';
     $page_description = 'Kelola data calon ketua OSIS';
+
+    $calonData = $calons->mapWithKeys(fn($c) => [$c->id => [
+        'nama' => $c->nama,
+        'id_kelas' => $c->id_kelas,
+        'kelas' => $c->kelas->name ?? '-',
+        'nomor' => $c->nomor,
+        'visi' => $c->visi,
+        'misi' => $c->misi,
+        'url_foto' => $c->url_foto ? asset($c->url_foto) : '',
+    ]]);
 @endphp
 <x-app-layout :page_title="$page_title" :page_description="$page_description">
     <x-slot name="actions">
-        <button onclick="openSidebar('add')" class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
-            <i class="fas fa-plus"></i> Tambah Calon
-        </button>
+        <x-admin-button icon="fas fa-plus" onclick="openSidebar('add')">
+            Tambah Calon
+        </x-admin-button>
     </x-slot>
 
-    <div class="space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-accent">Daftar Calon</h2>
-                <span class="text-sm text-gray-500">{{ $calons->count() }} calon terdaftar</span>
+        {{-- Daftar Calon --}}
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+            <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-accent">Daftar Calon</h2>
+                <span class="text-sm text-gray-400">{{ $calons->count() }} calon</span>
             </div>
-
-            <div class="divide-y divide-gray-100">
+            <div class="divide-y divide-gray-100 flex-1 overflow-y-auto">
                 @forelse($calons as $calon)
-                    <div class="p-6 flex items-center gap-6 hover:bg-gray-50 transition-colors">
-                        <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <div onclick="selectCandidate({{ $calon->id }})"
+                         id="row-{{ $calon->id }}"
+                         class="candidate-row p-4 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition-colors group">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                             @if($calon->url_foto)
                                 <img src="{{ asset($calon->url_foto) }}" alt="{{ $calon->nama }}" class="w-full h-full object-cover">
                             @else
-                                <i class="fas fa-user text-gray-400 text-xl"></i>
+                                <i class="fas fa-user text-gray-400 text-lg"></i>
                             @endif
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-3 mb-1">
-                                <h3 class="font-semibold text-accent">{{ $calon->nama }}</h3>
-                                <span class="px-2 py-0.5 bg-birupesat/10 text-birupesat text-xs font-medium rounded-full">No. {{ $calon->nomor }}</span>
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="w-5 h-5 rounded-full bg-birupesat/10 text-birupesat text-xs font-bold flex items-center justify-center flex-shrink-0">{{ $calon->nomor }}</span>
+                                <h3 class="font-semibold text-accent text-sm truncate">{{ $calon->nama }}</h3>
                             </div>
-                            <p class="text-sm text-gray-500">Kelas {{ $calon->kelas->name }}</p>
-                            <p class="text-sm text-gray-400 mt-1 truncate">{{ Str::limit($calon->visi, 80) }}</p>
+                            <p class="text-xs text-gray-400">{{ $calon->kelas->name }}</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <a href="{{ route('calon.edit', $calon) }}" onclick="event.preventDefault(); openSidebar('edit', {{ $calon->id }})" class="p-2 text-gray-400 hover:text-accent hover:bg-gray-100 rounded-lg transition-colors" title="Edit">
-                                <i class="fas fa-pen-to-square"></i>
-                            </a>
-                            <button onclick="confirmDelete('{{ route('calon.destroy', $calon) }}', 'Hapus Calon', 'Apakah Anda yakin ingin menghapus calon {{ $calon->nama }}? Foto juga akan dihapus.')" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
-                                <i class="fas fa-trash-can"></i>
-                            </button>
-                        </div>
+                        <i class="fas fa-chevron-right text-gray-300 text-xs group-hover:text-accent transition-colors"></i>
                     </div>
                 @empty
                     <div class="p-12 text-center">
-                        <i class="fas fa-user-group text-neutral-300 text-5xl mb-4"></i>
-                        <p class="text-gray-500">Belum ada calon terdaftar.</p>
+                        <i class="fas fa-user-group text-neutral-300 text-4xl mb-3"></i>
+                        <p class="text-gray-400 text-sm">Belum ada calon terdaftar.</p>
                     </div>
                 @endforelse
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 class="font-semibold text-accent mb-4">Pengaturan Batas Hak Suara</h3>
-            @php
-                $file = base_path('config.json');
-                $config = json_decode(file_get_contents($file), true);
-            @endphp
-            <form action="{{ route('calon.haksuara') }}" method="POST" class="flex items-end gap-4">
-                @csrf
-                <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Batas Maksimal Suara</label>
-                    <input type="number" name="haksuara" value="{{ $config['haksuara'] }}" min="1" required
-                           class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent outline-none">
+        {{-- Detail Calon --}}
+        <div class="lg:col-span-3 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+            {{-- Empty state --}}
+            <div id="detail-empty" class="flex-1 flex flex-col items-center justify-center p-12 text-center">
+                <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                    <i class="fas fa-hand-pointer text-gray-300 text-2xl"></i>
                 </div>
-                <button type="submit" class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors">
-                    Simpan
-                </button>
-            </form>
+                <h3 class="font-semibold text-gray-400 mb-1">Pilih calon</h3>
+                <p class="text-sm text-gray-300">Klik salah satu calon di daftar untuk melihat detail</p>
+            </div>
+
+            {{-- Detail content --}}
+            <div id="detail-content" class="hidden flex-1 flex flex-col">
+                <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="text-base font-semibold text-accent">Detail Calon</h2>
+                    <div class="flex items-center gap-2">
+                        <x-admin-button variant="ghost" icon="fas fa-pen-to-square" id="btn-edit"
+                            class="text-gray-400 hover:text-accent hover:bg-gray-100" title="Edit">
+                        </x-admin-button>
+                        <x-admin-button variant="ghost" icon="fas fa-trash-can" id="btn-delete"
+                            class="text-gray-400 hover:text-red-600 hover:bg-red-50" title="Hapus">
+                        </x-admin-button>
+                    </div>
+                </div>
+
+                <div class="p-6 flex-1 overflow-y-auto">
+                    {{-- Photo + identity --}}
+                    <div class="flex items-center gap-5 mb-6">
+                        <div id="detail-foto-wrap" class="w-24 h-24 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
+                            <img id="detail-foto" src="" alt="" class="w-full h-full object-cover hidden">
+                            <i id="detail-foto-placeholder" class="fas fa-user text-gray-400 text-3xl"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span id="detail-nomor" class="px-2.5 py-0.5 bg-birupesat/10 text-birupesat text-xs font-bold rounded-full"></span>
+                            </div>
+                            <h3 id="detail-nama" class="text-xl font-bold text-accent leading-tight"></h3>
+                            <p id="detail-kelas" class="text-sm text-gray-500 mt-0.5"></p>
+                        </div>
+                    </div>
+
+                    {{-- Visi --}}
+                    <div class="mb-5">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-1 h-4 rounded-full bg-birupesat"></div>
+                            <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Visi</h4>
+                        </div>
+                        <p id="detail-visi" class="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-4"></p>
+                    </div>
+
+                    {{-- Misi --}}
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-1 h-4 rounded-full bg-accent"></div>
+                            <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Misi</h4>
+                        </div>
+                        <p id="detail-misi" class="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-4 whitespace-pre-line"></p>
+                    </div>
+                </div>
+            </div>
         </div>
+
     </div>
 
+    {{-- Sidebar Form --}}
     <div id="secondary-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-100">
             <h2 id="sidebar-title" class="text-lg font-bold text-accent">Tambah Calon</h2>
-            <button onclick="closeSidebar()" class="p-2 text-gray-400 hover:text-accent hover:bg-gray-100 rounded-lg transition-colors">
-                <i class="fas fa-times text-lg"></i>
-            </button>
+            <x-admin-button variant="ghost" icon="fas fa-times" onclick="closeSidebar()"
+                class="text-gray-400 hover:text-accent hover:bg-gray-100 text-lg">
+            </x-admin-button>
         </div>
         <div class="flex-1 overflow-y-auto p-6">
             <form id="calon-form" action="{{ route('calon.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
@@ -137,12 +186,12 @@
                 </div>
 
                 <div class="flex gap-3 pt-4">
-                    <button type="submit" class="flex-1 bg-accent text-secondary py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors">
+                    <x-admin-button type="submit" class="flex-1" icon="fas fa-check">
                         Simpan
-                    </button>
-                    <button type="button" onclick="closeSidebar()" class="px-6 py-2.5 text-gray-600 bg-gray-100 rounded-xl font-medium hover:bg-gray-200 transition-colors">
+                    </x-admin-button>
+                    <x-admin-button variant="secondary" type="button" onclick="closeSidebar()">
                         Batal
-                    </button>
+                    </x-admin-button>
                 </div>
             </form>
         </div>
@@ -151,17 +200,53 @@
     <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity" onclick="closeSidebar()"></div>
 
     <script>
-        const calonData = {};
-        @foreach($calons as $calon)
-            calonData[{{ $calon->id }}] = {
-                nama: '{{ addslashes($calon->nama) }}',
-                id_kelas: {{ $calon->id_kelas }},
-                nomor: {{ $calon->nomor }},
-                visi: '{{ addslashes($calon->visi) }}',
-                misi: '{{ addslashes($calon->misi) }}',
-                url_foto: '{{ $calon->url_foto ? asset($calon->url_foto) : '' }}'
-            };
-        @endforeach
+        const calonData = @json($calonData);
+        let selectedId = null;
+
+        function selectCandidate(id) {
+            // Update row highlight
+            document.querySelectorAll('.candidate-row').forEach(r => {
+                r.classList.remove('bg-birupesat/5', 'border-l-4', 'border-birupesat');
+            });
+            const row = document.getElementById('row-' + id);
+            if (row) {
+                row.classList.add('bg-birupesat/5', 'border-l-4', 'border-birupesat');
+            }
+
+            selectedId = id;
+            const d = calonData[id];
+
+            // Show detail panel
+            document.getElementById('detail-empty').classList.add('hidden');
+            document.getElementById('detail-content').classList.remove('hidden');
+
+            // Populate fields
+            document.getElementById('detail-nama').textContent = d.nama;
+            document.getElementById('detail-kelas').textContent = 'Kelas ' + d.kelas;
+            document.getElementById('detail-nomor').textContent = 'No. ' + d.nomor;
+            document.getElementById('detail-visi').textContent = d.visi;
+            document.getElementById('detail-misi').textContent = d.misi;
+
+            const fotoEl = document.getElementById('detail-foto');
+            const placeholderEl = document.getElementById('detail-foto-placeholder');
+            if (d.url_foto) {
+                fotoEl.src = d.url_foto;
+                fotoEl.classList.remove('hidden');
+                placeholderEl.classList.add('hidden');
+            } else {
+                fotoEl.classList.add('hidden');
+                placeholderEl.classList.remove('hidden');
+            }
+
+            // Wire action buttons
+            document.getElementById('btn-edit').onclick = () => openSidebar('edit', id);
+            document.getElementById('btn-delete').onclick = () =>
+                confirmDelete(
+                    '{{ url('/admin/calon') }}/' + id,
+                    'Hapus Calon',
+                    'Apakah Anda yakin ingin menghapus calon ' + d.nama + '? Foto juga akan dihapus.'
+                );
+        }
 
         function openSidebar(mode, id = null) {
             const sidebar = document.getElementById('secondary-sidebar');
@@ -186,6 +271,8 @@
                 if (data.url_foto) {
                     document.getElementById('preview-image').src = data.url_foto;
                     document.getElementById('preview-container').classList.remove('hidden');
+                } else {
+                    document.getElementById('preview-container').classList.add('hidden');
                 }
             } else {
                 title.textContent = 'Tambah Calon Baru';
@@ -216,5 +303,10 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        // Auto-select first candidate if any
+        @if($calons->isNotEmpty())
+            selectCandidate({{ $calons->first()->id }});
+        @endif
     </script>
 </x-app-layout>

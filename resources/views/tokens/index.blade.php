@@ -4,34 +4,55 @@
 @endphp
 <x-app-layout :page_title="$page_title" :page_description="$page_description">
     <x-slot name="actions">
-        <button onclick="openSidebar('add')"
-            class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
-            <i class="fas fa-plus"></i> Tambah Token
-        </button>
+        <x-admin-button icon="fas fa-plus" onclick="openSidebar('add')">
+            Tambah Token
+        </x-admin-button>
     </x-slot>
 
     <div class="space-y-6">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-key text-blue-600 text-lg"></i>
-                    </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500">Total Token</p>
+                        <p class="text-sm text-gray-500 mb-1">Total Token</p>
                         <h3 class="text-2xl font-bold text-gray-800">{{ $totalTokens }}</h3>
+                    </div>
+                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
+                        <i class="fas fa-key text-primary text-sm"></i>
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-check-circle text-green-600 text-lg"></i>
-                    </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500">Token Aktif</p>
+                        <p class="text-sm text-gray-500 mb-1">Token Aktif</p>
                         <h3 class="text-2xl font-bold text-gray-800">{{ $activeTokens }}</h3>
+                    </div>
+                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
+                        <i class="fa-regular fa-circle-check text-primary text-base"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Token Nonaktif</p>
+                        <h3 class="text-2xl font-bold text-gray-800">{{ $totalTokens - $activeTokens }}</h3>
+                    </div>
+                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
+                        <i class="fas fa-ban text-primary text-sm"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Rasio Aktif</p>
+                        <h3 class="text-2xl font-bold text-gray-800">{{ $totalTokens > 0 ? number_format(($activeTokens / $totalTokens) * 100, 1) : 0 }}%</h3>
+                    </div>
+                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-simple text-primary text-sm"></i>
                     </div>
                 </div>
             </div>
@@ -69,12 +90,11 @@
                                     </form>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <button
+                                    <x-admin-button variant="ghost" icon="fas fa-trash-can"
                                         onclick="confirmDelete('{{ route('tokens.destroy', $token) }}', 'Hapus Token', 'Apakah Anda yakin ingin menghapus token {{ $token->token }}?')"
-                                        class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                        class="text-gray-400 hover:text-red-600 hover:bg-red-50"
                                         title="Hapus">
-                                        <i class="fas fa-trash-can"></i>
-                                    </button>
+                                    </x-admin-button>
                                 </td>
                             </tr>
                         @empty
@@ -95,10 +115,9 @@
         class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-100">
             <h2 class="text-lg font-bold text-accent">Tambah Token</h2>
-            <button onclick="closeSidebar()"
-                class="p-2 text-gray-400 hover:text-accent hover:bg-gray-100 rounded-lg transition-colors">
-                <i class="fas fa-times text-lg"></i>
-            </button>
+            <x-admin-button variant="ghost" icon="fas fa-times" onclick="closeSidebar()"
+                class="text-gray-400 hover:text-accent hover:bg-gray-100 text-lg">
+            </x-admin-button>
         </div>
         <div class="flex-1 overflow-y-auto p-6">
             <form action="{{ route('tokens.store') }}" method="POST" class="space-y-5">
@@ -109,22 +128,19 @@
                         <input type="text" id="token-input" name="token" required maxlength="10"
                             class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent outline-none font-mono uppercase"
                             placeholder="ABC123">
-                        <button type="button" onclick="generateToken()"
-                            class="px-4 py-2.5 bg-gray-100 text-accent rounded-xl hover:bg-gray-200 transition-colors text-sm font-medium">
+                        <x-admin-button type="button" onclick="generateToken()" variant="secondary" size="sm">
                             Generate
-                        </button>
+                        </x-admin-button>
                     </div>
                     <p class="text-xs text-gray-400 mt-1">Maksimal 10 karakter. Huruf dan angka saja.</p>
                 </div>
                 <div class="flex gap-3 pt-4">
-                    <button type="submit"
-                        class="flex-1 bg-accent text-secondary py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors">
+                    <x-admin-button type="submit" class="flex-1" icon="fas fa-check">
                         Simpan
-                    </button>
-                    <button type="button" onclick="closeSidebar()"
-                        class="px-6 py-2.5 text-gray-600 bg-gray-100 rounded-xl font-medium hover:bg-gray-200 transition-colors">
+                    </x-admin-button>
+                    <x-admin-button variant="secondary" type="button" onclick="closeSidebar()">
                         Batal
-                    </button>
+                    </x-admin-button>
                 </div>
             </form>
         </div>

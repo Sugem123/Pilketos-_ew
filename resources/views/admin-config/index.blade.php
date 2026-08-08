@@ -4,9 +4,9 @@
 @endphp
 <x-app-layout :page_title="$page_title" :page_description="$page_description">
     <x-slot name="actions">
-        <button onclick="openSidebar('add')" class="bg-accent text-secondary px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">
-            <i class="fas fa-plus"></i> Tambah Admin
-        </button>
+        <x-admin-button icon="fas fa-plus" onclick="openSidebar('add')">
+            Tambah Admin
+        </x-admin-button>
     </x-slot>
 
     <div class="space-y-6">
@@ -27,13 +27,17 @@
                             <p class="text-sm text-gray-500">{{ $user->email }}</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick='openSidebar("edit", @json($user))' class="p-2 text-gray-400 hover:text-accent hover:bg-gray-100 rounded-lg transition-colors" title="Edit">
-                                <i class="fas fa-pen-to-square"></i>
-                            </button>
+                            <x-admin-button variant="ghost" icon="fas fa-pen-to-square"
+                                onclick='openSidebar("edit", @json($user))'
+                                class="text-gray-400 hover:text-accent hover:bg-gray-100"
+                                title="Edit">
+                            </x-admin-button>
                             @if($user->id !== auth()->id())
-                                <button onclick="confirmDelete('{{ route('admin-config.destroy', $user) }}', 'Hapus Admin', 'Apakah Anda yakin ingin menghapus admin {{ $user->nama_lengkap }}?')" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
-                                    <i class="fas fa-trash-can"></i>
-                                </button>
+                                <x-admin-button variant="ghost" icon="fas fa-trash-can"
+                                    onclick="confirmDelete('{{ route('admin-config.destroy', $user) }}', 'Hapus Admin', 'Apakah Anda yakin ingin menghapus admin {{ $user->nama_lengkap }}?')"
+                                    class="text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                    title="Hapus">
+                                </x-admin-button>
                             @endif
                         </div>
                     </div>
@@ -50,9 +54,9 @@
     <div id="secondary-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-100">
             <h2 id="sidebar-title" class="text-lg font-bold text-accent">Tambah Admin</h2>
-            <button onclick="closeSidebar()" class="p-2 text-gray-400 hover:text-accent hover:bg-gray-100 rounded-lg transition-colors">
-                <i class="fas fa-times text-lg"></i>
-            </button>
+            <x-admin-button variant="ghost" icon="fas fa-times" onclick="closeSidebar()"
+                class="text-gray-400 hover:text-accent hover:bg-gray-100 text-lg">
+            </x-admin-button>
         </div>
         <div class="flex-1 overflow-y-auto p-6">
             <form id="admin-form" action="{{ route('admin-config.store') }}" method="POST" class="space-y-5">
@@ -85,12 +89,12 @@
                 </div>
 
                 <div class="flex gap-3 pt-4">
-                    <button type="submit" class="flex-1 bg-accent text-secondary py-2.5 rounded-xl font-medium hover:bg-gray-800 transition-colors">
+                    <x-admin-button type="submit" class="flex-1" icon="fas fa-check">
                         Simpan
-                    </button>
-                    <button type="button" onclick="closeSidebar()" class="px-6 py-2.5 text-gray-600 bg-gray-100 rounded-xl font-medium hover:bg-gray-200 transition-colors">
+                    </x-admin-button>
+                    <x-admin-button variant="secondary" type="button" onclick="closeSidebar()">
                         Batal
-                    </button>
+                    </x-admin-button>
                 </div>
             </form>
         </div>
@@ -99,6 +103,8 @@
     <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity" onclick="closeSidebar()"></div>
 
     <script>
+        const adminData = @json($users->keyBy('id'));
+
         function openSidebar(mode, user = null) {
             const sidebar = document.getElementById('secondary-sidebar');
             const backdrop = document.getElementById('sidebar-backdrop');

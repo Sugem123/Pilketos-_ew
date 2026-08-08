@@ -18,10 +18,9 @@ class VotingController extends Controller
             ->get();
 
         $totalVote = Vote::count();
-        $file = base_path('config.json');
-        $config = json_decode(file_get_contents($file), true);
+        $totalHakSuara = HakSuara::count();
 
-        return view('voting.index', compact('calons', 'totalVote', 'config'));
+        return view('voting.index', compact('calons', 'totalVote', 'totalHakSuara'));
     }
 
     public function vote(Request $request)

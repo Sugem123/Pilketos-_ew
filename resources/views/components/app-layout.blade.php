@@ -36,23 +36,57 @@
 
     <x-confirm-modal />
 
+    <style>
+        .notyf__toast {
+            border-radius: 0.75rem !important;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 4px 10px -5px rgba(0,0,0,0.05) !important;
+            padding: 0.875rem 1.25rem !important;
+            min-width: 280px !important;
+        }
+        .notyf__message {
+            font-family: 'Montserrat', sans-serif !important;
+            font-size: 0.875rem !important;
+            font-weight: 500 !important;
+            color: #111827 !important;
+        }
+        .notyf__icon {
+            margin-right: 0.625rem !important;
+        }
+        .notyf__dismiss {
+            background: #f3f4f6 !important;
+            border-radius: 0.5rem !important;
+        }
+        .notyf__dismiss-btn::before,
+        .notyf__dismiss-btn::after {
+            background: #6b7280 !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const notyf = new Notyf({
                 duration: 4000,
-                position: { x: 'right', y: 'top' },
+                position: { x: 'center', y: 'top' },
                 dismissible: true,
                 types: [
                     {
                         type: 'success',
-                        background: '#2f2575',
-                        icon: false
+                        background: '#ffffff',
+                        icon: {
+                            className: 'fas fa-check-circle',
+                            tagName: 'i',
+                            color: '#9ca3af'
+                        }
                     },
                     {
                         type: 'error',
-                        background: '#dc2626',
-                        icon: false
+                        background: '#ffffff',
+                        icon: {
+                            className: 'fas fa-times-circle',
+                            tagName: 'i',
+                            color: '#9ca3af'
+                        }
                     }
                 ]
             });

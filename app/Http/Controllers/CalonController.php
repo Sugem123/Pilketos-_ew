@@ -11,19 +11,10 @@ class CalonController extends Controller
 {
     public function index()
     {
-        $calons = CalonKetua::with('kelas')->orderBy('id', 'desc')->get();
-        $kelas = Kelas::orderBy('name')->get();
-        $editData = null;
-
-        return view('calon.index', compact('calons', 'kelas', 'editData'));
-    }
-
-    public function edit(CalonKetua $calon)
-    {
-        $calons = CalonKetua::with('kelas')->orderBy('id', 'desc')->get();
+        $calons = CalonKetua::with('kelas')->orderBy('nomor')->get();
         $kelas = Kelas::orderBy('name')->get();
 
-        return view('calon.index', compact('calons', 'kelas', 'calon'))->with('editData', $calon);
+        return view('calon.index', compact('calons', 'kelas'));
     }
 
     public function store(Request $request)
@@ -91,18 +82,5 @@ class CalonController extends Controller
         $calon->delete();
 
         return redirect()->route('calon.index')->with('success', 'Calon berhasil dihapus!');
-    }
-
-    public function updateHaksuara(Request $request)
-    {
-        $request->validate([
-            'haksuara' => 'required|integer|min:1',
-        ]);
-
-        $file = base_path('config.json');
-        $config = ['haksuara' => (int) $request->haksuara];
-        file_put_contents($file, json_encode($config, JSON_PRETTY_PRINT));
-
-        return redirect()->route('calon.index')->with('success', 'Batas hak suara berhasil diupdate!');
     }
 }

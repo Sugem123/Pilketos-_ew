@@ -23,7 +23,7 @@
             <div class="max-w-7xl mx-auto p-6 lg:py-6 lg:px-8">
                 <div class="text-center px-6 lg:p-0 mb-6 lg:mb-12">
                     <h1 class="text-2xl lg:text-4xl font-bold text-accent mb-2 lg:mb-2">Pemilihan Ketua OSIS</h1>
-                    @if ($config['haksuara'] - $totalVote > 0)
+                    @if ($totalHakSuara - $totalVote > 0)
                         <p class="text-lg lg:text-xl text-gray-600 mb-2">Pilih satu calon ketua OSIS favorit Anda</p>
                     @else
                         <p class="text-xl text-red-600 mb-2">Pemilihan suara ditutup! hak suara sudah mencapai batas</p>
@@ -47,7 +47,7 @@
                                     class="transition-all duration-150 ease-in">
                                     <div class="cursor-pointer flex w-[10rem] lg:w-[22rem] group items-center relative">
                                         <div
-                                            class="bg-white z-10 card w-full border-2 border-gray-200 rounded-xl shadow-lg hover:shadow-xl {{ $config['haksuara'] - $totalVote > 0 ? 'hover:border-birupesat' : '' }} transition-all duration-300 overflow-hidden max-w-sm group relative">
+                                            class="bg-white z-10 card w-full border-2 border-gray-200 rounded-xl shadow-lg hover:shadow-xl {{ $totalHakSuara - $totalVote > 0 ? 'hover:border-birupesat' : '' }} transition-all duration-300 overflow-hidden max-w-sm group relative">
                                             <i
                                                 class="selection-indicator opacity-0 text-birupesat absolute top-2.5 right-2.5 text-lg lg:text-2xl fa-solid fa-circle-check z-20 transition-opacity duration-150 ease-in-out"></i>
 

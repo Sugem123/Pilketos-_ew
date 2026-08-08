@@ -7,7 +7,7 @@
 <div class="transition-all duration-150 ease-in h-full">
     <div class="flex h-full items-center relative">
         <div
-            class="bg-white w-full h-full border border-gray-100 rounded-xl shadow-sm overflow-hidden relative flex flex-col">
+            class="bg-white w-full h-full border border-gray-100 rounded-xl shadow-lg overflow-hidden relative flex flex-col">
             <div class="flex gap-3 p-3 border-b border-gray-100 flex-shrink-0">
                 <h3 class="font-bold text-lg leading-5">
                     {{ $first }}<br>

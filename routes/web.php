@@ -26,10 +26,8 @@ Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
 
     Route::get('/calon', [CalonController::class, 'index'])->name('calon.index');
     Route::post('/calon', [CalonController::class, 'store'])->name('calon.store');
-    Route::get('/calon/{calon}/edit', [CalonController::class, 'edit'])->name('calon.edit');
     Route::put('/calon/{calon}', [CalonController::class, 'update'])->name('calon.update');
     Route::delete('/calon/{calon}', [CalonController::class, 'destroy'])->name('calon.destroy');
-    Route::post('/calon/haksuara', [CalonController::class, 'updateHaksuara'])->name('calon.haksuara');
 
     Route::get('/hak-suara', [HakSuaraController::class, 'index'])->name('hak-suara.index');
     Route::post('/hak-suara', [HakSuaraController::class, 'store'])->name('hak-suara.store');
