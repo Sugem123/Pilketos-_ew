@@ -1,0 +1,58 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e5]:
+      - img "Pilketos" [ref=e6]
+      - heading "PILKETOS" [level=1] [ref=e7]
+    - navigation [ref=e8]:
+      - link "Dashboard" [ref=e9] [cursor=pointer]:
+        - /url: http://localhost:8000/admin
+      - link "Kelola Calon" [ref=e12] [cursor=pointer]:
+        - /url: http://localhost:8000/admin/calon
+      - link "Konfigurasi Admin" [ref=e15] [cursor=pointer]:
+        - /url: http://localhost:8000/admin/admin-config
+      - link "Kelola Hak Suara" [ref=e18] [cursor=pointer]:
+        - /url: http://localhost:8000/admin/hak-suara
+      - link "Laporan" [ref=e21] [cursor=pointer]:
+        - /url: http://localhost:8000/admin/laporan
+      - link "Display Token" [ref=e24] [cursor=pointer]:
+        - /url: http://localhost:8000/admin/tokens
+      - link "Voting Page" [ref=e27] [cursor=pointer]:
+        - /url: http://localhost:8000/voting
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: A
+        - generic [ref=e34]:
+          - paragraph [ref=e35]: Administrator
+          - paragraph [ref=e36]: admin@gmail.com
+      - button "Logout" [ref=e38]
+  - generic [ref=e41]:
+    - banner [ref=e42]:
+      - heading "Dashboard" [level=1] [ref=e44]
+      - generic [ref=e45]: 08 Aug 2026, 08:08
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - heading "Dashboard" [level=1] [ref=e50]
+          - paragraph [ref=e51]: Selamat datang di sistem pemilihan ketua OSIS
+        - generic [ref=e52]:
+          - generic [ref=e54]:
+            - generic [ref=e55]:
+              - paragraph [ref=e56]: Jumlah Calon
+              - heading "0" [level=3] [ref=e57]
+            - generic [ref=e58]: 
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - paragraph [ref=e63]: Total Votes
+              - heading "0" [level=3] [ref=e64]
+            - generic [ref=e65]: 
+          - generic [ref=e68]:
+            - generic [ref=e69]:
+              - paragraph [ref=e70]: Tingkat Partisipasi
+              - heading "0%" [level=3] [ref=e71]
+            - generic [ref=e72]: 
+        - generic [ref=e74]:
+          - heading "Calon Ketos" [level=2] [ref=e75]
+          - generic [ref=e76]:
+            - generic [ref=e77]: 
+            - heading "Belum ada calon" [level=3] [ref=e78]
+            - paragraph [ref=e79]: Silakan tambahkan calon ketua OSIS terlebih dahulu.

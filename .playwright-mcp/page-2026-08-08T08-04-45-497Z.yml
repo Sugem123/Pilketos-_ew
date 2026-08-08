@@ -1,0 +1,26 @@
+- generic [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - generic [ref=f2e5]:
+      - generic [ref=f2e7]:
+        - heading [level=1] [ref=f2e8]: PILKETOS
+        - paragraph [ref=f2e9]: v2.0
+      - generic [ref=f2e10]:
+        - paragraph [ref=f2e11]: Sistem Voting
+        - paragraph [ref=f2e12]: Made with 🍵 by Sattar
+    - main [ref=f2e13]:
+      - generic [ref=f2e14]:
+        - generic [ref=f2e15]:
+          - heading [level=1] [ref=f2e16]: Pemilihan Ketua OSIS
+          - paragraph [ref=f2e17]: Pilih satu calon ketua OSIS favorit Anda
+        - generic [ref=f2e19]:
+          - heading [level=3] [ref=f2e22]: Belum Ada Calon
+          - paragraph [ref=f2e23]: Saat ini belum ada calon ketua OSIS yang terdaftar.
+    - contentinfo [ref=f2e24]:
+      - generic [ref=f2e26]:
+        - paragraph [ref=f2e27]: © 2026 Pilketos v2.0 - Sistem Pemilihan Ketua OSIS
+        - paragraph [ref=f2e28]: Suara Anda sangat berharga untuk masa depan sekolah
+  - dialog [ref=f2e30]:
+    - heading "Masukkan Display Token" [level=2] [ref=f2e31]
+    - textbox "Masukkan token di sini..." [active] [ref=f2e32]
+    - text: "!"
+    - button "OK" [ref=f2e34] [cursor=pointer]
