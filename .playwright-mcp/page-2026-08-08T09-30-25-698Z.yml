@@ -1,0 +1,78 @@
+- generic [ref=f54e2]:
+  - complementary [ref=f54e3]:
+    - generic [ref=f54e5]:
+      - img "Pilketos" [ref=f54e6]
+      - heading "PILKETOS" [level=1] [ref=f54e7]
+    - navigation [ref=f54e8]:
+      - link "Dashboard" [ref=f54e9] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin
+      - link "Kelola Calon" [ref=f54e12] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/calon
+      - link "Kelola Hak Suara" [ref=f54e15] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/hak-suara
+      - link "Laporan" [ref=f54e18] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/laporan
+      - link "Voting Token" [ref=f54e21] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/tokens
+      - link "Konfigurasi Admin" [ref=f54e24] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/admin-config
+      - link "Voting Page" [ref=f54e27] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/voting
+    - generic [ref=f54e30]:
+      - generic [ref=f54e31]:
+        - generic [ref=f54e32]: A
+        - generic [ref=f54e34]:
+          - paragraph [ref=f54e35]: Administrator
+          - paragraph [ref=f54e36]: admin@gmail.com
+      - button "Logout" [ref=f54e38]
+  - generic [ref=f54e41]:
+    - banner [ref=f54e42]:
+      - generic [ref=f54e44]:
+        - heading "Hak Suara" [level=1] [ref=f54e45]
+        - paragraph [ref=f54e46]: Daftar pemilih yang berhak memberikan suara
+      - generic [ref=f54e47]:
+        - button "Import Excel" [ref=f54e48]:
+          - generic [ref=f54e49]: 
+          - text: Import Excel
+        - button "Tambah" [ref=f54e50]:
+          - generic [ref=f54e51]: +
+          - text: Tambah
+    - main [ref=f54e52]:
+      - generic [ref=f54e53]:
+        - generic [ref=f54e54]:
+          - generic [ref=f54e56]:
+            - generic [ref=f54e57]: 
+            - generic [ref=f54e59]:
+              - paragraph [ref=f54e60]: Total Hak Suara
+              - heading "0" [level=3] [ref=f54e61]
+          - generic [ref=f54e63]:
+            - generic [ref=f54e64]: 
+            - generic [ref=f54e66]:
+              - paragraph [ref=f54e67]: Sudah Memilih
+              - heading "0" [level=3] [ref=f54e68]
+        - table [ref=f54e71]:
+          - rowgroup [ref=f54e72]:
+            - row [ref=f54e73]:
+              - columnheader "No" [ref=f54e74]
+              - columnheader "Nama" [ref=f54e75]
+              - columnheader "Status" [ref=f54e76]
+              - columnheader "Aksi" [ref=f54e77]
+          - rowgroup [ref=f54e78]:
+            - row [ref=f54e79]:
+              - cell [ref=f54e80]:
+                - generic [ref=f54e81]: 
+                - paragraph [ref=f54e82]: Belum ada data hak suara.
+      - generic [ref=f54e83]:
+        - generic [ref=f54e84]:
+          - heading "Tambah Hak Suara" [level=2] [ref=f54e85]
+          - button [ref=f54e86]:
+            - generic [ref=f54e87]: 
+        - generic [ref=f54e89]:
+          - generic [ref=f54e90]:
+            - generic [ref=f54e91]: Nama Lengkap
+            - textbox "Masukkan nama lengkap pemilih" [ref=f54e92]
+            - paragraph [ref=f54e93]: Nama harus sama dengan yang akan dipilih di halaman voting.
+          - generic [ref=f54e94]:
+            - button "Simpan" [ref=f54e95]
+            - button "Batal" [ref=f54e96]
+      - text:  

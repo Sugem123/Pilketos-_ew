@@ -1,0 +1,72 @@
+- generic [ref=f77e2]:
+  - complementary [ref=f77e3]:
+    - generic [ref=f77e5]:
+      - img "Pilketos" [ref=f77e6]
+      - heading "PILKETOS" [level=1] [ref=f77e7]
+    - navigation [ref=f77e8]:
+      - link "Dashboard" [ref=f77e9] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin
+      - link "Kelola Calon" [ref=f77e12] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/calon
+      - link "Kelola Hak Suara" [ref=f77e15] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/hak-suara
+      - link "Voting Token" [ref=f77e18] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/tokens
+      - link "Konfigurasi Admin" [ref=f77e21] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/admin-config
+      - link "Voting Page" [ref=f77e24] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/voting
+    - generic [ref=f77e27]:
+      - generic [ref=f77e28]:
+        - generic [ref=f77e29]: A
+        - generic [ref=f77e31]:
+          - paragraph [ref=f77e32]: Administrator
+          - paragraph [ref=f77e33]: admin@gmail.com
+      - button "Logout" [ref=f77e35]
+  - generic [ref=f77e38]:
+    - banner [ref=f77e39]:
+      - generic [ref=f77e41]:
+        - heading "Dashboard" [level=1] [ref=f77e42]
+        - paragraph [ref=f77e43]: Selamat datang di sistem pemilihan ketua OSIS
+    - main [ref=f77e44]:
+      - generic [ref=f77e45]:
+        - generic [ref=f77e46]:
+          - generic [ref=f77e48]:
+            - generic [ref=f77e49]:
+              - paragraph [ref=f77e50]: Jumlah Calon
+              - heading "1" [level=3] [ref=f77e51]
+            - generic [ref=f77e52]: 
+          - generic [ref=f77e55]:
+            - generic [ref=f77e56]:
+              - paragraph [ref=f77e57]: Total Hak Suara
+              - heading "0" [level=3] [ref=f77e58]
+            - generic [ref=f77e59]: 
+          - generic [ref=f77e62]:
+            - generic [ref=f77e63]:
+              - paragraph [ref=f77e64]: Total Votes
+              - heading "0" [level=3] [ref=f77e65]
+            - generic [ref=f77e66]: 
+          - generic [ref=f77e69]:
+            - generic [ref=f77e70]:
+              - paragraph [ref=f77e71]: Tingkat Partisipasi
+              - heading "0%" [level=3] [ref=f77e72]
+            - generic [ref=f77e73]: 
+        - generic [ref=f77e75]:
+          - heading "Tren Suara Masuk" [level=2] [ref=f77e77]
+          - generic [ref=f77e80]:
+            - heading "Suara Terkini" [level=2] [ref=f77e81]
+            - paragraph [ref=f77e83]: Belum ada suara masuk.
+        - generic [ref=f77e84]:
+          - heading "Calon Ketos" [level=2] [ref=f77e85]
+          - generic [ref=f77e89]:
+            - heading "Syabira Syahla" [level=3] [ref=f77e91]
+            - generic [ref=f77e92]:
+              - heading "01" [level=1] [ref=f77e93]
+              - img "Syabira Syahla" [ref=f77e94]
+            - generic [ref=f77e95]:
+              - generic [ref=f77e96]:
+                - generic [ref=f77e97]: SUARA
+                - generic [ref=f77e98]: "0"
+              - generic [ref=f77e99]:
+                - generic [ref=f77e100]: KELAS
+                - generic [ref=f77e101]: XI-1

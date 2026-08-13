@@ -202,7 +202,6 @@ $total_vote = mysqli_fetch_assoc($total_vote_result)['total'];
                 <div class="text-right">
                     <p class="text-sm font-medium text-accent">Sistem Voting</p>
                     <p class="text-xs lg:text-sm text-gray-600">Made with 🍵 by Sattar</p>
-                    <p class="text-xs lg:text-sm text-gray-600">Made with 🍵 by Sattar</p>
                 </div>
             </div>
         </div>

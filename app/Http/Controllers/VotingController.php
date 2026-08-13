@@ -19,8 +19,9 @@ class VotingController extends Controller
 
         $totalVote = Vote::count();
         $totalHakSuara = HakSuara::count();
+        $config = json_decode(file_get_contents(base_path('config.json')), true);
 
-        return view('voting.index', compact('calons', 'totalVote', 'totalHakSuara'));
+        return view('voting.index', compact('calons', 'totalVote', 'totalHakSuara', 'config'));
     }
 
     public function vote(Request $request)

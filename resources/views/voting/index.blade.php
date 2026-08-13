@@ -1,7 +1,7 @@
 @php $page_title = 'Pilih Calon'; @endphp
 <x-voting-layout>
     <div class="flex flex-col min-h-screen">
-        <div class="bg-secondary shadow-sm border-b border-gray-200">
+        {{-- <div class="bg-secondary shadow-sm border-b border-gray-200">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <div class="flex gap-3 items-center">
@@ -13,14 +13,15 @@
                     </div>
                     <div class="text-right">
                         <p class="text-sm font-medium text-accent">Sistem Voting</p>
-                        <p class="text-xs lg:text-sm text-gray-600">Made with 🍵 by Sattar</p>
+                        <p class="text-xs lg:text-sm text-gray-600">Suara Anda sangat berharga untuk masa depan sekolah
+                        </p>
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
-        <main class="flex-grow">
-            <div class="max-w-7xl mx-auto p-6 lg:py-6 lg:px-8">
+        <main class="flex-grow flex items-center justify-center">
+            <div class="mx-auto w-full">
                 <div class="text-center px-6 lg:p-0 mb-6 lg:mb-12">
                     <h1 class="text-2xl lg:text-4xl font-bold text-accent mb-2 lg:mb-2">Pemilihan Ketua OSIS</h1>
                     @if ($totalHakSuara - $totalVote > 0)
@@ -34,7 +35,7 @@
                     @csrf
 
                     @if ($calons->isNotEmpty())
-                        <div class="flex flex-wrap gap-2 lg:gap-8 items-center justify-center">
+                        <div class="flex flex-nowrap gap-2 lg:gap-8 items-center justify-center">
                             @php $no = 1; @endphp
                             @foreach ($calons as $calon)
                                 @php
@@ -43,11 +44,12 @@
                                     $second = $words[1] ?? '';
                                     $third = $words[2] ?? '';
                                 @endphp
-                                <div id="caketos-container-{{ $no }}"
-                                    class="transition-all duration-150 ease-in">
+                                <div id="caketos-container-{{ $no }}" class="caketos-item">
                                     <div class="cursor-pointer flex w-[10rem] lg:w-[22rem] group items-center relative">
-                                        <div
-                                            class="bg-white z-10 card w-full border-2 border-gray-200 rounded-xl shadow-lg hover:shadow-xl {{ $totalHakSuara - $totalVote > 0 ? 'hover:border-birupesat' : '' }} transition-all duration-300 overflow-hidden max-w-sm group relative">
+                                        <div class="bg-white z-10 card w-full border-2 border-gray-200 rounded-xl shadow-lg hover:shadow-xl {{ $totalHakSuara - $totalVote > 0 ? 'hover:border-birupesat' : '' }} transition-all duration-300 overflow-hidden max-w-sm group relative"
+                                            data-calon-id="{{ $calon->id }}" data-visi="{{ $calon->visi }}"
+                                            data-misi="{{ $calon->misi }}" data-nama="{{ $calon->nama }}"
+                                            data-kelas="{{ $calon->kelas->name }}">
                                             <i
                                                 class="selection-indicator opacity-0 text-birupesat absolute top-2.5 right-2.5 text-lg lg:text-2xl fa-solid fa-circle-check z-20 transition-opacity duration-150 ease-in-out"></i>
 
@@ -95,6 +97,43 @@
                                                 </div>
                                             </label>
                                         </div>
+
+                                        {{-- Detail Panel (preloaded behind card, 10% shorter, vertically centered) --}}
+                                        <div class="detail-panel absolute top-[5%] left-0 w-[10rem] lg:w-[22rem] h-[90%] bg-white border-2 border-birupesat rounded-xl shadow-xl overflow-hidden pointer-events-none z-0"
+                                            style="transform: translateX(0);">
+                                            <div class="p-4 pl-7 lg:p-6 lg:pl-9 h-full overflow-y-auto">
+                                                <div class="mb-4">
+                                                    <h3
+                                                        class="font-bold text-lg lg:text-2xl text-accent mb-1 detail-nama">
+                                                    </h3>
+                                                    <p class="text-sm lg:text-base text-gray-600 detail-kelas"></p>
+                                                </div>
+
+                                                <div class="mb-4">
+                                                    <div class="flex items-center gap-2 mb-2">
+                                                        <div class="w-1 h-4 rounded-full bg-birupesat"></div>
+                                                        <h4
+                                                            class="text-xs lg:text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                                            Visi</h4>
+                                                    </div>
+                                                    <p
+                                                        class="text-xs lg:text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-lg p-3 detail-visi">
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                    <div class="flex items-center gap-2 mb-2">
+                                                        <div class="w-1 h-4 rounded-full bg-accent"></div>
+                                                        <h4
+                                                            class="text-xs lg:text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                                            Misi</h4>
+                                                    </div>
+                                                    <p
+                                                        class="text-xs lg:text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-lg p-3 whitespace-pre-line detail-misi">
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 @php $no++; @endphp
@@ -125,11 +164,11 @@
         </main>
 
         <footer class="bg-secondary border-t border-gray-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
                 <div class="text-center">
-                    <p class="text-sm text-gray-600">© {{ date('Y') }} Pilketos v2.0 - Sistem Pemilihan Ketua OSIS
+                    <p class="text-sm text-gray-600">Pilketos v2.0 FOSS - Sistem Pemilihan Ketua OSIS
                     </p>
-                    <p class="text-xs text-gray-500 mt-1">Suara Anda sangat berharga untuk masa depan sekolah</p>
+                    <p class="text-xs text-gray-500 mt-1">Made with $20 Claude subscription by Sattar</p>
                 </div>
             </div>
         </footer>
@@ -139,6 +178,136 @@
         const candidateRadios = document.querySelectorAll('.candidate-radio');
         const candidateCards = document.querySelectorAll('.card');
         const voteButton = document.getElementById('voteButton');
+        const allItems = document.querySelectorAll('.caketos-item');
+        let currentlyExpanded = null;
+        const activeAnimations = new Map();
+
+        function ease(t) {
+            return t < 0.5 ?
+                2 * t * t :
+                1 - Math.pow(-2 * t + 2, 2) / 2;
+        }
+
+        function cancelAnimation(el) {
+            const existing = activeAnimations.get(el);
+            if (existing) {
+                cancelAnimationFrame(existing);
+                activeAnimations.delete(el);
+            }
+        }
+
+        function animateValue(el, from, to, duration, callback, onDone) {
+            cancelAnimation(el);
+            const start = performance.now();
+
+            function step(now) {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = ease(progress);
+                callback(from + (to - from) * eased);
+                if (progress < 1) {
+                    activeAnimations.set(el, requestAnimationFrame(step));
+                } else {
+                    activeAnimations.delete(el);
+                    if (onDone) onDone();
+                }
+            }
+            activeAnimations.set(el, requestAnimationFrame(step));
+        }
+
+        function getItemsAfter(item) {
+            const after = [];
+            allItems.forEach(other => {
+                if (other !== item && other.compareDocumentPosition(item) & Node.DOCUMENT_POSITION_PRECEDING) {
+                    after.push(other);
+                }
+            });
+            return after;
+        }
+
+        function expandPanel(card, container) {
+            const detailPanel = container.querySelector('.detail-panel');
+            const cardWidth = card.offsetWidth;
+            const overlap = 10;
+            const slideDistance = cardWidth - overlap;
+
+            detailPanel.querySelector('.detail-nama').textContent = card.dataset.nama;
+            detailPanel.querySelector('.detail-kelas').textContent = 'Kelas ' + card.dataset.kelas;
+            detailPanel.querySelector('.detail-visi').textContent = card.dataset.visi;
+            detailPanel.querySelector('.detail-misi').textContent = card.dataset.misi;
+
+            const siblingsAfter = getItemsAfter(container);
+
+            animateValue(detailPanel, 0, slideDistance, 400, (val) => {
+                detailPanel.style.transform = 'translateX(' + val + 'px)';
+            }, () => {
+                detailPanel.style.pointerEvents = 'auto';
+            });
+
+            siblingsAfter.forEach(sib => {
+                const currentTransform = sib.style.transform;
+                const currentVal = currentTransform ?
+                    parseFloat(currentTransform.match(/translateX\((.+)px\)/)?.[1] || 0) :
+                    0;
+                animateValue(sib, currentVal, slideDistance, 400, (val) => {
+                    sib.style.transform = 'translateX(' + val + 'px)';
+                });
+            });
+
+            detailPanel.style.pointerEvents = 'none';
+            currentlyExpanded = container;
+        }
+
+        function collapsePanel(container) {
+            const detailPanel = container.querySelector('.detail-panel');
+            const currentTransform = detailPanel.style.transform;
+            const currentVal = currentTransform ?
+                parseFloat(currentTransform.match(/translateX\((.+)px\)/)?.[1] || 0) :
+                0;
+
+            const siblingsAfter = getItemsAfter(container);
+
+            animateValue(detailPanel, currentVal, 0, 400, (val) => {
+                detailPanel.style.transform = 'translateX(' + val + 'px)';
+            }, () => {
+                detailPanel.style.pointerEvents = 'none';
+            });
+
+            siblingsAfter.forEach(sib => {
+                const sibTransform = sib.style.transform;
+                const sibCurrent = sibTransform ?
+                    parseFloat(sibTransform.match(/translateX\((.+)px\)/)?.[1] || 0) :
+                    0;
+                animateValue(sib, sibCurrent, 0, 400, (val) => {
+                    sib.style.transform = 'translateX(' + val + 'px)';
+                });
+            });
+
+            currentlyExpanded = null;
+        }
+
+        candidateCards.forEach((card) => {
+            card.addEventListener('click', function(e) {
+                if (e.target.tagName === 'LABEL' || e.target.closest('label')) {
+                    return;
+                }
+
+                const container = this.closest('.caketos-item');
+
+                if (currentlyExpanded === container) {
+                    collapsePanel(container);
+                    return;
+                }
+
+                if (currentlyExpanded) {
+                    const prevContainer = currentlyExpanded;
+                    collapsePanel(prevContainer);
+                    setTimeout(() => expandPanel(this, container), 50);
+                } else {
+                    expandPanel(this, container);
+                }
+            });
+        });
 
         candidateRadios.forEach((radio) => {
             radio.addEventListener('change', function() {
@@ -265,6 +434,18 @@
             voteButton.classList.add('bg-gray-400', 'cursor-not-allowed');
             voteButton.textContent = 'Pilih Calon Favorit';
             voteButton.nextElementSibling.textContent = 'Silakan pilih salah satu calon terlebih dahulu';
+            // Cancel all animations and reset transforms
+            activeAnimations.forEach((id, el) => cancelAnimationFrame(id));
+            activeAnimations.clear();
+            allItems.forEach(item => {
+                item.style.transform = '';
+                const panel = item.querySelector('.detail-panel');
+                if (panel) {
+                    panel.style.transform = 'translateX(0)';
+                    panel.style.pointerEvents = 'none';
+                }
+            });
+            currentlyExpanded = null;
         }
 
         function getCookie(name) {

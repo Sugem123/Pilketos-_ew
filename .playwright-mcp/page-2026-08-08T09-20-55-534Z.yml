@@ -1,0 +1,101 @@
+- generic [ref=f12e2]:
+  - complementary [ref=f12e3]:
+    - generic [ref=f12e5]:
+      - img "Pilketos" [ref=f12e6]
+      - heading "PILKETOS" [level=1] [ref=f12e7]
+    - navigation [ref=f12e8]:
+      - link "Dashboard" [ref=f12e9] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin
+      - link "Kelola Calon" [ref=f12e12] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/calon
+      - link "Kelola Hak Suara" [ref=f12e15] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/hak-suara
+      - link "Laporan" [ref=f12e18] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/laporan
+      - link "Voting Token" [ref=f12e21] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/tokens
+      - link "Konfigurasi Admin" [ref=f12e24] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/admin-config
+      - link "Voting Page" [ref=f12e27] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/voting
+    - generic [ref=f12e30]:
+      - generic [ref=f12e31]:
+        - generic [ref=f12e32]: A
+        - generic [ref=f12e34]:
+          - paragraph [ref=f12e35]: Administrator
+          - paragraph [ref=f12e36]: admin@gmail.com
+      - button "Logout" [ref=f12e38]
+  - generic [ref=f12e41]:
+    - banner [ref=f12e42]:
+      - generic [ref=f12e44]:
+        - heading "Data Calon" [level=1] [ref=f12e45]
+        - paragraph [ref=f12e46]: Kelola data calon ketua OSIS
+      - generic [ref=f12e47]: 08 Aug 2026, 09:20
+    - main [ref=f12e49]:
+      - generic [ref=f12e50]:
+        - button "Tambah Calon" [ref=f12e52]:
+          - generic [ref=f12e53]: +
+          - text: Tambah Calon
+        - generic [ref=f12e54]:
+          - generic [ref=f12e55]:
+            - heading "Daftar Calon" [level=2] [ref=f12e56]
+            - generic [ref=f12e57]: 1 calon terdaftar
+          - generic [ref=f12e59]:
+            - img "Syabira Syahla" [ref=f12e61]
+            - generic [ref=f12e62]:
+              - generic [ref=f12e63]:
+                - heading "Syabira Syahla" [level=3] [ref=f12e64]
+                - generic [ref=f12e65]: No. 1
+              - paragraph [ref=f12e66]: Kelas XI-1
+              - paragraph [ref=f12e67]: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor interdum m...
+            - generic [ref=f12e68]:
+              - link "Edit" [ref=f12e69] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/calon/1/edit
+                - generic [ref=f12e70]: 
+              - button "Hapus" [ref=f12e71]:
+                - generic [ref=f12e72]: 
+        - generic [ref=f12e73]:
+          - heading "Pengaturan Batas Hak Suara" [level=3] [ref=f12e74]
+          - generic [ref=f12e75]:
+            - generic [ref=f12e76]:
+              - generic [ref=f12e77]: Batas Maksimal Suara
+              - spinbutton [ref=f12e78]: "150"
+            - button "Simpan" [ref=f12e79]
+      - generic [ref=f12e80]:
+        - generic [ref=f12e81]:
+          - heading "Tambah Calon" [level=2] [ref=f12e82]
+          - button [ref=f12e83]:
+            - generic [ref=f12e84]: 
+        - generic [ref=f12e86]:
+          - generic [ref=f12e87]:
+            - generic [ref=f12e88]: Nama Lengkap
+            - textbox [ref=f12e89]
+          - generic [ref=f12e90]:
+            - generic [ref=f12e91]:
+              - generic [ref=f12e92]: Kelas
+              - combobox [ref=f12e93]:
+                - option "Pilih Kelas" [selected]
+                - option "X-1"
+                - option "X-2"
+                - option "X-3"
+                - option "XI-1"
+                - option "XI-2"
+                - option "XI-3"
+                - option "XII-1"
+                - option "XII-2"
+                - option "XII-3"
+            - generic [ref=f12e94]:
+              - generic [ref=f12e95]: Nomor Urut
+              - spinbutton [ref=f12e96]
+          - generic [ref=f12e97]:
+            - generic [ref=f12e98]: Upload Foto
+            - generic [ref=f12e99]: Klik untuk memilih foto
+          - generic [ref=f12e102]:
+            - generic [ref=f12e103]: Visi
+            - textbox [ref=f12e104]
+          - generic [ref=f12e105]:
+            - generic [ref=f12e106]: Misi
+            - textbox [ref=f12e107]
+          - generic [ref=f12e108]:
+            - button "Simpan" [ref=f12e109]
+            - button "Batal" [ref=f12e110]
