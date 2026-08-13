@@ -13,7 +13,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body { font-family: 'Montserrat', sans-serif; }
+        body { background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px); background-size: 40px 40px; }
         [x-cloak] { display: none !important; }
+
+        /* Prevent SweetAlert2's scroll lock from changing the page width. */
+        body.swal2-shown { padding-right: 0 !important; }
 
         .swal2-popup {
             font-family: 'Montserrat', sans-serif !important;
