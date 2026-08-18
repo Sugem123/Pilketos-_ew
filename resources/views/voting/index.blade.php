@@ -46,7 +46,7 @@
                                 @endphp
                                 <div id="caketos-container-{{ $no }}" class="caketos-item">
                                     <div class="cursor-pointer flex w-[10rem] lg:w-[22rem] group items-center relative">
-                                        <div class="bg-white z-10 card w-full border-2 border-gray-200 rounded-xl shadow-lg hover:shadow-xl {{ $totalHakSuara - $totalVote > 0 ? 'hover:border-birupesat' : '' }} transition-all duration-300 overflow-hidden max-w-sm group relative"
+                                        <div class="bg-white z-10 card w-full border-2 border-gray-200 rounded-xl shadow-lg hover:shadow-xl {{ $totalHakSuara - $totalVote > 0 ? 'hover:border-birupesat cursor-pointer' : '' }} transition-all duration-300 overflow-hidden max-w-sm group relative"
                                             data-calon-id="{{ $calon->id }}" data-visi="{{ $calon->visi }}"
                                             data-misi="{{ $calon->misi }}" data-nama="{{ $calon->nama }}"
                                             data-kelas="{{ $calon->kelas->name }}">
@@ -59,7 +59,7 @@
                                                 class="hidden candidate-radio">
 
                                             <label for="calon_{{ $calon->id }}"
-                                                class="{{ $config['haksuara'] - $totalVote <= 0 ? 'saturate-0 cursor-not-allowed' : '' }} block">
+                                                class="{{ $config['haksuara'] - $totalVote <= 0 ? 'saturate-0 cursor-not-allowed' : 'cursor-pointer' }} block">
                                                 <div class="flex gap-3 p-3 lg:p-6 border-b border-gray-100">
                                                     <h3 class="font-bold text-lg lg:text-2xl leading-5 lg:leading-6">
                                                         {{ $first }}<br>
@@ -326,7 +326,7 @@
         document.getElementById('votingForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            let token = getCookie('display_token');
+            let token = sessionStorage.getItem('display_token');
             if (!token) {
                 Swal.fire({
                     icon: 'error',
@@ -448,15 +448,6 @@
             currentlyExpanded = null;
         }
 
-        function getCookie(name) {
-            let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-            return match ? decodeURIComponent(match[2]) : null;
-        }
-
-        function deleteCookie(name) {
-            document.cookie = name + '=; Max-Age=0; path=/';
-        }
-
         function showTokenPopup() {
             Swal.fire({
                 title: 'Masukkan Display Token',
@@ -487,8 +478,8 @@
                                 Swal.showValidationMessage(data.message || 'Token tidak valid');
                                 return false;
                             }
-                            document.cookie = "display_token=" + encodeURIComponent(token) + "; max-age=" +
-                                (24 * 60 * 60) + "; path=/";
+                            // Gunakan sessionStorage agar token otomatis hilang saat tab/browser ditutup
+                            sessionStorage.setItem('display_token', token);
                             return true;
                         })
                         .catch(() => {
@@ -500,7 +491,8 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            let token = getCookie('display_token');
+            // sessionStorage selalu kosong saat halaman di-reload fresh (tab baru / reload)
+            let token = sessionStorage.getItem('display_token');
 
             if (!token) {
                 showTokenPopup();
@@ -516,7 +508,7 @@
                     .then(res => res.json())
                     .then(data => {
                         if (!data.success) {
-                            deleteCookie('display_token');
+                            sessionStorage.removeItem('display_token');
                             showTokenPopup();
                         }
                     })

@@ -36,7 +36,8 @@
         .swal2-icon.swal2-warning { border-color: #F59E0B !important; color: #F59E0B !important; }
         .swal2-icon.swal2-question { border-color: #3B82F6 !important; color: #3B82F6 !important; }
         body.swal2-shown.token-popup-open>[aria-hidden="true"] { transition: 0.1s filter; filter: blur(3px); }
-        .card.selected { border-color: #2f2575 !important; box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4) !important; }
+        .card:not(.selected):hover { border-color: #2f2575 !important; box-shadow: 0 10px 25px -5px rgba(47, 37, 117, 0.3) !important; cursor: pointer; }
+        .card.selected { border-color: #2f2575 !important; box-shadow: 0 10px 25px -5px rgba(47, 37, 117, 0.5) !important; cursor: pointer; }
         .card.selected .selection-indicator { opacity: 100; }
     </style>
 </head>

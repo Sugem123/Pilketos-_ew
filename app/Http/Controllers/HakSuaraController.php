@@ -19,7 +19,16 @@ class HakSuaraController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nisn' => 'required|string|max:255|unique:hak_suara,nisn',
+            'nisn' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:hak_suara,nisn',
+                'regex:/^[\p{L}\s\.\-\']+$/u',
+            ],
+        ], [
+            'nisn.regex'  => 'Nama pemilih hanya boleh mengandung huruf, spasi, titik, dan tanda hubung.',
+            'nisn.unique' => 'Nama pemilih ini sudah terdaftar dalam daftar hak suara.',
         ]);
 
         HakSuara::create(['nisn' => $request->nisn]);

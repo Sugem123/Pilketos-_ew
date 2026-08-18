@@ -19,7 +19,11 @@ class TokenController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'token' => 'required|string|max:10|unique:tokens,token',
+            'token' => ['required', 'string', 'regex:/^[A-Z0-9]+$/', 'max:10', 'unique:tokens,token'],
+        ], [
+            'token.regex'  => 'Token hanya boleh mengandung huruf kapital dan angka.',
+            'token.max'    => 'Token maksimal 10 karakter.',
+            'token.unique' => 'Token sudah digunakan, gunakan token lain.',
         ]);
 
         Token::create([

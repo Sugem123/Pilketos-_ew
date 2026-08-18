@@ -254,15 +254,12 @@
             document.getElementById('detail-misi').textContent = d.misi;
 
             const fotoEl = document.getElementById('detail-foto');
-            const placeholderEl = document.getElementById('detail-foto-placeholder');
             if (d.url_foto) {
                 fotoEl.src = d.url_foto;
                 fotoEl.classList.remove('hidden');
-                placeholderEl.classList.add('hidden');
             } else {
                 fotoEl.src = '';
                 fotoEl.classList.add('hidden');
-                placeholderEl.classList.remove('hidden');
             }
 
             // Wire action buttons

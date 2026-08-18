@@ -22,10 +22,13 @@ class CalonController extends Controller
         $request->validate([
             'nama' => 'required|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
-            'nomor' => 'required|integer',
+            'nomor' => 'required|integer|min:1',
             'foto_calon' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'visi' => 'required|string|max:521',
             'misi' => 'required|string|max:1000',
+        ], [
+            'nomor.min'     => 'Nomor urut harus minimal 1.',
+            'nomor.integer' => 'Nomor urut harus berupa angka bulat.',
         ]);
 
         $path = $request->file('foto_calon')->store('foto_calon', 'public');
@@ -47,10 +50,13 @@ class CalonController extends Controller
         $request->validate([
             'nama' => 'required|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
-            'nomor' => 'required|integer',
+            'nomor' => 'required|integer|min:1',
             'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'visi' => 'required|string|max:521',
             'misi' => 'required|string|max:1000',
+        ], [
+            'nomor.min'     => 'Nomor urut harus minimal 1.',
+            'nomor.integer' => 'Nomor urut harus berupa angka bulat.',
         ]);
 
         $data = [

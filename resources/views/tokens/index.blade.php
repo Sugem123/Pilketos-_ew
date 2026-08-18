@@ -122,10 +122,20 @@
         <div class="flex-1 overflow-y-auto p-6">
             <form action="{{ route('tokens.store') }}" method="POST" class="space-y-5">
                 @csrf
+                @if ($errors->any())
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                        <ul class="text-sm text-red-600 space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Token</label>
                     <div class="flex gap-2">
                         <input type="text" id="token-input" name="token" required maxlength="10"
+                            value="{{ old('token') }}"
                             class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent outline-none font-mono uppercase"
                             placeholder="ABC123">
                         <x-admin-button type="button" onclick="generateToken()" variant="secondary" size="sm">
@@ -159,6 +169,11 @@
             document.getElementById('secondary-sidebar').classList.add('translate-x-full');
             document.getElementById('sidebar-backdrop').classList.add('hidden');
         }
+
+        // Auto-buka sidebar jika ada error validasi
+        @if ($errors->any())
+            openSidebar();
+        @endif
 
         function generateToken() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
