@@ -51,7 +51,7 @@
         </div>
     </div>
 
-    <div id="secondary-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    <div id="secondary-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col pointer-events-none">
         <div class="flex items-center justify-between p-6 border-b border-gray-100">
             <h2 id="sidebar-title" class="text-lg font-bold text-accent">Tambah Admin</h2>
             <x-admin-button variant="ghost" icon="fas fa-times" onclick="closeSidebar()"
@@ -133,12 +133,21 @@
             }
 
             sidebar.classList.remove('translate-x-full');
+            sidebar.classList.remove('pointer-events-none');
+            sidebar.classList.add('pointer-events-auto');
             backdrop.classList.remove('hidden');
         }
 
         function closeSidebar() {
-            document.getElementById('secondary-sidebar').classList.add('translate-x-full');
+            const s = document.getElementById('secondary-sidebar');
+            s.classList.add('translate-x-full');
+            s.classList.remove('pointer-events-auto');
+            s.classList.add('pointer-events-none');
             document.getElementById('sidebar-backdrop').classList.add('hidden');
         }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSidebar();
+        });
     </script>
 </x-app-layout>

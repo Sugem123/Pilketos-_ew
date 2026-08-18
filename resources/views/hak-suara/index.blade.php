@@ -113,7 +113,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <x-admin-button variant="ghost" icon="fas fa-trash-can"
-                                        onclick="confirmDelete('{{ route('hak-suara.destroy', $hs) }}', 'Hapus Pemilih', 'Apakah Anda yakin ingin menghapus {{ $hs->nisn }} dari daftar pemilih?')"
+                                        onclick="confirmDelete('{{ route('hak-suara.destroy', $hs) }}', 'Hapus Pemilih', 'Apakah Anda yakin ingin menghapus {{ e(addslashes($hs->nisn)) }} dari daftar pemilih?')"
                                         class="text-gray-400 hover:text-red-600 hover:bg-red-50"
                                         title="Hapus">
                                     </x-admin-button>
@@ -133,7 +133,7 @@
         </div>
     </div>
 
-    <div id="secondary-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    <div id="secondary-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col pointer-events-none">
         <div class="flex items-center justify-between p-6 border-b border-gray-100">
             <h2 class="text-lg font-bold text-accent">Tambah Hak Suara</h2>
             <x-admin-button variant="ghost" icon="fas fa-times" onclick="closeSidebar()"
@@ -176,13 +176,23 @@
 
     <script>
         function openSidebar() {
-            document.getElementById('secondary-sidebar').classList.remove('translate-x-full');
+            const s = document.getElementById('secondary-sidebar');
+            s.classList.remove('translate-x-full');
+            s.classList.remove('pointer-events-none');
+            s.classList.add('pointer-events-auto');
             document.getElementById('sidebar-backdrop').classList.remove('hidden');
         }
         function closeSidebar() {
-            document.getElementById('secondary-sidebar').classList.add('translate-x-full');
+            const s = document.getElementById('secondary-sidebar');
+            s.classList.add('translate-x-full');
+            s.classList.remove('pointer-events-auto');
+            s.classList.add('pointer-events-none');
             document.getElementById('sidebar-backdrop').classList.add('hidden');
         }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSidebar();
+        });
 
         // Auto-buka sidebar jika ada error validasi
         @if ($errors->any())
