@@ -39,8 +39,8 @@
     <style>
         .notyf__toast {
             border-radius: 0.75rem !important;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 4px 10px -5px rgba(0,0,0,0.05) !important;
-            padding: 0.875rem 1.25rem !important;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.18), 0 10px 25px -5px rgba(0,0,0,0.1) !important;
+            padding: 0.5rem 1rem !important;
             min-width: 280px !important;
         }
         .notyf__message {
@@ -52,13 +52,30 @@
         .notyf__icon {
             margin-right: 0.625rem !important;
         }
-        .notyf__dismiss {
-            background: #f3f4f6 !important;
-            border-radius: 0.5rem !important;
+        .notyf__toast .notyf__dismiss,
+        .notyf__toast .notyf__dismiss::after {
+            background: transparent !important;
+            background-color: transparent !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
         }
-        .notyf__dismiss-btn::before,
-        .notyf__dismiss-btn::after {
-            background: #6b7280 !important;
+        .notyf__toast .notyf__dismiss-btn {
+            width: 16px !important;
+            height: 16px !important;
+            opacity: 0.35 !important;
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        .notyf__toast .notyf__dismiss-btn:hover {
+            opacity: 0.75 !important;
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        .notyf__toast .notyf__dismiss-btn::before,
+        .notyf__toast .notyf__dismiss-btn::after {
+            background: #111827 !important;
+            background-color: #111827 !important;
+            width: 1.5px !important;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
