@@ -62,6 +62,29 @@
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-4 border-b border-gray-100">
+                <form method="GET" action="{{ route('hak-suara.index') }}" class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" name="search" value="{{ request('search') }}"
+                               placeholder="Cari nama pemilih..."
+                               class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent outline-none">
+                    </div>
+                    <select name="status" class="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 focus:ring-2 focus:ring-accent focus:border-transparent outline-none">
+                        <option value="">Semua Status</option>
+                        <option value="sudah" {{ request('status') === 'sudah' ? 'selected' : '' }}>Sudah Memilih</option>
+                        <option value="belum" {{ request('status') === 'belum' ? 'selected' : '' }}>Belum Memilih</option>
+                    </select>
+                    <button type="submit" class="px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent/90 transition-colors">
+                        Filter
+                    </button>
+                    @if(request('search') || request('status'))
+                        <a href="{{ route('hak-suara.index') }}" class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors text-center">
+                            Reset
+                        </a>
+                    @endif
+                </form>
+            </div>
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead class="bg-gray-50 border-b border-gray-100">

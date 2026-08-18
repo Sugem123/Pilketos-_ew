@@ -8,9 +8,23 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class HakSuaraController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $hakSuaras = HakSuara::withCount('votes')->orderBy('id', 'desc')->get();
+        $query = HakSuara::withCount('votes');
+
+        if ($request->filled('search')) {
+            $query->where('nisn', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'sudah') {
+                $query->has('votes');
+            } elseif ($request->status === 'belum') {
+                $query->doesntHave('votes');
+            }
+        }
+
+        $hakSuaras = $query->orderBy('id', 'desc')->get();
         $totalHakSuara = HakSuara::count();
 
         return view('hak-suara.index', compact('hakSuaras', 'totalHakSuara'));

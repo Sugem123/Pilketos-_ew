@@ -28,7 +28,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <x-admin-button variant="ghost" icon="fas fa-pen-to-square"
-                                onclick='openSidebar("edit", @json($user))'
+                                onclick="openSidebar('edit', adminData[{{ $user->id }}])"
                                 class="text-gray-400 hover:text-accent hover:bg-gray-100"
                                 title="Edit">
                             </x-admin-button>
