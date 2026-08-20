@@ -13,13 +13,13 @@
         </button>
         <div>
             <div class="flex items-center gap-2.5">
-                <h1 class="font-heading font-black text-lg sm:text-xl lg:text-2xl text-white tracking-tight leading-tight">{{ $page_title }}</h1>
+                <h1 class="font-heading font-black text-lg sm:text-xl lg:text-2xl text-white tracking-tight leading-tight">{!! html_entity_decode($page_title) !!}</h1>
                 <span class="hidden md:inline-block px-3 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-300 font-mono border border-indigo-500/20">
                     {{ $schoolTitle }}
                 </span>
             </div>
             @if ($page_description)
-                <p class="text-xs text-slate-400 font-medium mt-0.5">{{ $page_description }}</p>
+                <p class="text-xs text-slate-400 font-medium mt-0.5">{!! html_entity_decode($page_description) !!}</p>
             @endif
         </div>
     </div>
