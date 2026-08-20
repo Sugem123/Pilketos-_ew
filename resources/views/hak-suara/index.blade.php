@@ -1,129 +1,194 @@
 @php
-    $page_title = 'Hak Suara';
-    $page_description = 'Daftar pemilih yang berhak memberikan suara';
+    $page_title = 'Daftar Pemilih Tetap (DPT)';
+    $page_description = 'Kelola hak suara pemilih Siswa (berdasarkan kelas) & Guru/Tendik';
 @endphp
 <x-app-layout :page_title="$page_title" :page_description="$page_description">
     <x-slot name="actions">
-        <x-admin-button variant="success" icon="fas fa-file-import" onclick="openImportModal()">
-            Import Excel
+        <a href="{{ route('cetak.undangan') }}" target="_blank"
+           class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-900 border border-white/10 text-slate-200 hover:text-white hover:bg-slate-800 rounded-2xl text-xs font-bold transition-all shadow-md">
+            <i class="fas fa-envelope-open-text text-indigo-400"></i>
+            <span>Cetak Undangan</span>
+        </a>
+
+        <a href="{{ route('cetak.kartu') }}" target="_blank"
+           class="inline-flex items-center gap-1.5 px-4 py-2.5 luxury-btn-primary text-white rounded-2xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/30">
+            <i class="fas fa-address-card"></i>
+            <span>Cetak Kartu Pemilih</span>
+        </a>
+
+        <x-admin-button variant="success" icon="fas fa-file-excel" onclick="openImportModal()">
+            Impor Excel
         </x-admin-button>
-        <x-admin-button icon="fas fa-plus" onclick="openSidebar('add')">
-            Tambah
+        <x-admin-button icon="fas fa-user-plus" onclick="openSidebar('add')">
+            Tambah Pemilih
         </x-admin-button>
     </x-slot>
 
-    <div class="space-y-6">
+    <div class="space-y-8">
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        {{-- Statistics Row --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">Total Pemilih</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ $totalHakSuara }}</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Total Pemilih</span>
+                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-white font-mono leading-none">{{ $totalHakSuara }}</h3>
                     </div>
-                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-                        <i class="fas fa-users text-primary text-sm"></i>
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fas fa-users"></i>
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+
+            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">Sudah Memilih</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ $hakSuaras->where('votes_count', '>', 0)->count() }}</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Siswa Terdaftar</span>
+                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-blue-400 font-mono leading-none">{{ $totalSiswa }}</h3>
                     </div>
-                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-                        <i class="fa-regular fa-circle-check text-primary text-base"></i>
+                    <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fas fa-graduation-cap"></i>
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+
+            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">Belum Memilih</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ $hakSuaras->where('votes_count', 0)->count() }}</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Guru / Tendik</span>
+                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-purple-400 font-mono leading-none">{{ $totalGuru }}</h3>
                     </div>
-                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-                        <i class="fas fa-clock text-primary text-sm"></i>
+                    <div class="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fas fa-chalkboard-user"></i>
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+
+            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">Partisipasi</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ $totalHakSuara > 0 ? number_format(($hakSuaras->where('votes_count', '>', 0)->count() / $totalHakSuara) * 100, 1) : 0 }}%</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Sudah Memilih</span>
+                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-emerald-400 font-mono leading-none">{{ $hakSuaras->where('votes_count', '>', 0)->count() }}</h3>
                     </div>
-                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-                        <i class="fas fa-chart-simple text-primary text-sm"></i>
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fa-solid fa-circle-check"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="p-4 border-b border-gray-100">
-                <form method="GET" action="{{ route('hak-suara.index') }}" class="flex flex-col sm:flex-row gap-3">
+        {{-- Table Container --}}
+        <div class="luxury-card rounded-3xl overflow-hidden">
+            {{-- Filter Bar --}}
+            <div class="p-6 border-b border-white/5 bg-slate-950/40">
+                <form method="GET" action="{{ route('hak-suara.index') }}" class="flex flex-col sm:flex-row gap-3.5">
                     <div class="relative flex-1">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
                         <input type="text" name="search" value="{{ request('search') }}"
-                               placeholder="Cari nama pemilih..."
-                               class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent outline-none">
+                            placeholder="Cari nama pemilih..."
+                            class="w-full pl-10 pr-4 py-3 luxury-input rounded-2xl text-xs font-semibold outline-none">
                     </div>
-                    <select name="status" class="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 focus:ring-2 focus:ring-accent focus:border-transparent outline-none">
+                    
+                    <select name="tipe" class="px-4 py-3 luxury-input rounded-2xl text-xs font-semibold outline-none">
+                        <option value="">Semua Kategori</option>
+                        <option value="siswa" {{ request('tipe') === 'siswa' ? 'selected' : '' }}>Siswa</option>
+                        <option value="guru" {{ request('tipe') === 'guru' ? 'selected' : '' }}>Guru / Tendik</option>
+                    </select>
+
+                    <select name="id_kelas" class="px-4 py-3 luxury-input rounded-2xl text-xs font-semibold outline-none">
+                        <option value="">Semua Kelas</option>
+                        @foreach($kelas as $k)
+                            <option value="{{ $k->id }}" {{ request('id_kelas') == $k->id ? 'selected' : '' }}>{{ $k->name }}</option>
+                        @endforeach
+                    </select>
+
+                    <select name="status" class="px-4 py-3 luxury-input rounded-2xl text-xs font-semibold outline-none">
                         <option value="">Semua Status</option>
                         <option value="sudah" {{ request('status') === 'sudah' ? 'selected' : '' }}>Sudah Memilih</option>
                         <option value="belum" {{ request('status') === 'belum' ? 'selected' : '' }}>Belum Memilih</option>
                     </select>
-                    <button type="submit" class="px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent/90 transition-colors">
+
+                    <button type="submit" class="px-6 py-3 luxury-btn-primary text-white text-xs font-bold rounded-2xl transition-all shadow-md cursor-pointer">
                         Filter
                     </button>
-                    @if(request('search') || request('status'))
-                        <a href="{{ route('hak-suara.index') }}" class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors text-center">
+                    @if(request('search') || request('tipe') || request('id_kelas') || request('status'))
+                        <a href="{{ route('hak-suara.index') }}" class="px-4 py-3 bg-slate-900 border border-white/10 text-slate-400 hover:text-white text-xs font-bold rounded-2xl transition-colors text-center">
                             Reset
                         </a>
                     @endif
                 </form>
             </div>
+
+            {{-- Table --}}
             <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-100">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-950/60 border-b border-white/5">
                         <tr>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">No</th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Nama</th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                            <th class="text-right px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Aksi</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">No</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Nama Pemilih</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Token Bilik</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Kategori / Kelas</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Status Suara</th>
+                            <th class="text-right px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-white/5">
                         @forelse($hakSuaras as $index => $hs)
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 text-sm text-gray-500">{{ $index + 1 }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-accent">{{ $hs->nisn }}</td>
+                            <tr class="hover:bg-slate-900/50 transition-colors">
+                                <td class="px-6 py-4 text-xs font-mono text-slate-500">{{ $index + 1 }}</td>
+                                <td class="px-6 py-4 text-xs font-bold text-white">{{ $hs->nisn }}</td>
                                 <td class="px-6 py-4">
-                                    @if($hs->votes_count > 0)
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                                            <i class="fas fa-check"></i> Sudah Memilih
+                                    <code class="px-3 py-1 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono font-black {{ $hs->token_used ? 'line-through text-slate-600' : 'text-amber-400' }}">
+                                        {{ $hs->token ?? '-' }}
+                                    </code>
+                                    @if($hs->token_used)
+                                        <span class="ml-1.5 text-[9px] text-rose-400 font-bold font-mono px-1.5 py-0.5 bg-rose-500/10 border border-rose-500/20 rounded">HANGUS</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($hs->tipe === 'guru')
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/10 text-purple-300 border border-purple-500/20 text-[10px] font-bold rounded-xl font-mono">
+                                            <i class="fas fa-chalkboard-user"></i> GURU / TENDIK
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
-                                            <i class="fas fa-clock"></i> Belum Memilih
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 text-blue-300 border border-blue-500/20 text-[10px] font-bold rounded-xl font-mono">
+                                            <i class="fas fa-graduation-cap"></i> {{ $hs->kelas->name ?? 'SISWA' }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($hs->votes_count > 0 || $hs->token_used)
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-full">
+                                            <i class="fa-solid fa-circle-check text-[10px]"></i> Sudah Memilih
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold rounded-full">
+                                            <i class="fa-solid fa-clock text-[10px]"></i> Belum Memilih
                                         </span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <x-admin-button variant="ghost" icon="fas fa-trash-can"
-                                        onclick="confirmDelete('{{ route('hak-suara.destroy', $hs) }}', 'Hapus Pemilih', 'Apakah Anda yakin ingin menghapus {{ e(addslashes($hs->nisn)) }} dari daftar pemilih?')"
-                                        class="text-gray-400 hover:text-red-600 hover:bg-red-50"
-                                        title="Hapus">
-                                    </x-admin-button>
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <a href="{{ route('cetak.kartu', ['id' => $hs->id]) }}" target="_blank"
+                                           class="p-2 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors" title="Cetak Kartu">
+                                            <i class="fas fa-print text-xs"></i>
+                                        </a>
+                                        <x-admin-button variant="ghost" icon="fas fa-trash-can"
+                                            onclick="confirmDelete('{{ route('hak-suara.destroy', $hs) }}', 'Hapus Pemilih', 'Apakah Anda yakin ingin menghapus {{ e(addslashes($hs->nisn)) }} dari daftar pemilih?')"
+                                            class="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
+                                            title="Hapus">
+                                        </x-admin-button>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-12 text-center">
-                                    <i class="fas fa-users text-neutral-300 text-4xl mb-3"></i>
-                                    <p class="text-gray-500">Belum ada data hak suara.</p>
+                                <td colspan="6" class="px-6 py-14 text-center">
+                                    <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-white/5 text-slate-600 flex items-center justify-center mx-auto mb-3 text-lg">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-400">Belum ada data pemilih.</p>
+                                    <p class="text-[11px] text-slate-500 mt-0.5">Tambah manual atau unggah file Excel.</p>
                                 </td>
                             </tr>
                         @endforelse
@@ -133,36 +198,68 @@
         </div>
     </div>
 
-    <div id="secondary-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col pointer-events-none">
-        <div class="flex items-center justify-between p-6 border-b border-gray-100">
-            <h2 class="text-lg font-bold text-accent">Tambah Hak Suara</h2>
-            <x-admin-button variant="ghost" icon="fas fa-times" onclick="closeSidebar()"
-                class="text-gray-400 hover:text-accent hover:bg-gray-100 text-lg">
-            </x-admin-button>
+    {{-- Slide-in Sidebar Form --}}
+    <div id="secondary-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-[460px] bg-slate-900 border-l border-white/10 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col pointer-events-none text-slate-100">
+        <div class="flex items-center justify-between p-6 border-b border-white/5 bg-slate-950/60">
+            <h2 class="font-heading font-black text-lg text-white">Tambah Data Pemilih</h2>
+            <button onclick="closeSidebar()" class="w-8 h-8 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 flex items-center justify-center transition-colors">
+                <i class="fas fa-times text-base"></i>
+            </button>
         </div>
-        <div class="flex-1 overflow-y-auto p-6">
-            <form action="{{ route('hak-suara.store') }}" method="POST" class="space-y-5">
+        <div class="flex-1 overflow-y-auto p-6 sm:p-8">
+            <form action="{{ route('hak-suara.store') }}" method="POST" class="space-y-5" x-data="{ tipe: 'siswa' }">
                 @csrf
                 @if ($errors->any())
-                    <div class="bg-red-50 border border-red-200 rounded-lg p-3">
-                        <ul class="text-sm text-red-600 space-y-1">
+                    <div class="bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-2xl p-4">
+                        <ul class="text-xs space-y-1 font-medium">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>
                 @endif
+
+                {{-- Tipe Pemilih: Siswa vs Guru --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Lengkap</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2 font-mono">Kategori Pemilih</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-2.5 p-3.5 border rounded-2xl cursor-pointer transition-all"
+                            :class="tipe === 'siswa' ? 'border-indigo-500 bg-indigo-500/10 ring-2 ring-indigo-500/30' : 'border-slate-800 bg-slate-950/40'">
+                            <input type="radio" name="tipe" value="siswa" x-model="tipe" class="text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-xs font-bold text-white"><i class="fas fa-graduation-cap mr-1 text-indigo-400"></i> Siswa</span>
+                        </label>
+                        <label class="flex items-center gap-2.5 p-3.5 border rounded-2xl cursor-pointer transition-all"
+                            :class="tipe === 'guru' ? 'border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/30' : 'border-slate-800 bg-slate-950/40'">
+                            <input type="radio" name="tipe" value="guru" x-model="tipe" class="text-purple-600 focus:ring-purple-500">
+                            <span class="text-xs font-bold text-white"><i class="fas fa-chalkboard-user mr-1 text-purple-400"></i> Guru / Tendik</span>
+                        </label>
+                    </div>
+                </div>
+
+                {{-- Kelas (Hanya untuk Siswa) --}}
+                <div x-show="tipe === 'siswa'" x-transition>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Kelas Siswa</label>
+                    <select name="id_kelas" :required="tipe === 'siswa'"
+                        class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold">
+                        <option value="">Pilih Kelas</option>
+                        @foreach ($kelas as $k)
+                            <option value="{{ $k->id }}" {{ old('id_kelas') == $k->id ? 'selected' : '' }}>{{ $k->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Nama Lengkap Pemilih</label>
                     <input type="text" name="nisn" required
                            value="{{ old('nisn') }}"
-                           class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent outline-none"
-                           placeholder="Masukkan nama lengkap pemilih">
-                    <p class="text-xs text-gray-400 mt-1">Hanya huruf, spasi, titik, dan tanda hubung. Nama harus sama dengan yang akan diinput di halaman voting.</p>
+                           class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold"
+                           placeholder="Contoh: Shabira Syahla">
+                    <p class="text-[11px] text-slate-500 mt-1.5">Gunakan nama yang sama persis saat konfirmasi suara di bilik voting.</p>
                 </div>
-                <div class="flex gap-3 pt-4">
+
+                <div class="flex gap-3 pt-4 border-t border-white/5">
                     <x-admin-button type="submit" class="flex-1" icon="fas fa-check">
-                        Simpan
+                        Simpan Data
                     </x-admin-button>
                     <x-admin-button variant="secondary" type="button" onclick="closeSidebar()">
                         Batal
@@ -172,7 +269,7 @@
         </div>
     </div>
 
-    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity" onclick="closeSidebar()"></div>
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 hidden transition-opacity" onclick="closeSidebar()"></div>
 
     <script>
         function openSidebar() {
@@ -194,59 +291,56 @@
             if (e.key === 'Escape') closeSidebar();
         });
 
-        // Auto-buka sidebar jika ada error validasi
         @if ($errors->any())
             openSidebar();
         @endif
 
         function openImportModal() {
             Swal.fire({
-                title: 'Import dari Excel',
+                title: 'Import DPT dari Excel',
                 html: `
-                    <p class="text-sm text-gray-500 mb-3">Upload file Excel (.xls/.xlsx) dengan format:<br>kolom A = No, kolom B = Nama</p>
-                    <a href="{{ route('hak-suara.download-sample') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-green-600 mb-4 transition-colors">
-                        <i class="fas fa-download text-xs"></i> Download Sample
-                    </a>
-                    <label id="import-label" class="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-400 hover:border-green-500 hover:text-green-600 cursor-pointer transition-all">
-                        <i class="fas fa-file-arrow-up text-2xl mb-2"></i>
-                        <span id="import-filename">Pilih file Excel</span>
-                        <input id="import-file-input" type="file" accept=".xls,.xlsx" class="hidden">
-                    </label>
+                    <div class="text-left space-y-3">
+                        <p class="text-xs text-slate-400">Format Excel: <strong>Kolom A:</strong> No, <strong>Kolom B:</strong> Nama, <strong>Kolom C:</strong> Kelas (contoh: <em>X-1</em>), <strong>Kolom D:</strong> Tipe (<em>siswa</em> / <em>guru</em>).</p>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">Tipe Default (Jika Kolom D kosong):</label>
+                            <select id="import-tipe-default" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-200 outline-none">
+                                <option value="siswa">Siswa</option>
+                                <option value="guru">Guru / Tendik</option>
+                            </select>
+                        </div>
+
+                        <div class="pt-2">
+                            <label id="import-label" class="flex flex-col items-center justify-center w-full py-6 border-2 border-dashed border-slate-700 hover:border-indigo-500 bg-slate-900 rounded-2xl text-xs text-slate-400 hover:text-indigo-400 cursor-pointer transition-all">
+                                <i class="fas fa-file-excel text-3xl mb-2 text-emerald-500"></i>
+                                <span id="import-filename" class="font-medium">Pilih file spreadsheet (.xlsx/.xls)</span>
+                                <input id="import-file-input" type="file" accept=".xls,.xlsx" class="hidden">
+                            </label>
+                        </div>
+                    </div>
                 `,
-                iconHtml: '<i class="fas fa-file-excel" style="font-size:1.6rem;color:#16a34a;"></i>',
                 showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-check mr-1.5"></i> Import',
+                confirmButtonText: 'Mulai Impor',
                 cancelButtonText: 'Batal',
                 reverseButtons: true,
-                buttonsStyling: false,
-                backdrop: 'rgba(17, 24, 39, 0.35)',
-                customClass: {
-                    popup: 'swal2-popup-custom',
-                    icon: 'swal2-icon-import',
-                    title: 'swal2-title-custom',
-                    htmlContainer: 'swal2-html-custom',
-                    actions: 'swal2-actions-custom',
-                    confirmButton: 'swal2-confirm-import',
-                    cancelButton: 'swal2-cancel-custom',
-                },
                 didOpen: () => {
                     const input = document.getElementById('import-file-input');
                     const label = document.getElementById('import-label');
                     input.addEventListener('change', function () {
                         if (this.files[0]) {
                             document.getElementById('import-filename').textContent = this.files[0].name;
-                            label.classList.add('border-green-500', 'text-green-600');
-                            label.classList.remove('border-gray-300', 'text-gray-400');
+                            label.classList.add('border-emerald-500', 'text-emerald-400');
                         }
                     });
                 },
                 preConfirm: () => {
                     const file = document.getElementById('import-file-input').files[0];
+                    const tipeDefault = document.getElementById('import-tipe-default').value;
                     if (!file) {
-                        Swal.showValidationMessage('Pilih file Excel terlebih dahulu.');
+                        Swal.showValidationMessage('Pilih file Excel terlebih dahulu');
                         return false;
                     }
-                    return file;
+                    return { file, tipeDefault };
                 }
             }).then((result) => {
                 if (result.isConfirmed && result.value) {
@@ -258,17 +352,23 @@
                     const csrf = document.createElement('input');
                     csrf.type = 'hidden';
                     csrf.name = '_token';
-                    csrf.value = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+                    csrf.value = '{{ csrf_token() }}';
+
+                    const tipeInput = document.createElement('input');
+                    tipeInput.type = 'hidden';
+                    tipeInput.name = 'tipe_import';
+                    tipeInput.value = result.value.tipeDefault;
 
                     const fileInput = document.createElement('input');
                     fileInput.type = 'file';
                     fileInput.name = 'file_excel';
 
                     const dt = new DataTransfer();
-                    dt.items.add(result.value);
+                    dt.items.add(result.value.file);
                     fileInput.files = dt.files;
 
                     form.appendChild(csrf);
+                    form.appendChild(tipeInput);
                     form.appendChild(fileInput);
                     document.body.appendChild(form);
                     form.submit();
@@ -277,3 +377,4 @@
         }
     </script>
 </x-app-layout>
+

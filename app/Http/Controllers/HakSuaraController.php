@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\HakSuara;
+use App\Models\Kelas;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -10,10 +11,18 @@ class HakSuaraController extends Controller
 {
     public function index(Request $request)
     {
-        $query = HakSuara::withCount('votes');
+        $query = HakSuara::with(['kelas'])->withCount('votes');
 
         if ($request->filled('search')) {
             $query->where('nisn', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('tipe')) {
+            $query->where('tipe', $request->tipe);
+        }
+
+        if ($request->filled('id_kelas')) {
+            $query->where('id_kelas', $request->id_kelas);
         }
 
         if ($request->filled('status')) {
@@ -26,13 +35,16 @@ class HakSuaraController extends Controller
 
         $hakSuaras = $query->orderBy('id', 'desc')->get();
         $totalHakSuara = HakSuara::count();
+        $totalSiswa = HakSuara::where('tipe', 'siswa')->count();
+        $totalGuru = HakSuara::where('tipe', 'guru')->count();
+        $kelas = Kelas::orderBy('name')->get();
 
-        return view('hak-suara.index', compact('hakSuaras', 'totalHakSuara'));
+        return view('hak-suara.index', compact('hakSuaras', 'totalHakSuara', 'totalSiswa', 'totalGuru', 'kelas'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $rules = [
             'nisn' => [
                 'required',
                 'string',
@@ -40,14 +52,29 @@ class HakSuaraController extends Controller
                 'unique:hak_suara,nisn',
                 'regex:/^[\p{L}\s\.\-\']+$/u',
             ],
-        ], [
+            'tipe' => 'required|in:siswa,guru',
+            'id_kelas' => 'nullable|exists:kelas,id',
+        ];
+
+        if ($request->tipe === 'siswa') {
+            $rules['id_kelas'] = 'required|exists:kelas,id';
+        }
+
+        $request->validate($rules, [
             'nisn.regex'  => 'Nama pemilih hanya boleh mengandung huruf, spasi, titik, dan tanda hubung.',
             'nisn.unique' => 'Nama pemilih ini sudah terdaftar dalam daftar hak suara.',
+            'id_kelas.required' => 'Kelas wajib dipilih untuk pemilih tipe Siswa.',
         ]);
 
-        HakSuara::create(['nisn' => $request->nisn]);
+        HakSuara::create([
+            'nisn' => $request->nisn,
+            'tipe' => $request->tipe,
+            'id_kelas' => $request->tipe === 'siswa' ? $request->id_kelas : null,
+            'token' => HakSuara::generateUniqueToken(),
+            'token_used' => false,
+        ]);
 
-        return redirect()->route('hak-suara.index')->with('success', 'Hak suara berhasil ditambahkan!');
+        return redirect()->route('hak-suara.index')->with('success', 'Hak suara dan token pemilih berhasil ditambahkan!');
     }
 
     public function destroy(HakSuara $hakSuara)
@@ -65,6 +92,7 @@ class HakSuaraController extends Controller
     {
         $request->validate([
             'file_excel' => 'required|file|mimes:xls,xlsx',
+            'tipe_import' => 'nullable|in:siswa,guru',
         ]);
 
         try {
@@ -74,27 +102,49 @@ class HakSuaraController extends Controller
             $imported = 0;
             $skipped = 0;
 
+            // Cache kelas mapping by name (case-insensitive)
+            $kelasMap = Kelas::all()->keyBy(fn ($k) => strtolower(trim($k->name)));
+
+            $tipeDefault = $request->input('tipe_import', 'siswa');
+
             foreach ($rows as $index => $row) {
                 if ($index === 0) {
                     continue;
                 }
 
                 $nama = trim($row[1] ?? '');
+                $kelasNama = trim($row[2] ?? '');
+                $tipeRow = strtolower(trim($row[3] ?? ''));
 
                 if (empty($nama)) {
                     $skipped++;
-
                     continue;
                 }
 
                 $exists = HakSuara::where('nisn', $nama)->exists();
                 if ($exists) {
                     $skipped++;
-
                     continue;
                 }
 
-                HakSuara::create(['nisn' => $nama]);
+                $tipe = in_array($tipeRow, ['guru', 'siswa']) ? $tipeRow : $tipeDefault;
+                $idKelas = null;
+
+                if ($tipe === 'siswa' && !empty($kelasNama)) {
+                    $kelasObj = $kelasMap->get(strtolower($kelasNama));
+                    if ($kelasObj) {
+                        $idKelas = $kelasObj->id;
+                    }
+                }
+
+                HakSuara::create([
+                    'nisn' => $nama,
+                    'tipe' => $tipe,
+                    'id_kelas' => $idKelas,
+                    'token' => HakSuara::generateUniqueToken(),
+                    'token_used' => false,
+                ]);
+
                 $imported++;
             }
 
@@ -114,3 +164,4 @@ class HakSuaraController extends Controller
         return redirect()->route('hak-suara.index')->with('error', 'File sample tidak ditemukan.');
     }
 }
+

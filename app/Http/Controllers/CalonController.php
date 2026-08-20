@@ -67,9 +67,12 @@ class CalonController extends Controller
             'id_kelas' => $request->id_kelas,
         ];
 
-        if ($request->hasFile('foto_calon')) {
+        if ($request->hasFile('foto_calon') && $request->file('foto_calon')->isValid()) {
             if ($calon->url_foto) {
-                Storage::disk('public')->delete(str_replace('storage/', '', $calon->url_foto));
+                $oldPath = str_replace('storage/', '', $calon->url_foto);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
             }
             $path = $request->file('foto_calon')->store('foto_calon', 'public');
             $data['url_foto'] = 'storage/'.$path;

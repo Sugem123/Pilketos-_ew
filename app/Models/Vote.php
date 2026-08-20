@@ -11,7 +11,21 @@ class Vote extends Model
 
     protected $table = 'votes';
 
-    protected $fillable = ['id_calon', 'id_nisn', 'created_at'];
+    protected $fillable = [
+        'id_calon',
+        'id_nisn',
+        'status_verifikasi',
+        'catatan_verifikasi',
+        'verified_at',
+        'created_at',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'verified_at' => 'datetime',
+        ];
+    }
 
     public function calon(): BelongsTo
     {
@@ -23,3 +37,4 @@ class Vote extends Model
         return $this->belongsTo(HakSuara::class, 'id_nisn');
     }
 }
+

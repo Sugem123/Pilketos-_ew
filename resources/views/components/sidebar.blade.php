@@ -1,87 +1,103 @@
 @php
     $currentRoute = request()->route()->getName();
+    $configPath = base_path('config.json');
+    $appConfig = file_exists($configPath) ? json_decode(file_get_contents($configPath), true) : [];
+    $appLogo = !empty($appConfig['url_logo']) ? asset($appConfig['url_logo']) : asset('img/logo_white.png');
+    $schoolName = $appConfig['nama_sekolah'] ?? 'PILKETOS';
 @endphp
 
-<aside class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white shadow-lg z-30">
-    <div class="flex items-center justify-center h-16 bg-accent">
-        <div class="flex items-center gap-2">
-            <img src="{{ asset('img/logo_white.png') }}" alt="Pilketos" class="h-8">
-            <h1 class="text-secondary text-xl font-bold">PILKETOS</h1>
+<aside class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-slate-900 border-r border-slate-800/80 shadow-2xl z-30">
+    {{-- Brand Header --}}
+    <div class="flex items-center gap-3 px-6 h-20 bg-slate-950/60 border-b border-slate-800/80">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center p-2 shadow-lg shadow-indigo-500/20">
+            <img src="{{ $appLogo }}" alt="Logo" class="h-6 w-6 object-contain">
+        </div>
+        <div class="min-w-0 flex-1">
+            <h1 class="text-white font-heading font-extrabold text-base tracking-tight leading-none truncate" title="{{ $schoolName }}">
+                {{ $schoolName }}
+            </h1>
+            <p class="text-[10px] font-medium text-slate-400 mt-1 font-mono">Control Center</p>
         </div>
     </div>
 
-    <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+    {{-- Nav Links --}}
+    <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+        <div class="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Menu Utama</div>
+
         <a href="{{ route('dashboard') }}"
-            class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ $currentRoute === 'dashboard' ? 'bg-accent text-secondary' : 'text-accent hover:bg-gray-100' }}">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 576 512">
-                <path
-                    d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 16.2c0 22.1-17.9 40-40 40l-16 0c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1L416 512l-24 0c-22.1 0-40-17.9-40-40l0-24 0-64c0-17.7-14.3-32-32-32l-64 0c-17.7 0-32 14.3-32 32l0 64 0 24c0 22.1-17.9 40-40 40l-24 0-31.9 0c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2l-16 0c-22.1 0-40-17.9-40-40l0-112c0-.9 0-1.9 .1-2.8l0-69.7-32 0c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z" />
-            </svg>
+            class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ $currentRoute === 'dashboard' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+            <i class="fas fa-chart-pie w-5 text-center text-sm {{ $currentRoute === 'dashboard' ? 'text-white' : 'text-indigo-400' }}"></i>
             Dashboard
         </a>
 
         <a href="{{ route('calon.index') }}"
-            class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ str_starts_with($currentRoute, 'calon') ? 'bg-accent text-secondary' : 'text-accent hover:bg-gray-100' }}">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 640 512">
-                <path
-                    d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304l91.4 0C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7L29.7 512C13.3 512 0 498.7 0 482.3zM609.3 512l-137.8 0c5.4-9.4 8.6-20.3 8.6-32l0-8c0-60.7-27.1-115.2-69.8-151.8c2.4-.1 4.7-.2 7.1-.2l61.4 0C567.8 320 640 392.2 640 481.3c0 17-13.8 30.7-30.7 30.7zM432 256c-31 0-59-12.6-79.3-32.9C372.4 196.5 384 163.6 384 128c0-26.8-6.6-52.1-18.3-74.3C384.3 40.1 407.2 32 432 32c61.9 0 112 50.1 112 112s-50.1 112-112 112z" />
-            </svg>
-            Kelola Calon
+            class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'calon') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+            <i class="fas fa-users-viewfinder w-5 text-center text-sm {{ str_starts_with($currentRoute, 'calon') ? 'text-white' : 'text-indigo-400' }}"></i>
+            Data Calon
         </a>
 
         <a href="{{ route('hak-suara.index') }}"
-            class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ str_starts_with($currentRoute, 'hak-suara') ? 'bg-accent text-secondary' : 'text-accent hover:bg-gray-100' }}">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 640 512">
-                <path
-                    d="M96 80c0-26.5 21.5-48 48-48l288 0c26.5 0 48 21.5 48 48l0 304L96 384 96 80zm313 47c-9.4-9.4-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L409 161c9.4-9.4 9.4-24.6 0-33.9zM0 336c0-26.5 21.5-48 48-48l16 0 0 128 448 0 0-128 16 0c26.5 0 48 21.5 48 48l0 96c0 26.5-21.5 48-48 48L48 480c-26.5 0-48-21.5-48-48l0-96z" />
-            </svg>
-            Kelola Hak Suara
+            class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'hak-suara') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+            <i class="fas fa-id-card-clip w-5 text-center text-sm {{ str_starts_with($currentRoute, 'hak-suara') ? 'text-white' : 'text-indigo-400' }}"></i>
+            Hak Suara (DPT)
         </a>
 
         <a href="{{ route('tokens.index') }}"
-            class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ str_starts_with($currentRoute, 'tokens') ? 'bg-accent text-secondary' : 'text-accent hover:bg-gray-100' }}">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 640 640">
-                <path
-                    d="M96 160L96 400L544 400L544 160L96 160zM32 160C32 124.7 60.7 96 96 96L544 96C579.3 96 608 124.7 608 160L608 400C608 435.3 579.3 464 544 464L96 464C60.7 464 32 435.3 32 400L32 160zM192 512L448 512C465.7 512 480 526.3 480 544C480 561.7 465.7 576 448 576L192 576C174.3 576 160 561.7 160 544C160 526.3 174.3 512 192 512z" />
-            </svg>
-            Voting Token
+            class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'tokens') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+            <i class="fas fa-key w-5 text-center text-sm {{ str_starts_with($currentRoute, 'tokens') ? 'text-white' : 'text-indigo-400' }}"></i>
+            Display Token
+        </a>
+
+        <a href="{{ route('audit-suara.index') }}"
+            class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'audit-suara') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+            <i class="fas fa-check-double w-5 text-center text-sm {{ str_starts_with($currentRoute, 'audit-suara') ? 'text-white' : 'text-indigo-400' }}"></i>
+            Audit Suara Manual
+        </a>
+
+        <div class="pt-5 px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Sistem & Live</div>
+
+        <a href="{{ route('live-count') }}" target="_blank"
+            class="flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all group">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-tower-broadcast w-5 text-center text-sm text-rose-400"></i>
+                <span>Live Count (Proyektor)</span>
+            </div>
+            <span class="text-[10px] bg-rose-500/20 text-rose-300 group-hover:bg-rose-500 group-hover:text-white px-2 py-0.5 rounded font-mono font-bold">TPS</span>
         </a>
 
         <a href="{{ route('admin-config.index') }}"
-            class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ str_starts_with($currentRoute, 'admin-config') ? 'bg-accent text-secondary' : 'text-accent hover:bg-gray-100' }}">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 640 512">
-                <path
-                    d="M224 0a128 128 0 1 1 0 256A128 128 0 1 1 224 0zM178.3 304l91.4 0c11.8 0 23.4 1.2 34.5 3.3c-2.1 18.5 7.4 35.6 21.8 44.8c-16.6 10.6-26.7 31.6-20 53.3c4 12.9 9.4 25.5 16.4 37.6s15.2 23.1 24.4 33c15.7 16.9 39.6 18.4 57.2 8.7l0 .9c0 9.2 2.7 18.5 7.9 26.3L29.7 512C13.3 512 0 498.7 0 482.3C0 383.8 79.8 304 178.3 304zM436 218.2c0-7 4.5-13.3 11.3-14.8c10.5-2.4 21.5-3.7 32.7-3.7s22.2 1.3 32.7 3.7c6.8 1.5 11.3 7.8 11.3 14.8l0 30.6c7.9 3.4 15.4 7.7 22.3 12.8l24.9-14.3c6.1-3.5 13.7-2.7 18.5 2.4c7.6 8.1 14.3 17.2 20.1 27.2s10.3 20.4 13.5 31c2.1 6.7-1.1 13.7-7.2 17.2l-25 14.4c.4 4 .7 8.1 .7 12.3s-.2 8.2-.7 12.3l25 14.4c6.1 3.5 9.2 10.5 7.2 17.2c-3.3 10.6-7.8 21-13.5 31s-12.5 19.1-20.1 27.2c-4.8 5.1-12.5 5.9-18.5 2.4l-24.9-14.3c-6.9 5.1-14.3 9.4-22.3 12.8l0 30.6c0 7-4.5 13.3-11.3 14.8c-10.5 2.4-21.5 3.7-32.7 3.7s-22.2-1.3-32.7-3.7c-6.8-1.5-11.3-7.8-11.3-14.8l0-30.5c-8-3.4-15.6-7.7-22.5-12.9l-24.7 14.3c-6.1 3.5-13.7 2.7-18.5-2.4c-7.6-8.1-14.3-17.2-20.1-27.2s-10.3-20.4-13.5-31c-2.1-6.7 1.1-13.7 7.2-17.2l24.8-14.3c-.4-4.1-.7-8.2-.7-12.4s.2-8.3 .7-12.4L343.8 325c-6.1-3.5-9.2-10.5-7.2-17.2c3.3-10.6 7.7-21 13.5-31s12.5-19.1 20.1-27.2c4.8-5.1 12.4-5.9 18.5-2.4l24.8 14.3c6.9-5.1 14.5-9.4 22.5-12.9l0-30.5zm92.1 133.5a48.1 48.1 0 1 0 -96.1 0 48.1 48.1 0 1 0 96.1 0z" />
-            </svg>
-            Konfigurasi Admin
+            class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'admin-config') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+            <i class="fas fa-user-shield w-5 text-center text-sm {{ str_starts_with($currentRoute, 'admin-config') ? 'text-white' : 'text-indigo-400' }}"></i>
+            Akun Admin
         </a>
 
         <a href="{{ route('voting.index') }}" target="_blank"
-            class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors text-accent hover:bg-gray-100">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 512 512">
-                <path
-                    d="M320 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l82.7 0L201.4 265.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L448 109.3l0 82.7c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160c0-17.7-14.3-32-32-32L320 0zM80 32C35.8 32 0 67.8 0 112L0 432c0 44.2 35.8 80 80 80l320 0c44.2 0 80-35.8 80-80l0-112c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 112c0 8.8-7.2 16-16 16L80 448c-8.8 0-16-7.2-16-16l0-320c0-8.8 7.2-16 16-16l112 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L80 32z" />
-            </svg>
-            Voting Page
+            class="flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all group">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-arrow-up-right-from-square w-5 text-center text-sm text-amber-400"></i>
+                <span>Bilik Suara</span>
+            </div>
+            <span class="text-[10px] bg-slate-800 group-hover:bg-slate-700 px-2 py-0.5 rounded text-slate-400 font-mono">Live</span>
         </a>
     </nav>
 
-    <div class="p-4 border-t border-gray-200">
-        <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <span
-                    class="text-secondary font-semibold text-sm">{{ substr(auth()->user()->nama_lengkap, 0, 1) }}</span>
+    {{-- User Footer --}}
+    <div class="p-4 bg-slate-950/60 border-t border-slate-800/80">
+        <div class="flex items-center gap-3 mb-3 p-2 rounded-xl bg-slate-900/80 border border-slate-800">
+            <div class="w-9 h-9 bg-gradient-to-tr from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center font-bold text-white text-sm shadow-md">
+                {{ substr(auth()->user()->nama_lengkap ?? 'A', 0, 1) }}
             </div>
             <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-accent truncate">{{ auth()->user()->nama_lengkap }}</p>
-                <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                <p class="text-xs font-bold text-white truncate">{{ auth()->user()->nama_lengkap ?? 'Admin' }}</p>
+                <p class="text-[11px] text-slate-400 truncate">{{ auth()->user()->email ?? 'admin@system.local' }}</p>
             </div>
         </div>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <x-admin-button type="submit" variant="danger" icon="fas fa-arrow-right-from-bracket" class="w-full justify-center text-sm py-2">
-                Logout
-            </x-admin-button>
+            <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all cursor-pointer border border-rose-500/20">
+                <i class="fas fa-power-off text-xs"></i>
+                Keluar Sesi
+            </button>
         </form>
     </div>
 </aside>

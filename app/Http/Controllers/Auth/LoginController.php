@@ -18,14 +18,23 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'email' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $input = trim((string) $request->email);
+
+        $user = User::where('email', $input)
+            ->orWhere('nama_lengkap', $input)
+            ->first();
+
+        // Support default username 'admin' if requested
+        if (! $user && strtolower($input) === 'admin') {
+            $user = User::first();
+        }
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            return back()->withErrors(['email' => 'Email atau password salah.'])->withInput();
+            return back()->withErrors(['email' => 'Username/Email atau password salah.'])->withInput();
         }
 
         Auth::login($user);

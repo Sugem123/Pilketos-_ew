@@ -1,6 +1,6 @@
 @php
     $page_title = 'Display Token';
-    $page_description = 'Kelola token untuk akses halaman voting';
+    $page_description = 'Kelola token otorisasi bilik suara untuk akses pemilih';
 @endphp
 <x-app-layout :page_title="$page_title" :page_description="$page_description">
     <x-slot name="actions">
@@ -9,73 +9,79 @@
         </x-admin-button>
     </x-slot>
 
-    <div class="space-y-6">
+    <div class="space-y-8">
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        {{-- Metric Stats --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">Total Token</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ $totalTokens }}</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Total Token</span>
+                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-white font-mono leading-none">{{ $totalTokens }}</h3>
                     </div>
-                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-                        <i class="fas fa-key text-primary text-sm"></i>
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fas fa-key"></i>
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+
+            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">Token Aktif</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ $activeTokens }}</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Token Aktif</span>
+                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-emerald-400 font-mono leading-none">{{ $activeTokens }}</h3>
                     </div>
-                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-                        <i class="fa-regular fa-circle-check text-primary text-base"></i>
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fa-solid fa-circle-check"></i>
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+
+            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">Token Nonaktif</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ $totalTokens - $activeTokens }}</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Token Nonaktif</span>
+                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-slate-500 font-mono leading-none">{{ $totalTokens - $activeTokens }}</h3>
                     </div>
-                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-                        <i class="fas fa-ban text-primary text-sm"></i>
+                    <div class="w-14 h-14 rounded-2xl bg-slate-900 border border-white/5 text-slate-500 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fas fa-ban"></i>
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+
+            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">Rasio Aktif</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ $totalTokens > 0 ? number_format(($activeTokens / $totalTokens) * 100, 1) : 0 }}%</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Rasio Aktif</span>
+                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-indigo-400 font-mono leading-none">{{ $totalTokens > 0 ? number_format(($activeTokens / $totalTokens) * 100, 1) : 0 }}%</h3>
                     </div>
-                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-                        <i class="fas fa-chart-simple text-primary text-sm"></i>
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fas fa-chart-pie"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        {{-- Table Card --}}
+        <div class="luxury-card rounded-3xl overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-100">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-950/60 border-b border-white/5">
                         <tr>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">No</th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Token</th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                            <th class="text-right px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Aksi</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">No</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Kode Token</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Status Akses</th>
+                            <th class="text-right px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-white/5">
                         @forelse($tokens as $index => $token)
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 text-sm text-gray-500">{{ $index + 1 }}</td>
+                            <tr class="hover:bg-slate-900/50 transition-colors">
+                                <td class="px-6 py-4 text-xs font-mono text-slate-500">{{ $index + 1 }}</td>
                                 <td class="px-6 py-4">
-                                    <code
-                                        class="px-3 py-1 bg-gray-100 rounded-lg text-sm font-mono font-semibold text-accent">{{ $token->token }}</code>
+                                    <code class="px-3.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono font-black text-amber-400 tracking-widest select-all">
+                                        {{ $token->token }}
+                                    </code>
                                 </td>
                                 <td class="px-6 py-4">
                                     <form action="{{ route('tokens.update', $token) }}" method="POST" class="inline">
@@ -83,8 +89,8 @@
                                         @method('PATCH')
                                         <input type="hidden" name="active" value="{{ $token->active ? '0' : '1' }}">
                                         <button type="submit"
-                                            class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full transition-colors {{ $token->active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200' }}">
-                                            <i class="fas fa-circle text-[8px]"></i>
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold rounded-full transition-all cursor-pointer {{ $token->active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20' : 'bg-slate-900 text-slate-400 border border-slate-800 hover:bg-slate-800' }}">
+                                            <span class="w-1.5 h-1.5 rounded-full {{ $token->active ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500' }}"></span>
                                             {{ $token->active ? 'Aktif' : 'Nonaktif' }}
                                         </button>
                                     </form>
@@ -92,16 +98,19 @@
                                 <td class="px-6 py-4 text-right">
                                     <x-admin-button variant="ghost" icon="fas fa-trash-can"
                                         onclick="confirmDelete('{{ route('tokens.destroy', $token) }}', 'Hapus Token', 'Apakah Anda yakin ingin menghapus token {{ $token->token }}?')"
-                                        class="text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                        class="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
                                         title="Hapus">
                                     </x-admin-button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-12 text-center">
-                                    <i class="fas fa-key text-neutral-300 text-4xl mb-3"></i>
-                                    <p class="text-gray-500">Belum ada token terdaftar.</p>
+                                <td colspan="4" class="px-6 py-14 text-center">
+                                    <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-white/5 text-slate-600 flex items-center justify-center mx-auto mb-3 text-lg">
+                                        <i class="fas fa-key"></i>
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-400">Belum ada token yang dibuat.</p>
+                                    <p class="text-[11px] text-slate-500 mt-0.5">Buat token baru untuk otorisasi bilik suara.</p>
                                 </td>
                             </tr>
                         @endforelse
@@ -111,20 +120,21 @@
         </div>
     </div>
 
+    {{-- Slide-in Sidebar Form --}}
     <div id="secondary-sidebar"
-        class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col pointer-events-none">
-        <div class="flex items-center justify-between p-6 border-b border-gray-100">
-            <h2 class="text-lg font-bold text-accent">Tambah Token</h2>
-            <x-admin-button variant="ghost" icon="fas fa-times" onclick="closeSidebar()"
-                class="text-gray-400 hover:text-accent hover:bg-gray-100 text-lg">
-            </x-admin-button>
+        class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-slate-900 border-l border-white/10 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col pointer-events-none text-slate-100">
+        <div class="flex items-center justify-between p-6 border-b border-white/5 bg-slate-950/60">
+            <h2 class="font-heading font-black text-lg text-white">Tambah Display Token</h2>
+            <button onclick="closeSidebar()" class="w-8 h-8 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 flex items-center justify-center transition-colors">
+                <i class="fas fa-times text-base"></i>
+            </button>
         </div>
-        <div class="flex-1 overflow-y-auto p-6">
+        <div class="flex-1 overflow-y-auto p-6 sm:p-8">
             <form action="{{ route('tokens.store') }}" method="POST" class="space-y-5">
                 @csrf
                 @if ($errors->any())
-                    <div class="bg-red-50 border border-red-200 rounded-lg p-3">
-                        <ul class="text-sm text-red-600 space-y-1">
+                    <div class="bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-2xl p-4">
+                        <ul class="text-xs space-y-1 font-medium">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
@@ -132,21 +142,21 @@
                     </div>
                 @endif
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Token</label>
-                    <div class="flex gap-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Kode Token</label>
+                    <div class="flex gap-2.5">
                         <input type="text" id="token-input" name="token" required maxlength="10"
                             value="{{ old('token') }}"
-                            class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent outline-none font-mono uppercase"
+                            class="flex-1 px-4 py-3 luxury-input rounded-2xl outline-none font-mono uppercase text-sm font-black tracking-widest"
                             placeholder="ABC123">
-                        <x-admin-button type="button" onclick="generateToken()" variant="secondary" size="sm">
-                            Generate
+                        <x-admin-button type="button" onclick="generateToken()" variant="secondary" size="sm" icon="fas fa-shuffle">
+                            Acak
                         </x-admin-button>
                     </div>
-                    <p class="text-xs text-gray-400 mt-1">Maksimal 10 karakter. Huruf dan angka saja.</p>
+                    <p class="text-[11px] text-slate-500 mt-1.5">Maksimal 10 karakter alfanumerik.</p>
                 </div>
-                <div class="flex gap-3 pt-4">
+                <div class="flex gap-3 pt-4 border-t border-white/5">
                     <x-admin-button type="submit" class="flex-1" icon="fas fa-check">
-                        Simpan
+                        Simpan Token
                     </x-admin-button>
                     <x-admin-button variant="secondary" type="button" onclick="closeSidebar()">
                         Batal
@@ -156,7 +166,7 @@
         </div>
     </div>
 
-    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity"
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 hidden transition-opacity"
         onclick="closeSidebar()"></div>
 
     <script>
@@ -180,7 +190,6 @@
             if (e.key === 'Escape') closeSidebar();
         });
 
-        // Auto-buka sidebar jika ada error validasi
         @if ($errors->any())
             openSidebar();
         @endif

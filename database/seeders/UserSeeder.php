@@ -10,10 +10,18 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'nama_lengkap' => 'Administrator',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('admin123'),
-        ]);
+        $user = User::first();
+        if ($user) {
+            $user->update([
+                'password' => Hash::make('admin123'),
+            ]);
+        } else {
+            User::create([
+                'nama_lengkap' => 'Administrator',
+                'email' => 'admin@gmail.com',
+                'password' => Hash::make('admin123'),
+            ]);
+        }
     }
 }
+

@@ -9,10 +9,18 @@ class KelasSeeder extends Seeder
 {
     public function run(): void
     {
-        $kelas = ['X-1', 'X-2', 'X-3', 'XI-1', 'XI-2', 'XI-3', 'XII-1', 'XII-2', 'XII-3'];
+        $levels = ['X', 'XI', 'XII'];
+        $kelas = [];
+
+        foreach ($levels as $level) {
+            for ($i = 1; $i <= 10; $i++) {
+                $kelas[] = "{$level}-{$i}";
+            }
+        }
 
         foreach ($kelas as $name) {
-            Kelas::create(['name' => $name]);
+            Kelas::firstOrCreate(['name' => $name]);
         }
     }
 }
+
