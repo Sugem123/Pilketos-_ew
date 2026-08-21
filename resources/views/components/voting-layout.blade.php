@@ -11,6 +11,7 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('img/logo.png') }}" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('head')
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .font-heading { font-family: 'Outfit', sans-serif; }

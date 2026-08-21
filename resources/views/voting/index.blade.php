@@ -1,5 +1,14 @@
 @php $page_title = 'Pilih Calon'; @endphp
 <x-voting-layout>
+    {{-- Preload candidate photos so they load before SweetAlert overlay --}}
+    @push('head')
+        @foreach ($calons as $calon)
+            @if ($calon->url_foto)
+                <link rel="preload" as="image" href="{{ asset($calon->url_foto) }}">
+            @endif
+        @endforeach
+    @endpush
+
     <div class="flex flex-col min-h-screen relative overflow-hidden">
         {{-- Floating Top Bar --}}
         <header class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 z-20">
@@ -109,7 +118,10 @@
                                                     @if ($calon->url_foto)
                                                         <img class="w-full h-full object-contain object-center relative z-10 transition-transform duration-500 group-hover:scale-105 drop-shadow-2xl"
                                                             src="{{ asset($calon->url_foto) }}"
-                                                            alt="{{ $calon->nama }}" />
+                                                            alt="{{ $calon->nama }}"
+                                                            loading="eager"
+                                                            fetchpriority="high"
+                                                            decoding="async" />
                                                     @else
                                                         <div class="w-24 h-24 rounded-full bg-slate-800 flex items-center justify-center text-slate-600 relative z-10">
                                                             <i class="fa-solid fa-user text-4xl"></i>
@@ -560,35 +572,50 @@
             });
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            let token = sessionStorage.getItem('display_token');
+        // Wait for all candidate images to finish loading before showing token popup
+        function waitForCandidateImages() {
+            const imgs = document.querySelectorAll('.caketos-item img');
+            if (imgs.length === 0) return Promise.resolve();
+            return Promise.all(Array.from(imgs).map(img => {
+                if (img.complete && img.naturalHeight > 0) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.addEventListener('load', resolve, { once: true });
+                    img.addEventListener('error', resolve, { once: true });
+                });
+            }));
+        }
 
-            if (!token) {
-                showTokenPopup();
-            } else {
-                fetch('{{ route('check-token') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: 'token=' + encodeURIComponent(token)
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.success) {
-                            sessionStorage.removeItem('display_token');
-                            showTokenPopup();
-                        }
-                    })
-                    .catch(() => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Koneksi Error',
-                            text: 'Gagal memverifikasi status token.'
+        window.addEventListener('DOMContentLoaded', () => {
+            waitForCandidateImages().then(() => {
+                let token = sessionStorage.getItem('display_token');
+
+                if (!token) {
+                    showTokenPopup();
+                } else {
+                    fetch('{{ route('check-token') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: 'token=' + encodeURIComponent(token)
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (!data.success) {
+                                sessionStorage.removeItem('display_token');
+                                showTokenPopup();
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Koneksi Error',
+                                text: 'Gagal memverifikasi status token.'
+                            });
                         });
-                    });
-            }
+                }
+            });
         });
     </script>
 </x-voting-layout>
