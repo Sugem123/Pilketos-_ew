@@ -109,43 +109,141 @@
             </div>
         </div>
 
-        {{-- Quick Token Scanner / Checklist Input --}}
-        <div class="luxury-card rounded-3xl p-6 sm:p-8 relative overflow-hidden border border-indigo-500/30">
-            <div class="max-w-2xl">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-3">
-                    <i class="fas fa-barcode"></i> Fast Token Verification
-                </span>
-                <h3 class="font-heading font-black text-2xl tracking-tight text-white mb-2">
-                    Input dan Verifikasi Cepat Token Kotak Suara
-                </h3>
-                <p class="text-xs text-slate-400 leading-relaxed mb-6">
-                    Ambil kartu pemilih dari kotak suara TPS satu per satu, ketik kode token yang tertera pada kartu fisik, lalu tekan tombol <strong>SAH</strong> jika kartu valid atau <strong>BATAL</strong> jika token tidak memenuhi syarat.
-                </p>
+        {{-- Quick Token Scanner / Kotak Suara Verification --}}
+        <div class="luxury-card rounded-3xl p-6 sm:p-8 relative overflow-hidden border border-indigo-500/30" x-data="tokenScanner()">
+            <div class="max-w-3xl mx-auto">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                    <div>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-3">
+                            <i class="fas fa-box-open"></i> Hitung Manual Kotak Suara
+                        </span>
+                        <h3 class="font-heading font-black text-2xl tracking-tight text-white mb-1">
+                            Validasi Kartu dari Kotak Suara
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Ambil kartu pemilih dari kotak suara satu per satu. Ketik kode token pada kartu, lalu tekan <strong class="text-white">Enter</strong>.
+                            Token yang <strong class="text-emerald-400">sudah digunakan voting</strong> akan dinyatakan <strong class="text-emerald-400">SAH</strong>.
+                            Token yang <strong class="text-rose-400">tidak dikenali / belum voting</strong> akan <strong class="text-rose-400">TIDAK SAH</strong>.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 self-start">
+                        <span class="text-[11px] font-mono font-bold px-3 py-1.5 bg-amber-500/10 text-amber-300 border border-amber-500/20 rounded-xl whitespace-nowrap">
+                            <i class="fas fa-hourglass-half mr-1"></i> Sisa: <span x-text="pendingCount">{{ $totalPending }}</span>
+                        </span>
+                    </div>
+                </div>
 
-                <div class="flex flex-col sm:flex-row gap-3">
+                {{-- Input Area --}}
+                <div class="flex flex-col sm:flex-row gap-3 mb-5">
                     <div class="relative flex-1">
                         <i class="fas fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-                        <input type="text" id="quick-token-input" autofocus maxlength="10"
-                               placeholder="Ketik Kode Token (Contoh: A8F3K9)..."
-                               class="w-full pl-11 pr-4 py-3.5 luxury-input rounded-2xl text-white font-mono uppercase font-black text-base tracking-widest outline-none">
+                        <input type="text" x-ref="tokenInput" autofocus maxlength="10"
+                               placeholder="Ketik kode token kartu..."
+                               @keydown.enter.prevent="validateToken()"
+                               x-model="tokenValue"
+                               class="w-full pl-11 pr-4 py-4 luxury-input rounded-2xl text-white font-mono uppercase font-black text-lg tracking-[0.25em] outline-none placeholder:text-sm placeholder:tracking-normal placeholder:font-medium">
                     </div>
-                    <button type="button" onclick="submitQuickVerify('sah')"
-                            class="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-heading font-black text-xs sm:text-sm rounded-2xl transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer active:scale-95">
-                        <i class="fas fa-check"></i>
-                        <span>SAH (KARTU ADA)</span>
-                    </button>
-                    <button type="button" onclick="submitQuickVerify('tidak_sah')"
-                            class="px-6 py-3.5 bg-rose-600/80 hover:bg-rose-600 text-white font-heading font-bold text-xs sm:text-sm rounded-2xl transition-all shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95">
-                        <i class="fas fa-times"></i>
-                        <span>TIDAK SAH</span>
+                    <button type="button" @click="validateToken()" :disabled="processing"
+                            class="px-8 py-4 luxury-btn-primary text-white font-heading font-black text-sm rounded-2xl transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-magnifying-glass" x-show="!processing"></i>
+                        <i class="fas fa-spinner fa-spin" x-show="processing" x-cloak></i>
+                        <span>VALIDASI</span>
                     </button>
                 </div>
 
-                <div id="quick-verify-alert" class="mt-4 hidden p-4 rounded-2xl text-xs font-semibold flex items-center justify-between">
-                    <span id="quick-verify-msg"></span>
-                    <button onclick="document.getElementById('quick-verify-alert').classList.add('hidden')" class="text-slate-400 hover:text-white ml-2">
-                        <i class="fas fa-times"></i>
+                {{-- Scanned Token History --}}
+                <template x-if="history.length > 0">
+                    <div class="bg-slate-950/60 rounded-2xl border border-white/5 p-4 max-h-48 overflow-y-auto">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
+                                <i class="fas fa-list-check mr-1"></i> Riwayat Scan (<span x-text="history.length"></span> kartu)
+                            </h4>
+                            <button @click="history = []" class="text-[10px] text-slate-500 hover:text-slate-300 transition-colors">
+                                <i class="fas fa-trash-can mr-0.5"></i> Bersihkan
+                            </button>
+                        </div>
+                        <div class="space-y-1.5">
+                            <template x-for="(item, idx) in history" :key="idx">
+                                <div class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-mono"
+                                     :class="item.verdict === 'sah' ? 'bg-emerald-500/10 border border-emerald-500/15' : item.verdict === 'sudah' ? 'bg-blue-500/10 border border-blue-500/15' : 'bg-rose-500/10 border border-rose-500/15'">
+                                    <div class="flex items-center gap-2">
+                                        <i :class="item.verdict === 'sah' ? 'fa-solid fa-circle-check text-emerald-400' : item.verdict === 'sudah' ? 'fa-solid fa-circle-info text-blue-400' : 'fa-solid fa-circle-xmark text-rose-400'"></i>
+                                        <code class="font-black tracking-widest text-white" x-text="item.token"></code>
+                                        <span class="text-slate-400" x-text="item.name || ''"></span>
+                                    </div>
+                                    <span class="font-bold uppercase"
+                                          :class="item.verdict === 'sah' ? 'text-emerald-400' : item.verdict === 'sudah' ? 'text-blue-400' : 'text-rose-400'"
+                                          x-text="item.verdict === 'sah' ? 'SAH' : item.verdict === 'sudah' ? 'SUDAH' : 'TIDAK SAH'"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                {{-- Hanguskan Sisa Button --}}
+                <div class="mt-5 pt-5 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <p class="text-[11px] text-slate-500 leading-relaxed max-w-md">
+                        <i class="fas fa-triangle-exclamation text-amber-500 mr-1"></i>
+                        Setelah semua kartu dalam kotak suara selesai dibacakan, tekan tombol di samping untuk menghanguskan sisa token yang tidak tervalidasi.
+                    </p>
+                    <button type="button" @click="hanguskanSisa()"
+                            :disabled="pendingCount === 0"
+                            class="px-5 py-3 bg-rose-600/80 hover:bg-rose-600 disabled:bg-slate-800 disabled:text-slate-600 disabled:border-slate-700 text-white font-heading font-bold text-xs rounded-2xl transition-all shadow-lg shadow-rose-600/20 flex items-center gap-2 cursor-pointer active:scale-95 disabled:cursor-not-allowed border border-rose-500/30 disabled:border-slate-700 whitespace-nowrap">
+                        <i class="fas fa-fire"></i>
+                        <span>Hanguskan Sisa (<span x-text="pendingCount"></span>)</span>
                     </button>
+                </div>
+            </div>
+
+            {{-- ====== FULLSCREEN VERDICT OVERLAY ====== --}}
+            <div x-show="showOverlay" x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                 @click="closeOverlay()"
+                 class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+                 :class="overlayVerdict === 'sah' ? 'bg-emerald-950/80' : overlayVerdict === 'sudah' ? 'bg-blue-950/80' : 'bg-rose-950/80'"
+                 style="backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);"
+                 x-cloak>
+                <div x-show="showOverlay"
+                     x-transition:enter="transition ease-out duration-400"
+                     x-transition:enter-start="opacity-0 scale-75 translate-y-8"
+                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90"
+                     @click.stop
+                     class="w-full max-w-md rounded-3xl p-8 text-center shadow-2xl border"
+                     :class="overlayVerdict === 'sah' ? 'bg-slate-950 border-emerald-500/30 shadow-emerald-500/20' : overlayVerdict === 'sudah' ? 'bg-slate-950 border-blue-500/30 shadow-blue-500/20' : 'bg-slate-950 border-rose-500/30 shadow-rose-500/20'">
+
+                    {{-- Icon --}}
+                    <div class="mb-5">
+                        <div class="w-24 h-24 rounded-full mx-auto flex items-center justify-center text-5xl"
+                             :class="overlayVerdict === 'sah' ? 'bg-emerald-500/15 text-emerald-400 ring-4 ring-emerald-500/20' : overlayVerdict === 'sudah' ? 'bg-blue-500/15 text-blue-400 ring-4 ring-blue-500/20' : 'bg-rose-500/15 text-rose-400 ring-4 ring-rose-500/20'"
+                             x-show="showOverlay"
+                             x-transition:enter="transition ease-out duration-500 delay-100"
+                             x-transition:enter-start="scale-0 rotate-180"
+                             x-transition:enter-end="scale-100 rotate-0">
+                            <i :class="overlayVerdict === 'sah' ? 'fa-solid fa-circle-check' : overlayVerdict === 'sudah' ? 'fa-solid fa-circle-info' : 'fa-solid fa-circle-xmark'"></i>
+                        </div>
+                    </div>
+
+                    {{-- Verdict Label --}}
+                    <h2 class="font-heading font-black text-4xl mb-2 tracking-tight"
+                        :class="overlayVerdict === 'sah' ? 'text-emerald-400' : overlayVerdict === 'sudah' ? 'text-blue-400' : 'text-rose-400'"
+                        x-text="overlayVerdict === 'sah' ? 'SUARA SAH' : overlayVerdict === 'sudah' ? 'SUDAH DIVERIFIKASI' : 'TIDAK SAH'">
+                    </h2>
+
+                    {{-- Token Code --}}
+                    <code class="inline-block px-5 py-2 bg-slate-900 border border-white/10 rounded-xl text-2xl font-black font-mono tracking-[0.3em] text-white mb-3"
+                          x-text="overlayToken"></code>
+
+                    {{-- Message --}}
+                    <p class="text-sm text-slate-300 mb-1" x-text="overlayMessage"></p>
+                    <p class="text-xs text-slate-500" x-show="overlayVoterName" x-text="'Pemilih: ' + overlayVoterName"></p>
+                    <p class="text-xs text-slate-500 mt-0.5" x-show="overlayCalon" x-text="'Memilih: ' + overlayCalon"></p>
+
+                    {{-- Auto-close hint --}}
+                    <p class="text-[10px] text-slate-600 mt-6 font-mono">Klik di mana saja atau tekan Enter untuk lanjut</p>
                 </div>
             </div>
         </div>
@@ -301,65 +399,191 @@
     </div>
 
     <script>
-        async function submitQuickVerify(status) {
-            const input = document.getElementById('quick-token-input');
-            const token = input.value.trim();
-            const alertBox = document.getElementById('quick-verify-alert');
-            const alertMsg = document.getElementById('quick-verify-msg');
+        function tokenScanner() {
+            return {
+                tokenValue: '',
+                processing: false,
+                history: [],
+                pendingCount: {{ $totalPending }},
 
-            if (!token) {
-                alertBox.className = 'mt-4 p-4 rounded-2xl text-xs font-semibold flex items-center justify-between bg-rose-500/20 text-rose-300 border border-rose-500/30';
-                alertMsg.textContent = 'Silakan ketik atau scan kode token terlebih dahulu!';
-                alertBox.classList.remove('hidden');
-                input.focus();
-                return;
-            }
+                // Overlay state
+                showOverlay: false,
+                overlayVerdict: '',
+                overlayToken: '',
+                overlayMessage: '',
+                overlayVoterName: '',
+                overlayCalon: '',
+                _overlayTimer: null,
 
-            try {
-                const res = await fetch('{{ route('audit-suara.quick-verify') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ token, status })
-                });
+                init() {
+                    // Close overlay on Enter
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && this.showOverlay) {
+                            e.preventDefault();
+                            this.closeOverlay();
+                        }
+                    });
+                },
 
-                const data = await res.json();
+                async validateToken() {
+                    const token = this.tokenValue.trim().toUpperCase();
+                    if (!token || this.processing) return;
 
-                if (!data.success) {
-                    alertBox.className = 'mt-4 p-4 rounded-2xl text-xs font-semibold flex items-center justify-between bg-rose-500/20 text-rose-300 border border-rose-500/30';
-                    alertMsg.textContent = data.message;
-                    alertBox.classList.remove('hidden');
-                } else {
-                    alertBox.className = 'mt-4 p-4 rounded-2xl text-xs font-semibold flex items-center justify-between bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-                    alertMsg.textContent = data.message + ` (${data.voter_name})`;
-                    alertBox.classList.remove('hidden');
+                    this.processing = true;
 
-                    if (data.counts) {
-                        document.getElementById('stat-total-sah').textContent = data.counts.sah;
-                        document.getElementById('stat-total-tidak-sah').textContent = data.counts.tidak_sah;
-                        document.getElementById('stat-total-pending').textContent = data.counts.pending;
+                    try {
+                        const res = await fetch('{{ route("audit-suara.quick-verify") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ token })
+                        });
+
+                        const data = await res.json();
+
+                        // Add to history
+                        this.history.unshift({
+                            token: token,
+                            verdict: data.verdict || 'tidak_sah',
+                            name: data.voter_name || ''
+                        });
+
+                        // Show overlay
+                        this.showVerdict(
+                            data.verdict || 'tidak_sah',
+                            token,
+                            data.message,
+                            data.voter_name || '',
+                            data.calon || ''
+                        );
+
+                        // Update counts
+                        if (data.counts) {
+                            this.pendingCount = data.counts.pending;
+                            document.getElementById('stat-total-sah').textContent = data.counts.sah;
+                            document.getElementById('stat-total-tidak-sah').textContent = data.counts.tidak_sah;
+                            document.getElementById('stat-total-pending').textContent = data.counts.pending;
+                        }
+
+                        // Clear input
+                        this.tokenValue = '';
+
+                    } catch (err) {
+                        this.showVerdict('tidak_sah', token, 'Kesalahan komunikasi dengan server.', '', '');
+                    } finally {
+                        this.processing = false;
                     }
+                },
 
-                    input.value = '';
-                    input.focus();
+                showVerdict(verdict, token, message, voterName, calon) {
+                    this.overlayVerdict = verdict;
+                    this.overlayToken = token;
+                    this.overlayMessage = message;
+                    this.overlayVoterName = voterName;
+                    this.overlayCalon = calon;
+                    this.showOverlay = true;
 
-                    setTimeout(() => location.reload(), 1200);
+                    // Play sound effect
+                    this.playSound(verdict);
+
+                    // Auto-close after 3.5 seconds
+                    clearTimeout(this._overlayTimer);
+                    this._overlayTimer = setTimeout(() => this.closeOverlay(), 3500);
+                },
+
+                closeOverlay() {
+                    clearTimeout(this._overlayTimer);
+                    this.showOverlay = false;
+                    this.$nextTick(() => {
+                        this.$refs.tokenInput?.focus();
+                    });
+                },
+
+                playSound(verdict) {
+                    try {
+                        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        gain.gain.value = 0.12;
+
+                        if (verdict === 'sah') {
+                            // Rising two-tone — success
+                            osc.frequency.setValueAtTime(523, ctx.currentTime);       // C5
+                            osc.frequency.setValueAtTime(784, ctx.currentTime + 0.1); // G5
+                            osc.type = 'sine';
+                            osc.start();
+                            osc.stop(ctx.currentTime + 0.25);
+                        } else if (verdict === 'sudah') {
+                            // Short blip — info
+                            osc.frequency.setValueAtTime(660, ctx.currentTime);
+                            osc.type = 'sine';
+                            osc.start();
+                            osc.stop(ctx.currentTime + 0.12);
+                        } else {
+                            // Low buzz — error
+                            osc.frequency.setValueAtTime(220, ctx.currentTime);
+                            osc.type = 'square';
+                            gain.gain.value = 0.06;
+                            osc.start();
+                            osc.stop(ctx.currentTime + 0.3);
+                        }
+                    } catch (e) { /* no audio support */ }
+                },
+
+                async hanguskanSisa() {
+                    if (this.pendingCount === 0) return;
+
+                    const confirmResult = await Swal.fire({
+                        title: 'Hanguskan Sisa Token?',
+                        html: `<p style="font-size:0.9rem;color:#9ca3af">Semua <strong style="color:#f59e0b">${this.pendingCount} suara</strong> yang belum diverifikasi akan dinyatakan <strong style="color:#f87171">TIDAK SAH</strong>.</p><p style="font-size:0.8rem;color:#6b7280;margin-top:0.5rem">Pastikan semua kartu dalam kotak suara sudah selesai dibacakan.</p>`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, Hanguskan Sisa',
+                        cancelButtonText: 'Batal',
+                        customClass: {
+                            confirmButton: '!bg-rose-600 !shadow-rose-600/40',
+                        }
+                    });
+
+                    if (!confirmResult.isConfirmed) return;
+
+                    try {
+                        const res = await fetch('{{ route("audit-suara.hanguskan-sisa") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        });
+
+                        const data = await res.json();
+
+                        if (data.success) {
+                            if (data.counts) {
+                                this.pendingCount = data.counts.pending;
+                                document.getElementById('stat-total-sah').textContent = data.counts.sah;
+                                document.getElementById('stat-total-tidak-sah').textContent = data.counts.tidak_sah;
+                                document.getElementById('stat-total-pending').textContent = data.counts.pending;
+                            }
+
+                            await Swal.fire({
+                                title: 'Selesai!',
+                                html: `<p style="color:#9ca3af">${data.message}</p>`,
+                                icon: 'success',
+                            });
+
+                            location.reload();
+                        }
+                    } catch (err) {
+                        await Swal.fire({ title: 'Error', text: 'Gagal menghanguskan sisa token.', icon: 'error' });
+                    }
                 }
-            } catch (err) {
-                alertBox.className = 'mt-4 p-4 rounded-2xl text-xs font-semibold flex items-center justify-between bg-rose-500/20 text-rose-300 border border-rose-500/30';
-                alertMsg.textContent = 'Terjadi kesalahan komunikasi dengan server.';
-                alertBox.classList.remove('hidden');
-            }
+            };
         }
-
-        document.getElementById('quick-token-input').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                submitQuickVerify('sah');
-            }
-        });
     </script>
 </x-app-layout>
 

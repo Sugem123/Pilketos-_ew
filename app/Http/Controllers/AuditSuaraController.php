@@ -22,7 +22,7 @@ class AuditSuaraController extends Controller
             $search = trim($request->search);
             $query->whereHas('hakSuara', function ($q) use ($search) {
                 $q->where('token', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%");
+                    ->orWhere('nisn', 'like', "%{$search}%");
             });
         }
 
@@ -67,55 +67,112 @@ class AuditSuaraController extends Controller
             'verified_at' => $request->status !== 'pending' ? now() : null,
         ]);
 
-        return back()->with('success', "Status verifikasi token {$vote->hakSuara->token} diperbarui menjadi " . strtoupper($request->status));
+        return back()->with('success', "Status verifikasi token {$vote->hakSuara->token} diperbarui menjadi ".strtoupper($request->status));
     }
 
+    /**
+     * Quick verify: panitia inputs token from physical ballot card.
+     *
+     * Logic:
+     * - Token exists in DPT AND has a vote record (used) → SAH
+     * - Token already verified (not pending) → already processed
+     * - Token exists but no vote → TIDAK SAH (didn't vote)
+     * - Token not in DPT → TIDAK SAH (unknown token)
+     */
     public function quickVerifyByToken(Request $request): JsonResponse
     {
         $request->validate([
             'token' => 'required|string',
-            'status' => 'required|in:sah,tidak_sah',
-            'catatan' => 'nullable|string|max:255',
         ]);
 
         $tokenInput = strtoupper(trim($request->token));
         $hakSuara = HakSuara::where('token', $tokenInput)->first();
 
+        // Token not found in DPT
         if (! $hakSuara) {
             return response()->json([
                 'success' => false,
-                'message' => "Token '{$tokenInput}' tidak ditemukan dalam daftar DPT.",
-            ], 404);
+                'verdict' => 'tidak_sah',
+                'message' => "Token \"{$tokenInput}\" tidak terdaftar dalam DPT. Kartu TIDAK SAH.",
+            ]);
         }
 
+        // Token exists but voter never voted (no vote record)
         $vote = Vote::where('id_nisn', $hakSuara->id)->first();
 
         if (! $vote) {
             return response()->json([
                 'success' => false,
-                'message' => "Token '{$tokenInput}' terdaftar, tetapi pemilih belum pernah melakukan voting di bilik suara.",
-            ], 400);
+                'verdict' => 'tidak_sah',
+                'message' => "Token \"{$tokenInput}\" terdaftar, tapi pemilih tidak melakukan voting. Kartu TIDAK SAH.",
+                'voter_name' => $hakSuara->nisn,
+            ]);
         }
 
+        // Already verified before (not pending)
+        if ($vote->status_verifikasi !== 'pending') {
+            return response()->json([
+                'success' => true,
+                'verdict' => 'sudah',
+                'message' => "Token \"{$tokenInput}\" sudah diverifikasi sebelumnya sebagai: ".strtoupper($vote->status_verifikasi),
+                'voter_name' => $hakSuara->nisn,
+                'status' => $vote->status_verifikasi,
+                'counts' => $this->getAuditCounts(),
+            ]);
+        }
+
+        // Token valid + voted + still pending → mark SAH
         $vote->update([
-            'status_verifikasi' => $request->status,
-            'catatan_verifikasi' => $request->catatan ?? ($request->status === 'sah' ? 'Kartu fisik ditemukan di kotak suara' : 'Kartu fisik tidak sesuai / tidak ditemukan'),
+            'status_verifikasi' => 'sah',
+            'catatan_verifikasi' => 'Kartu fisik ditemukan di kotak suara',
             'verified_at' => now(),
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => "Token {$tokenInput} berhasil diverifikasi sebagai: " . strtoupper($request->status),
+            'verdict' => 'sah',
+            'message' => "Token \"{$tokenInput}\" — Suara SAH!",
             'token' => $tokenInput,
-            'status' => $request->status,
+            'status' => 'sah',
             'voter_name' => $hakSuara->nisn,
-            'counts' => [
-                'total' => Vote::count(),
-                'sah' => Vote::where('status_verifikasi', 'sah')->count(),
-                'tidak_sah' => Vote::where('status_verifikasi', 'tidak_sah')->count(),
-                'pending' => Vote::where('status_verifikasi', 'pending')->count(),
-            ],
+            'calon' => $vote->calon->nama ?? '-',
+            'counts' => $this->getAuditCounts(),
         ]);
+    }
+
+    /**
+     * Hanguskan sisa: mark all remaining pending votes as tidak_sah.
+     * Used after all physical ballot cards have been read.
+     */
+    public function hanguskanSisa(): JsonResponse
+    {
+        $hangusCount = Vote::where('status_verifikasi', 'pending')->count();
+
+        Vote::where('status_verifikasi', 'pending')->update([
+            'status_verifikasi' => 'tidak_sah',
+            'catatan_verifikasi' => 'Kartu fisik tidak ditemukan di kotak suara — hangus',
+            'verified_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$hangusCount} suara yang belum diverifikasi telah dihanguskan (tidak sah).",
+            'hangus_count' => $hangusCount,
+            'counts' => $this->getAuditCounts(),
+        ]);
+    }
+
+    /**
+     * @return array{total: int, sah: int, tidak_sah: int, pending: int}
+     */
+    private function getAuditCounts(): array
+    {
+        return [
+            'total' => Vote::count(),
+            'sah' => Vote::where('status_verifikasi', 'sah')->count(),
+            'tidak_sah' => Vote::where('status_verifikasi', 'tidak_sah')->count(),
+            'pending' => Vote::where('status_verifikasi', 'pending')->count(),
+        ];
     }
 
     public function batchVerifyAll(Request $request)
@@ -143,4 +200,3 @@ class AuditSuaraController extends Controller
         return redirect()->route('audit-suara.index')->with('success', $msg);
     }
 }
-
