@@ -2,7 +2,7 @@
 # Laravel 13 / TailwindCSS v4 / Alpine.js / Chart.js / SweetAlert2 / SQLite
 
 # ─── Stage 1: Build frontend assets ───
-FROM node:22-alpine AS frontend
+FROM node:22-slim AS frontend
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
