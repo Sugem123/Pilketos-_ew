@@ -23,9 +23,25 @@ fi
 if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "base64:" ]; then
   echo "Generating APP_KEY..."
   export APP_KEY="$(php -r "echo 'base64:'.base64_encode(random_bytes(32));")"
-  echo "APP_KEY=${APP_KEY}" >> .env 2>/dev/null || true
-  echo "APP_KEY generated (set it permanently in Coolify env for restarts)."
 fi
+
+# Write all essential env vars to .env so config:cache picks them up
+# (Laravel config:cache reads .env, ignores OS env vars after caching)
+cat > .env <<ENVEOF
+APP_NAME=${APP_NAME:-Pilketos}
+APP_ENV=${APP_ENV:-production}
+APP_KEY=${APP_KEY}
+APP_DEBUG=${APP_DEBUG:-false}
+APP_URL=${APP_URL:-http://localhost}
+APP_TIMEZONE=${APP_TIMEZONE:-Asia/Jakarta}
+LOG_CHANNEL=${LOG_CHANNEL:-stderr}
+DB_CONNECTION=${DB_CONNECTION:-sqlite}
+DB_DATABASE=${DB_DATABASE:-/var/www/html/database/database.sqlite}
+SESSION_DRIVER=${SESSION_DRIVER:-file}
+CACHE_STORE=${CACHE_STORE:-file}
+QUEUE_CONNECTION=${QUEUE_CONNECTION:-sync}
+ENVEOF
+echo ".env written from Docker environment."
 
 php artisan config:clear || true
 php artisan route:clear || true
