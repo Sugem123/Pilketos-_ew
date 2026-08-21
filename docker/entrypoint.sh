@@ -10,11 +10,13 @@ chown -R www-data:www-data storage bootstrap/cache database 2>/dev/null || true
 chmod -R ug+rwx storage bootstrap/cache database 2>/dev/null || true
 
 # Create SQLite database if not exists
+DB_FRESH=false
 if [ ! -f database/database.sqlite ]; then
   echo "Creating SQLite database..."
   touch database/database.sqlite
   chown www-data:www-data database/database.sqlite
   chmod 664 database/database.sqlite
+  DB_FRESH=true
 fi
 
 # Generate APP_KEY if missing
@@ -38,10 +40,12 @@ if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
   php artisan migrate --force
 fi
 
-# Seed (first boot only)
-if [ "${RUN_SEEDERS:-true}" = "true" ]; then
-  echo "Running seeders..."
+# Seed (first boot only — when DB was freshly created)
+if [ "${RUN_SEEDERS:-true}" = "true" ] && [ "$DB_FRESH" = "true" ]; then
+  echo "Running seeders (fresh database)..."
   php artisan db:seed --force || true
+else
+  echo "Skipping seeders (database already exists)."
 fi
 
 # Storage symlink
@@ -53,6 +57,19 @@ elif [ -d public/storage ] || [ -e public/storage ]; then
 fi
 php artisan storage:link 2>/dev/null || ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage || true
 chown -h www-data:www-data public/storage 2>/dev/null || true
+
+# Copy seed assets (foto_calon) into storage if not present
+if [ -d /var/www/html/docker/seed-assets/foto_calon ]; then
+  mkdir -p storage/app/public/foto_calon
+  for f in /var/www/html/docker/seed-assets/foto_calon/*; do
+    fname=$(basename "$f")
+    if [ ! -f "storage/app/public/foto_calon/$fname" ]; then
+      echo "Seeding asset: foto_calon/$fname"
+      cp "$f" "storage/app/public/foto_calon/$fname"
+    fi
+  done
+  chown -R www-data:www-data storage/app/public/foto_calon 2>/dev/null || true
+fi
 
 # Cache config & routes
 php artisan config:cache || true

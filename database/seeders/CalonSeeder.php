@@ -49,7 +49,10 @@ class CalonSeeder extends Seeder
         ];
 
         foreach ($calons as $calon) {
-            CalonKetua::create($calon);
+            CalonKetua::firstOrCreate(
+                ['nomor' => $calon['nomor']],
+                $calon
+            );
         }
     }
 }
