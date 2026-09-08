@@ -132,20 +132,62 @@
                     </div>
                 </div>
 
-                {{-- Mode Switcher Tabs --}}
-                <div class="flex items-center gap-2 p-1.5 bg-slate-950/80 rounded-2xl border border-white/10 mb-5 w-full sm:w-max">
-                    <button type="button" @click="setMode('manual')"
-                            class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center justify-center gap-2"
-                            :class="activeMode === 'manual' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-400 hover:text-white'">
-                        <i class="fas fa-keyboard"></i>
-                        <span>Input Manual &amp; Gun Scanner</span>
-                    </button>
-                    <button type="button" @click="setMode('camera')"
-                            class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center justify-center gap-2"
-                            :class="activeMode === 'camera' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : 'text-slate-400 hover:text-white'">
-                        <i class="fas fa-qrcode"></i>
-                        <span>Scan Kamera QR</span>
-                        <span class="w-2 h-2 rounded-full" :class="cameraRunning ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'"></span>
+                {{-- Mode Switcher Tabs + Wireless HP Scanner + Auto/Manual Toggle --}}
+                <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-6">
+                    <div class="flex items-center gap-2 p-1.5 bg-slate-950/80 rounded-2xl border border-white/10 flex-wrap">
+                        <button type="button" @click="setMode('manual')"
+                                class="px-4 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-2"
+                                :class="activeMode === 'manual' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-400 hover:text-white'">
+                            <i class="fas fa-keyboard"></i>
+                            <span>Input Manual / Gun</span>
+                        </button>
+                        <button type="button" @click="setMode('camera')"
+                                class="px-4 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-2"
+                                :class="activeMode === 'camera' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : 'text-slate-400 hover:text-white'">
+                            <i class="fas fa-video"></i>
+                            <span>Kamera Laptop</span>
+                            <span class="w-2 h-2 rounded-full" :class="cameraRunning ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'"></span>
+                        </button>
+                        <button type="button" @click="openPairingModal()"
+                                class="px-4 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md hover:brightness-110">
+                            <i class="fas fa-mobile-screen-button"></i>
+                            <span>Sambungkan HP Scanner</span>
+                            <span class="w-2 h-2 rounded-full" :class="remoteConnected ? 'bg-emerald-300 animate-ping' : 'bg-amber-400'"></span>
+                        </button>
+                    </div>
+
+                    {{-- Toggle Validasi Otomatis vs Manual --}}
+                    <div class="flex items-center gap-3 p-2 bg-slate-950/80 rounded-2xl border border-white/10 self-start md:self-auto">
+                        <div class="text-right">
+                            <span class="text-[10px] font-bold uppercase tracking-wider block font-mono"
+                                  :class="autoValidate ? 'text-emerald-400' : 'text-amber-400'"
+                                  x-text="autoValidate ? 'VALIDASI OTOMATIS: ON' : 'VALIDASI MANUAL: ON'"></span>
+                            <span class="text-[9px] text-slate-500 block leading-none"
+                                  x-text="autoValidate ? 'Scan langsung sahkan suara' : 'Scan masuk teks, klik tombol validasi'"></span>
+                        </div>
+                        <button type="button" @click="autoValidate = !autoValidate"
+                                class="w-12 h-7 rounded-full p-1 transition-colors relative cursor-pointer"
+                                :class="autoValidate ? 'bg-emerald-600' : 'bg-slate-800'">
+                            <div class="w-5 h-5 rounded-full bg-white transition-transform shadow-md"
+                                 :class="autoValidate ? 'translate-x-5' : 'translate-x-0'"></div>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Status Bar Wireless HP --}}
+                <div x-show="pairingSession" x-cloak class="mb-5 p-3.5 rounded-2xl bg-teal-950/40 border border-teal-500/30 flex items-center justify-between text-xs font-mono">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fas fa-mobile-screen-button text-teal-400 text-sm"></i>
+                        <span class="text-slate-300">Remote HP:</span>
+                        <code class="px-2 py-0.5 rounded bg-slate-900 text-amber-300 font-bold tracking-widest text-[11px]" x-text="pairingSession"></code>
+                        <span class="flex items-center gap-1.5 text-[10px] font-bold"
+                              :class="remoteConnected ? 'text-emerald-400' : 'text-amber-400'">
+                            <span class="w-2 h-2 rounded-full" :class="remoteConnected ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'"></span>
+                            <span x-text="remoteConnected ? 'HP Terhubung (Siap Scan)' : 'Menunggu HP terhubung...'"></span>
+                        </span>
+                    </div>
+                    <button type="button" @click="openPairingModal()" class="text-[10px] text-teal-400 hover:text-white underline font-bold">
+                        Buka QR Pairing
                     </button>
                 </div>
 
@@ -254,6 +296,59 @@
                         <i class="fas fa-fire"></i>
                         <span>Hanguskan Sisa (<span x-text="pendingCount"></span>)</span>
                     </button>
+                </div>
+            </div>
+
+            {{-- ====== MODAL PAIRING HP SCANNER ====== --}}
+            <div x-show="showPairingModal" x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+                 x-cloak>
+                <div @click.stop class="w-full max-w-md bg-slate-900 border border-teal-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative text-center">
+                    <button type="button" @click="closePairingModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/60">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+
+                    <div class="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/30 text-teal-300 flex items-center justify-center mx-auto mb-3 text-xl shadow-lg">
+                        <i class="fas fa-mobile-screen-button"></i>
+                    </div>
+
+                    <h3 class="font-heading font-black text-xl text-white mb-1">Sambungkan HP Scanner</h3>
+                    <p class="text-xs text-slate-400 max-w-xs mx-auto mb-5 leading-relaxed">
+                        Buka kamera di smartphone panitia, lalu scan QR Code di bawah ini untuk membuka halaman scanner remote.
+                    </p>
+
+                    {{-- Canvas QR Code Pairing --}}
+                    <div class="p-4 bg-white rounded-2xl inline-block shadow-xl mb-4 border-2 border-teal-500/30">
+                        <div id="pairing-qr-canvas" class="w-[180px] h-[180px] flex items-center justify-center">
+                            <span class="text-xs text-slate-400 font-mono">Membuat QR...</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-center gap-2 text-xs font-mono">
+                            <span class="text-slate-400">Kode Sesi:</span>
+                            <code class="px-2.5 py-1 bg-slate-950 text-amber-300 font-bold rounded-lg border border-slate-800" x-text="pairingSession"></code>
+                        </div>
+
+                        {{-- Connection status indicator --}}
+                        <div class="p-3 rounded-2xl text-xs font-mono font-bold flex items-center justify-center gap-2"
+                             :class="remoteConnected ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'">
+                            <span class="w-2.5 h-2.5 rounded-full" :class="remoteConnected ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'"></span>
+                            <span x-text="remoteConnected ? 'HP TERHUBUNG! Silakan scan kartu suara.' : 'Menunggu HP melakukan scan QR ini...'"></span>
+                        </div>
+
+                        <div class="pt-2 flex gap-2">
+                            <button type="button" @click="copyPairingUrl()" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-white/10 flex items-center justify-center gap-1.5">
+                                <i class="fas fa-copy text-[11px]"></i> Salin Link
+                            </button>
+                            <button type="button" @click="closePairingModal()" class="flex-1 py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow-md">
+                                Tutup &amp; Mulai
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -460,15 +555,25 @@
         </div>
     </div>
 
+    <script src="{{ asset('js/qrcode.min.js') }}"></script>
     <script src="{{ asset('js/html5-qrcode.min.js') }}"></script>
     <script>
         function tokenScanner() {
             return {
                 activeMode: 'manual', // 'manual' or 'camera'
+                autoValidate: true,   // true: langsung sahkan, false: isi token ke input lalu panitia klik Validasi
                 tokenValue: '',
                 processing: false,
                 history: [],
                 pendingCount: {{ $totalPending }},
+
+                // Wireless Remote HP Pairing State
+                showPairingModal: false,
+                pairingSession: '',
+                pairingUrl: '',
+                remoteConnected: false,
+                _pollInterval: null,
+                _qrRendered: false,
 
                 // Camera Scanner State
                 cameraRunning: false,
@@ -509,6 +614,95 @@
                     }
                 },
 
+                async openPairingModal() {
+                    this.showPairingModal = true;
+
+                    if (!this.pairingSession) {
+                        try {
+                            const res = await fetch('{{ route("audit-suara.create-remote") }}');
+                            const data = await res.json();
+                            if (data.success) {
+                                this.pairingSession = data.session_id;
+                                this.pairingUrl = data.url;
+
+                                this.$nextTick(() => {
+                                    const qrEl = document.getElementById('pairing-qr-canvas');
+                                    if (qrEl && typeof QRCode !== 'undefined') {
+                                        qrEl.innerHTML = '';
+                                        new QRCode(qrEl, {
+                                            text: this.pairingUrl,
+                                            width: 180,
+                                            height: 180,
+                                            colorDark: "#020617",
+                                            colorLight: "#ffffff",
+                                            correctLevel: QRCode.CorrectLevel.M
+                                        });
+                                        this._qrRendered = true;
+                                    }
+                                });
+
+                                this.startRemotePolling();
+                            }
+                        } catch (e) {
+                            alert('Gagal membuat sesi pairing wireless.');
+                        }
+                    } else {
+                        this.startRemotePolling();
+                    }
+                },
+
+                closePairingModal() {
+                    this.showPairingModal = false;
+                },
+
+                copyPairingUrl() {
+                    if (navigator.clipboard && this.pairingUrl) {
+                        navigator.clipboard.writeText(this.pairingUrl);
+                        alert('Link scanner HP berhasil disalin!');
+                    }
+                },
+
+                startRemotePolling() {
+                    if (this._pollInterval) return;
+
+                    this._pollInterval = setInterval(async () => {
+                        if (!this.pairingSession) return;
+
+                        try {
+                            const res = await fetch(`{{ url('admin/audit-suara/remote-poll') }}/${this.pairingSession}`);
+                            const data = await res.json();
+
+                            if (data.expired) {
+                                this.remoteConnected = false;
+                                clearInterval(this._pollInterval);
+                                this._pollInterval = null;
+                                return;
+                            }
+
+                            this.remoteConnected = !!data.connected;
+
+                            // Handle token yang masuk dari HP
+                            if (data.tokens && data.tokens.length > 0) {
+                                for (const item of data.tokens) {
+                                    const token = item.token.trim().toUpperCase();
+                                    this.tokenValue = token;
+
+                                    if (this.autoValidate) {
+                                        // Mode Validasi Otomatis: langsung eksekusi validasi
+                                        await this.validateToken();
+                                    } else {
+                                        // Mode Manual: cukup masukkan token ke textbox dan mainkan suara info
+                                        this.playSound('sudah');
+                                        this.$nextTick(() => {
+                                            this.$refs.tokenInput?.focus();
+                                        });
+                                    }
+                                }
+                            }
+                        } catch (e) { }
+                    }, 850);
+                },
+
                 async startCamera() {
                     if (this.cameraRunning) return;
 
@@ -527,7 +721,6 @@
                             const devices = await Html5Qrcode.getCameras();
                             if (devices && devices.length) {
                                 this.cameras = devices;
-                                // Utamakan kamera belakang (environment) jika ada
                                 const backCam = devices.find(d => /back|rear|environment/i.test(d.label));
                                 this.selectedCameraId = backCam ? backCam.id : devices[0].id;
                             } else {
@@ -546,7 +739,7 @@
                             this.selectedCameraId ? { deviceId: { exact: this.selectedCameraId } } : { facingMode: "environment" },
                             config,
                             (decodedText) => this.onScanSuccess(decodedText),
-                            (errorMessage) => { /* ignore frame noise */ }
+                            (errorMessage) => { }
                         );
 
                         this.cameraRunning = true;
@@ -597,7 +790,15 @@
                     this.lastScanTime = now;
 
                     this.tokenValue = token;
-                    this.validateToken();
+
+                    if (this.autoValidate) {
+                        this.validateToken();
+                    } else {
+                        this.playSound('sudah');
+                        this.$nextTick(() => {
+                            this.$refs.tokenInput?.focus();
+                        });
+                    }
                 },
 
                 async validateToken() {

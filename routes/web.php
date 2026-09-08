@@ -36,6 +36,10 @@ Route::get('/live-count/data', [LiveCountController::class, 'data'])->name('live
 Route::get('/calon', [CalonPublicController::class, 'index'])->name('calon-public.index');
 Route::get('/calon/{calon}', [CalonPublicController::class, 'show'])->name('calon-public.show');
 
+// Remote Scanner Pairing untuk Audit Suara (Akses HP Panitia tanpa perlu login ulang)
+Route::get('/audit-suara/remote/{session}', [AuditSuaraController::class, 'remoteView'])->name('audit-suara.remote-view');
+Route::post('/audit-suara/remote/push', [AuditSuaraController::class, 'remotePush'])->name('audit-suara.remote-push');
+
 Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -64,6 +68,8 @@ Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
 
         // Audit Suara Manual & Rekonsiliasi TPS
         Route::get('/audit-suara', [AuditSuaraController::class, 'index'])->name('audit-suara.index');
+        Route::get('/audit-suara/remote-session', [AuditSuaraController::class, 'createRemoteSession'])->name('audit-suara.create-remote');
+        Route::get('/audit-suara/remote-poll/{session}', [AuditSuaraController::class, 'remotePoll'])->name('audit-suara.remote-poll');
         Route::patch('/audit-suara/{vote}', [AuditSuaraController::class, 'verifySingle'])->name('audit-suara.verify-single');
         Route::post('/audit-suara/quick-verify', [AuditSuaraController::class, 'quickVerifyByToken'])->name('audit-suara.quick-verify');
         Route::post('/audit-suara/hanguskan-sisa', [AuditSuaraController::class, 'hanguskanSisa'])->name('audit-suara.hanguskan-sisa');

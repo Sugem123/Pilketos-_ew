@@ -199,4 +199,119 @@ class AuditSuaraController extends Controller
 
         return redirect()->route('audit-suara.index')->with('success', $msg);
     }
+
+    /**
+     * Generate session ID pairing laptop <-> HP untuk remote scanner
+     */
+    public function createRemoteSession(): JsonResponse
+    {
+        $sessionId = strtoupper(substr(str_shuffle('ABCDEFGHJKLMNPQRSTUVWXYZ23456789'), 0, 8));
+        \Illuminate\Support\Facades\Cache::put("audit_pair_{$sessionId}", [
+            'created_at' => now()->timestamp,
+            'connected' => false,
+            'last_ping' => now()->timestamp,
+        ], now()->addHours(3));
+
+        $url = route('audit-suara.remote-view', ['session' => $sessionId]);
+
+        return response()->json([
+            'success' => true,
+            'session_id' => $sessionId,
+            'url' => $url,
+        ]);
+    }
+
+    /**
+     * Tampilan Scanner Kamera di HP Panitia
+     */
+    public function remoteView(string $session)
+    {
+        $session = strtoupper(trim($session));
+        $cacheData = \Illuminate\Support\Facades\Cache::get("audit_pair_{$session}");
+
+        if (! $cacheData) {
+            return view('audit-suara.remote-expired');
+        }
+
+        // Tandai HP sudah terhubung
+        $cacheData['connected'] = true;
+        $cacheData['last_ping'] = now()->timestamp;
+        \Illuminate\Support\Facades\Cache::put("audit_pair_{$session}", $cacheData, now()->addHours(3));
+
+        $config = $this->getConfig();
+
+        return view('audit-suara.remote', compact('session', 'config'));
+    }
+
+    /**
+     * HP mengirimkan token yang di-scan ke Laptop
+     */
+    public function remotePush(Request $request): JsonResponse
+    {
+        $request->validate([
+            'session_id' => 'required|string',
+            'token' => 'required|string',
+        ]);
+
+        $sessionId = strtoupper(trim($request->session_id));
+        $token = strtoupper(trim($request->token));
+
+        $pair = \Illuminate\Support\Facades\Cache::get("audit_pair_{$sessionId}");
+        if (! $pair) {
+            return response()->json(['success' => false, 'message' => 'Sesi pairing kadaluarsa atau tidak valid.'], 404);
+        }
+
+        // Update ping dan taruh di antrian laptop
+        $pair['connected'] = true;
+        $pair['last_ping'] = now()->timestamp;
+        \Illuminate\Support\Facades\Cache::put("audit_pair_{$sessionId}", $pair, now()->addHours(3));
+
+        // Tambahkan ke antrian token
+        $queue = \Illuminate\Support\Facades\Cache::get("audit_queue_{$sessionId}", []);
+        $queue[] = [
+            'token' => $token,
+            'time' => now()->format('H:i:s'),
+        ];
+        \Illuminate\Support\Facades\Cache::put("audit_queue_{$sessionId}", $queue, now()->addMinutes(10));
+
+        return response()->json([
+            'success' => true,
+            'message' => "Token {$token} berhasil dikirim ke laptop!",
+            'token' => $token,
+        ]);
+    }
+
+    /**
+     * Laptop mem-poll token yang dikirim oleh HP
+     */
+    public function remotePoll(string $session): JsonResponse
+    {
+        $sessionId = strtoupper(trim($session));
+        $pair = \Illuminate\Support\Facades\Cache::get("audit_pair_{$sessionId}");
+
+        if (! $pair) {
+            return response()->json(['success' => false, 'expired' => true]);
+        }
+
+        $queue = \Illuminate\Support\Facades\Cache::get("audit_queue_{$sessionId}", []);
+        \Illuminate\Support\Facades\Cache::forget("audit_queue_{$sessionId}");
+
+        $connected = (now()->timestamp - ($pair['last_ping'] ?? 0)) < 30 && ($pair['connected'] ?? false);
+
+        return response()->json([
+            'success' => true,
+            'connected' => $connected,
+            'tokens' => $queue,
+        ]);
+    }
+
+    private function getConfig(): array
+    {
+        $path = base_path('config.json');
+        if (file_exists($path)) {
+            return json_decode(file_get_contents($path), true) ?: [];
+        }
+
+        return [];
+    }
 }
