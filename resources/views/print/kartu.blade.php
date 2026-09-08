@@ -37,13 +37,13 @@
             background: #ffffff;
             border: 2px dashed #94a3b8;
             border-radius: 14px;
-            padding: 12px 14px;
+            padding: 12px 15px;
             position: relative;
             page-break-inside: avoid;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 64mm;
+            height: 70mm;
             box-shadow: 0 2px 4px rgba(0,0,0,0.04);
             overflow: hidden;
         }
@@ -119,16 +119,17 @@
 
         .auth-cluster {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 7px;
+            gap: 5px;
             flex-shrink: 0;
         }
 
         .qr-box {
-            width: 52px;
-            height: 52px;
+            width: 62px;
+            height: 62px;
             background: #ffffff;
-            border: 1px solid #cbd5e1;
+            border: 1.5px solid #cbd5e1;
             border-radius: 8px;
             padding: 3px;
             display: flex;
@@ -137,35 +138,39 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
         .qr-box canvas, .qr-box img {
-            width: 44px !important;
-            height: 44px !important;
+            width: 54px !important;
+            height: 54px !important;
             display: block;
         }
 
         .token-box {
             background: #0f172a;
             color: #ffffff;
-            padding: 5px 9px;
+            padding: 4px 10px;
             border-radius: 8px;
             text-align: center;
             border: 1px solid #1e293b;
-            min-width: 65px;
+            width: 100%;
+            min-width: 82px;
         }
         .token-box .tok-label {
-            font-size: 7px;
+            font-size: 7.5px;
             color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 700;
+            letter-spacing: 0.8px;
+            font-weight: 800;
             display: block;
+            line-height: 1;
+            margin-bottom: 2px;
         }
         .token-box .tok-code {
-            font-size: 14px;
+            font-size: 17px;
             font-weight: 900;
             font-family: monospace;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             color: #fbbf24;
             display: block;
+            line-height: 1.1;
         }
 
         .card-bottom {
@@ -299,8 +304,8 @@
                 if (token && typeof QRCode !== 'undefined') {
                     new QRCode(el, {
                         text: token,
-                        width: 44,
-                        height: 44,
+                        width: 54,
+                        height: 54,
                         colorDark: "#0f172a",
                         colorLight: "#ffffff",
                         correctLevel: QRCode.CorrectLevel.M
