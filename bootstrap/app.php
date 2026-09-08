@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'role.admin' => \App\Http\Middleware\EnsureAdminRole::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'audit-suara/remote/push',
+        ]);
+
         // Trust all proxies (Cloudflare Zero Trust Tunnel / Docker reverse proxy)
         $middleware->trustProxies(
             at: '*',
