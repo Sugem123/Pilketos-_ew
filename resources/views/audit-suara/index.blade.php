@@ -121,9 +121,8 @@
                             Validasi Kartu dari Kotak Suara
                         </h3>
                         <p class="text-xs text-slate-400 leading-relaxed">
-                            Ambil kartu pemilih dari kotak suara satu per satu. Ketik kode token pada kartu, lalu tekan <strong class="text-white">Enter</strong>.
+                            Pilih mode input: gunakan <strong class="text-indigo-300">Kamera Scanner QR</strong> atau <strong class="text-indigo-300">Input Manual / Barcode Gun</strong>.
                             Token yang <strong class="text-emerald-400">sudah digunakan voting</strong> akan dinyatakan <strong class="text-emerald-400">SAH</strong>.
-                            Token yang <strong class="text-rose-400">tidak dikenali / belum voting</strong> akan <strong class="text-rose-400">TIDAK SAH</strong>.
                         </p>
                     </div>
                     <div class="flex items-center gap-2 self-start">
@@ -133,12 +132,75 @@
                     </div>
                 </div>
 
-                {{-- Input Area --}}
+                {{-- Mode Switcher Tabs --}}
+                <div class="flex items-center gap-2 p-1.5 bg-slate-950/80 rounded-2xl border border-white/10 mb-5 w-full sm:w-max">
+                    <button type="button" @click="setMode('manual')"
+                            class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center justify-center gap-2"
+                            :class="activeMode === 'manual' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-400 hover:text-white'">
+                        <i class="fas fa-keyboard"></i>
+                        <span>Input Manual &amp; Gun Scanner</span>
+                    </button>
+                    <button type="button" @click="setMode('camera')"
+                            class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center justify-center gap-2"
+                            :class="activeMode === 'camera' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : 'text-slate-400 hover:text-white'">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Scan Kamera QR</span>
+                        <span class="w-2 h-2 rounded-full" :class="cameraRunning ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'"></span>
+                    </button>
+                </div>
+
+                {{-- CAMERA SCANNER PANEL --}}
+                <div x-show="activeMode === 'camera'" x-cloak class="mb-5 p-5 bg-slate-950/90 rounded-3xl border border-emerald-500/30 shadow-2xl">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-sm">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-heading font-bold text-sm text-white">Scanner Kamera QR</h4>
+                                <p class="text-[11px] text-slate-400">Arahkan QR Code pada kartu suara ke lensa kamera</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <select x-model="selectedCameraId" @change="changeCamera()" x-show="cameras.length > 1"
+                                    class="px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-xs text-slate-200 outline-none">
+                                <template x-for="cam in cameras" :key="cam.id">
+                                    <option :value="cam.id" x-text="cam.label || 'Kamera ' + cam.id"></option>
+                                </template>
+                            </select>
+
+                            <button type="button" @click="toggleCameraState()"
+                                    class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                                    :class="cameraRunning ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'">
+                                <i :class="cameraRunning ? 'fas fa-stop' : 'fas fa-play'"></i>
+                                <span x-text="cameraRunning ? 'Hentikan Kamera' : 'Nyalakan Kamera'"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Camera Viewport Container --}}
+                    <div class="relative w-full max-w-md mx-auto aspect-square sm:aspect-video rounded-2xl overflow-hidden bg-black border border-slate-800 flex items-center justify-center">
+                        <div id="qr-camera-reader" class="w-full h-full"></div>
+                        <div x-show="!cameraRunning" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-950/90">
+                            <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-slate-500 text-2xl mb-3">
+                                <i class="fas fa-video-slash"></i>
+                            </div>
+                            <p class="text-xs font-bold text-white mb-1">Kamera Nonaktif</p>
+                            <p class="text-[11px] text-slate-400 max-w-xs mb-3">Tekan tombol "Nyalakan Kamera" untuk mulai memindai QR Code kartu suara</p>
+                            <button type="button" @click="startCamera()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2">
+                                <i class="fas fa-play"></i> Mulai Scan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Input Area Manual & Gun Scanner --}}
                 <div class="flex flex-col sm:flex-row gap-3 mb-5">
                     <div class="relative flex-1">
                         <i class="fas fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-                        <input type="text" x-ref="tokenInput" autofocus maxlength="10"
-                               placeholder="Ketik kode token kartu..."
+                        <input type="text" x-ref="tokenInput" maxlength="10"
+                               :placeholder="activeMode === 'camera' ? 'Atau ketik token manual di sini...' : 'Ketik kode token kartu atau scan dengan barcode gun...'"
                                @keydown.enter.prevent="validateToken()"
                                x-model="tokenValue"
                                class="w-full pl-11 pr-4 py-4 luxury-input rounded-2xl text-white font-mono uppercase font-black text-lg tracking-[0.25em] outline-none placeholder:text-sm placeholder:tracking-normal placeholder:font-medium">
@@ -398,13 +460,23 @@
         </div>
     </div>
 
+    <script src="{{ asset('js/html5-qrcode.min.js') }}"></script>
     <script>
         function tokenScanner() {
             return {
+                activeMode: 'manual', // 'manual' or 'camera'
                 tokenValue: '',
                 processing: false,
                 history: [],
                 pendingCount: {{ $totalPending }},
+
+                // Camera Scanner State
+                cameraRunning: false,
+                html5QrCode: null,
+                cameras: [],
+                selectedCameraId: '',
+                lastScannedCode: '',
+                lastScanTime: 0,
 
                 // Overlay state
                 showOverlay: false,
@@ -423,6 +495,109 @@
                             this.closeOverlay();
                         }
                     });
+                },
+
+                setMode(mode) {
+                    this.activeMode = mode;
+                    if (mode === 'camera') {
+                        this.startCamera();
+                    } else {
+                        this.stopCamera();
+                        this.$nextTick(() => {
+                            this.$refs.tokenInput?.focus();
+                        });
+                    }
+                },
+
+                async startCamera() {
+                    if (this.cameraRunning) return;
+
+                    try {
+                        if (typeof Html5Qrcode === 'undefined') {
+                            alert('Scanner library gagal dimuat.');
+                            return;
+                        }
+
+                        if (!this.html5QrCode) {
+                            this.html5QrCode = new Html5Qrcode("qr-camera-reader");
+                        }
+
+                        // Ambil daftar kamera jika belum
+                        if (this.cameras.length === 0) {
+                            const devices = await Html5Qrcode.getCameras();
+                            if (devices && devices.length) {
+                                this.cameras = devices;
+                                // Utamakan kamera belakang (environment) jika ada
+                                const backCam = devices.find(d => /back|rear|environment/i.test(d.label));
+                                this.selectedCameraId = backCam ? backCam.id : devices[0].id;
+                            } else {
+                                alert('Tidak ada perangkat kamera yang terdeteksi.');
+                                return;
+                            }
+                        }
+
+                        const config = {
+                            fps: 12,
+                            qrbox: { width: 240, height: 240 },
+                            aspectRatio: 1.0
+                        };
+
+                        await this.html5QrCode.start(
+                            this.selectedCameraId ? { deviceId: { exact: this.selectedCameraId } } : { facingMode: "environment" },
+                            config,
+                            (decodedText) => this.onScanSuccess(decodedText),
+                            (errorMessage) => { /* ignore frame noise */ }
+                        );
+
+                        this.cameraRunning = true;
+
+                    } catch (err) {
+                        console.error('Error kamera:', err);
+                        this.cameraRunning = false;
+                        alert('Gagal mengakses kamera: ' + (err.message || err));
+                    }
+                },
+
+                async stopCamera() {
+                    if (this.html5QrCode && this.cameraRunning) {
+                        try {
+                            await this.html5QrCode.stop();
+                        } catch (e) { }
+                        this.cameraRunning = false;
+                    }
+                },
+
+                async toggleCameraState() {
+                    if (this.cameraRunning) {
+                        await this.stopCamera();
+                    } else {
+                        await this.startCamera();
+                    }
+                },
+
+                async changeCamera() {
+                    if (this.cameraRunning) {
+                        await this.stopCamera();
+                        await this.startCamera();
+                    }
+                },
+
+                onScanSuccess(decodedText) {
+                    if (this.processing) return;
+
+                    const token = decodedText.trim().toUpperCase();
+                    const now = Date.now();
+
+                    // Debounce token yang sama dalam jeda 3 detik
+                    if (token === this.lastScannedCode && (now - this.lastScanTime) < 3000) {
+                        return;
+                    }
+
+                    this.lastScannedCode = token;
+                    this.lastScanTime = now;
+
+                    this.tokenValue = token;
+                    this.validateToken();
                 },
 
                 async validateToken() {

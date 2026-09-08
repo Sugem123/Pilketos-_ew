@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/35d8865ade.js" crossorigin="anonymous"></script>
+    <script src="{{ asset('js/qrcode.min.js') }}"></script>
     <style>
         @page {
             size: A4 portrait;
@@ -30,13 +31,13 @@
             gap: 6mm;
             max-width: 210mm;
             margin: 0 auto;
-            padding: 8mm 0;
+            padding: 6mm 0;
         }
         .voter-card {
             background: #ffffff;
             border: 2px dashed #94a3b8;
             border-radius: 14px;
-            padding: 14px 16px;
+            padding: 12px 14px;
             position: relative;
             page-break-inside: avoid;
             display: flex;
@@ -51,7 +52,7 @@
             align-items: center;
             justify-content: space-between;
             border-bottom: 1.5px solid #0f172a;
-            padding-bottom: 6px;
+            padding-bottom: 5px;
         }
         .card-brand {
             display: flex;
@@ -61,10 +62,10 @@
         .card-brand img {
             width: 20px;
             height: 20px;
-            object-contain: contain;
+            object-fit: contain;
         }
         .card-title {
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 800;
             color: #0f172a;
             letter-spacing: -0.3px;
@@ -72,7 +73,7 @@
             text-transform: uppercase;
         }
         .card-type-badge {
-            font-size: 9px;
+            font-size: 8.5px;
             font-weight: 800;
             padding: 2px 6px;
             border-radius: 6px;
@@ -86,20 +87,24 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 6px 0;
+            padding: 4px 0;
+            gap: 8px;
+        }
+        .voter-meta {
+            flex: 1;
+            min-width: 0;
         }
         .voter-meta .label {
-            font-size: 8.5px;
+            font-size: 8px;
             color: #64748b;
             text-transform: uppercase;
             font-weight: 700;
         }
         .voter-meta .voter-name {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 800;
             color: #0f172a;
-            line-height: 1.2;
-            max-width: 170px;
+            line-height: 1.25;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -109,18 +114,45 @@
             color: #4338ca;
             font-weight: 700;
             font-family: monospace;
+            margin-top: 1px;
+        }
+
+        .auth-cluster {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-shrink: 0;
+        }
+
+        .qr-box {
+            width: 52px;
+            height: 52px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .qr-box canvas, .qr-box img {
+            width: 44px !important;
+            height: 44px !important;
+            display: block;
         }
 
         .token-box {
             background: #0f172a;
             color: #ffffff;
-            padding: 6px 12px;
-            border-radius: 10px;
+            padding: 5px 9px;
+            border-radius: 8px;
             text-align: center;
             border: 1px solid #1e293b;
+            min-width: 65px;
         }
         .token-box .tok-label {
-            font-size: 7.5px;
+            font-size: 7px;
             color: #94a3b8;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -128,11 +160,12 @@
             display: block;
         }
         .token-box .tok-code {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 900;
             font-family: monospace;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             color: #fbbf24;
+            display: block;
         }
 
         .card-bottom {
@@ -192,6 +225,8 @@
             .no-print { display: none !important; }
             .sheet { padding: 0; max-width: 100%; gap: 4mm; }
             .voter-card { box-shadow: none; border: 1.5px dashed #64748b; }
+            .token-box { background: #0f172a !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .token-box .tok-code { color: #fbbf24 !important; }
         }
     </style>
 </head>
@@ -232,9 +267,13 @@
                         @endif
                     </div>
 
-                    <div class="token-box">
-                        <span class="tok-label">Token Bilik</span>
-                        <span class="tok-code">{{ $p->token }}</span>
+                    {{-- QR Code + Token Box --}}
+                    <div class="auth-cluster">
+                        <div class="qr-box" id="qr-{{ $p->id }}" data-token="{{ $p->token }}"></div>
+                        <div class="token-box">
+                            <span class="tok-label">Token</span>
+                            <span class="tok-code">{{ $p->token }}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -242,7 +281,7 @@
                     <span class="status-warning">
                         <i class="fas fa-bolt"></i> 1x Pakai Langsung Hangus
                     </span>
-                    <span>Bawa kartu ke bilik suara TPS</span>
+                    <span>Scan QR / Ketik Token di Bilik Suara</span>
                 </div>
             </div>
         @empty
@@ -251,6 +290,25 @@
             </div>
         @endforelse
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const qrElements = document.querySelectorAll('.qr-box');
+            qrElements.forEach(function(el) {
+                const token = el.getAttribute('data-token');
+                if (token && typeof QRCode !== 'undefined') {
+                    new QRCode(el, {
+                        text: token,
+                        width: 44,
+                        height: 44,
+                        colorDark: "#0f172a",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                }
+            });
+        });
+    </script>
 
 </body>
 </html>
