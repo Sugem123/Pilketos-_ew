@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Surat Undangan Pemilihan Ketua OSIS</title>
+    <title>Surat Undangan Pemilihan Ketua OSIS &amp; MPK</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -10,7 +10,7 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 10mm;
+            margin: 8mm 10mm;
         }
         * {
             box-sizing: border-box;
@@ -25,32 +25,36 @@
             print-color-adjust: exact;
         }
         .page-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15mm;
             max-width: 210mm;
             margin: 0 auto;
             padding: 10mm 0;
+        }
+        .sheet {
+            background: transparent;
+            margin-bottom: 12mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .invitation-card {
             background: #ffffff;
             border: 2px solid #cbd5e1;
             border-radius: 16px;
-            padding: 20px 24px;
+            padding: 18px 22px;
             position: relative;
-            page-break-inside: avoid;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            flex: 1;
         }
         .invitation-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             border-bottom: 2px solid #0f172a;
-            padding-bottom: 12px;
-            margin-bottom: 14px;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
         }
         .school-info h2 {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 800;
             color: #0f172a;
             letter-spacing: -0.5px;
@@ -75,33 +79,25 @@
         .badge-guru { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
         
         .invitation-body {
-            font-size: 12px;
-            line-height: 1.6;
+            font-size: 11.5px;
+            line-height: 1.55;
             color: #334155;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .voter-box {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 10px 14px;
-            margin: 10px 0;
+            margin: 8px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .voter-details .label { font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; }
-        .voter-details .name { font-size: 14px; font-weight: 800; color: #0f172a; }
+        .voter-details .label { font-size: 9.5px; font-weight: 600; color: #64748b; text-transform: uppercase; }
+        .voter-details .name { font-size: 14px; font-weight: 800; color: #0f172a; margin-top: 1px; }
         .voter-details .class-info { font-size: 11px; color: #475569; font-weight: 600; font-family: monospace; }
         
-        .token-display {
-            text-align: right;
-            border-left: 2px dashed #cbd5e1;
-            padding-left: 14px;
-        }
-        .token-display .token-label { font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-        .token-display .token-code { font-size: 18px; font-weight: 900; font-family: monospace; color: #4338ca; letter-spacing: 1.5px; }
-
         .schedule-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -110,15 +106,15 @@
             background: #f1f5f9;
             padding: 8px 12px;
             border-radius: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
-        .schedule-item strong { display: block; color: #0f172a; font-size: 10px; text-transform: uppercase; }
+        .schedule-item strong { display: block; color: #0f172a; font-size: 9.5px; text-transform: uppercase; }
 
         .invitation-footer {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            font-size: 10px;
+            font-size: 9.5px;
             color: #64748b;
             border-top: 1px solid #f1f5f9;
             padding-top: 8px;
@@ -129,8 +125,47 @@
         .signature-box .line {
             width: 140px;
             border-bottom: 1px solid #0f172a;
-            margin-top: 35px;
+            margin-top: 30px;
             margin-bottom: 2px;
+        }
+
+        /* Garis Bantu Gunting Potong di Tengah */
+        .cut-guide {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 5mm 0;
+            width: 100%;
+            height: 18px;
+        }
+        .cut-line {
+            width: 100%;
+            border-top: 1.5px dashed #94a3b8;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            z-index: 1;
+        }
+        .cut-badge {
+            position: relative;
+            z-index: 2;
+            background: #ffffff;
+            padding: 2px 14px;
+            border-radius: 9999px;
+            border: 1px dashed #94a3b8;
+            font-size: 9.5px;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .cut-badge i {
+            font-size: 11px;
+            color: #475569;
         }
 
         .no-print {
@@ -170,8 +205,30 @@
         @media print {
             body { background: transparent; }
             .no-print { display: none !important; }
-            .page-container { padding: 0; max-width: 100%; }
-            .invitation-card { box-shadow: none; border: 1.5px solid #94a3b8; margin-bottom: 8mm; }
+            .page-container { padding: 0; max-width: 100%; margin: 0; }
+            .sheet {
+                margin: 0;
+                min-height: 275mm;
+                height: 275mm;
+                page-break-after: always;
+                page-break-inside: avoid;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+            .sheet:last-child {
+                page-break-after: auto;
+            }
+            .invitation-card {
+                box-shadow: none;
+                border: 1.5px solid #94a3b8;
+                page-break-inside: avoid;
+            }
+            .cut-badge {
+                background: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
 </head>
@@ -187,74 +244,90 @@
     </div>
 
     <div class="page-container">
-        @forelse($pemilihs as $p)
-            <div class="invitation-card">
-                <div class="invitation-header">
-                    <div class="school-info">
-                        <h2>{{ $config['undangan_judul_kop'] ?? $config['nama_sekolah'] ?? 'PANITIA PEMILIHAN KETUA OSIS' }}</h2>
-                        <p>{{ $config['undangan_sub_kop'] ?? $config['nama_kegiatan'] ?? 'Surat Pemberitahuan Pemungutan Suara' }} &bull; Tahun Ajaran {{ $config['tahun_ajaran'] ?? date('Y') }}</p>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        @if(!empty($config['url_logo']))
-                            <img src="{{ asset($config['url_logo']) }}" style="height: 28px; width: 28px; object-fit: contain;">
-                        @endif
-                        @if($p->tipe === 'guru')
-                            <span class="badge-kategori badge-guru">Guru / Tendik</span>
-                        @else
-                            <span class="badge-kategori badge-siswa">Siswa &bull; {{ $p->kelas->name ?? 'X' }}</span>
-                        @endif
-                    </div>
-                </div>
+        @php
+            $chunks = $pemilihs->chunk(2);
+        @endphp
 
-                <div class="invitation-body">
-                    <p>{{ $config['undangan_pembuka'] ?? 'Bersama ini Panitia Pemilihan Ketua OSIS mengundang Saudara/i untuk menggunakan hak pilih pada pemilihan umum ketua OSIS dengan data identitas terdaftar sebagai berikut:' }}</p>
-                    
-                    <div class="voter-box">
-                        <div class="voter-details">
-                            <span class="label">Nama Pemilih Terdaftar (DPT)</span>
-                            <div class="name">{{ $p->nisn }}</div>
-                            @if($p->tipe === 'siswa')
-                                <div class="class-info">Kelas: {{ $p->kelas->name ?? '-' }}</div>
-                            @else
-                                <div class="class-info">Kategori: Tenaga Pendidik / Guru</div>
-                            @endif
+        @forelse($chunks as $chunk)
+            <div class="sheet">
+                @foreach($chunk as $p)
+                    <div class="invitation-card">
+                        <div class="invitation-header">
+                            <div class="school-info">
+                                <h2>{{ $config['undangan_judul_kop'] ?? $config['nama_sekolah'] ?? 'PANITIA PEMILIHAN KETUA OSIS' }}</h2>
+                                <p>{{ $config['undangan_sub_kop'] ?? $config['nama_kegiatan'] ?? 'Surat Pemberitahuan Pemungutan Suara' }} &bull; Tahun Ajaran {{ $config['tahun_ajaran'] ?? date('Y') }}</p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                @if(!empty($config['url_logo']))
+                                    <img src="{{ asset($config['url_logo']) }}" style="height: 28px; width: 28px; object-fit: contain;">
+                                @endif
+                                @if($p->tipe === 'guru')
+                                    <span class="badge-kategori badge-guru">Guru / Tendik</span>
+                                @else
+                                    <span class="badge-kategori badge-siswa">Siswa &bull; {{ $p->kelas->name ?? 'X' }}</span>
+                                @endif
+                            </div>
                         </div>
-                        <div class="token-display">
-                            <span class="token-label">Token Otorisasi Bilik</span>
-                            <div class="token-code">{{ $p->token }}</div>
+
+                        <div class="invitation-body">
+                            <p>{{ $config['undangan_pembuka'] ?? 'Bersama ini Panitia Pemilihan Ketua OSIS mengundang Saudara/i untuk menggunakan hak pilih pada pemilihan umum ketua OSIS dengan data identitas terdaftar sebagai berikut:' }}</p>
+                            
+                            <div class="voter-box">
+                                <div class="voter-details">
+                                    <span class="label">Nama Pemilih Terdaftar (DPT)</span>
+                                    <div class="name">{{ $p->nisn }}</div>
+                                    @if($p->tipe === 'siswa')
+                                        <div class="class-info">Kelas: {{ $p->kelas->name ?? '-' }}</div>
+                                    @else
+                                        <div class="class-info">Kategori: Tenaga Pendidik / Guru</div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="schedule-grid">
+                                <div class="schedule-item">
+                                    <strong>Hari / Tanggal</strong>
+                                    <span>{{ $tanggal }}</span>
+                                </div>
+                                <div class="schedule-item">
+                                    <strong>Waktu Pelaksanaan</strong>
+                                    <span>{{ $waktu }}</span>
+                                </div>
+                                <div class="schedule-item">
+                                    <strong>Tempat / TPS</strong>
+                                    <span>{{ $lokasi }}</span>
+                                </div>
+                            </div>
+
+                            <p style="font-size: 10.5px; color: #64748b;">
+                                <em>*{{ $config['undangan_catatan_kaki'] ?? 'Harap membawa surat undangan ini atau mengingat Token Otorisasi saat dipanggil oleh panitia TPS menuju bilik suara e-voting. Satu token hanya berlaku untuk 1 (satu) kali penggunaan.' }}</em>
+                            </p>
+                        </div>
+
+                        <div class="invitation-footer">
+                            <div>
+                                <span>Dicetak otomatis oleh Sistem PILKETOS Official</span>
+                            </div>
+                            <div class="signature-box">
+                                <span>{{ $config['undangan_penandatangan'] ?? 'Ketua Panitia Pemilihan' }}</span>
+                                <div class="line"></div>
+                                <span style="font-size: 9px; text-transform: uppercase;">{{ $config['nama_sekolah'] ?? 'Panitia Pilketos' }}</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="schedule-grid">
-                        <div class="schedule-item">
-                            <strong>Hari / Tanggal</strong>
-                            <span>{{ $tanggal }}</span>
+                    @if(!$loop->last)
+                        {{-- Garis Bantu Gunting Tengah Lembar A4 --}}
+                        <div class="cut-guide">
+                            <div class="cut-line"></div>
+                            <div class="cut-badge">
+                                <i class="fa-solid fa-scissors"></i>
+                                <span>GARIS POTONG</span>
+                                <i class="fa-solid fa-scissors" style="transform: scaleX(-1);"></i>
+                            </div>
                         </div>
-                        <div class="schedule-item">
-                            <strong>Waktu Pelaksanaan</strong>
-                            <span>{{ $waktu }}</span>
-                        </div>
-                        <div class="schedule-item">
-                            <strong>Tempat / TPS</strong>
-                            <span>{{ $lokasi }}</span>
-                        </div>
-                    </div>
-
-                    <p style="font-size: 10.5px; color: #64748b;">
-                        <em>*{{ $config['undangan_catatan_kaki'] ?? 'Harap membawa surat undangan ini atau mengingat Token Otorisasi saat dipanggil oleh panitia TPS menuju bilik suara e-voting. Satu token hanya berlaku untuk 1 (satu) kali penggunaan.' }}</em>
-                    </p>
-                </div>
-
-                <div class="invitation-footer">
-                    <div>
-                        <span>Dicetak otomatis oleh Sistem PILKETOS Official</span>
-                    </div>
-                    <div class="signature-box">
-                        <span>{{ $config['undangan_penandatangan'] ?? 'Ketua Panitia Pemilihan' }}</span>
-                        <div class="line"></div>
-                        <span style="font-size: 9px; text-transform: uppercase;">{{ $config['nama_sekolah'] ?? 'Panitia Pilketos' }}</span>
-                    </div>
-                </div>
+                    @endif
+                @endforeach
             </div>
         @empty
             <div style="text-align: center; padding: 40px; color: #64748b;">
