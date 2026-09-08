@@ -58,6 +58,15 @@
 
         <div class="pt-5 px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Sistem & Live</div>
 
+        <a href="{{ route('calon-public.index') }}" target="_blank"
+            class="flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all group">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-bullhorn w-5 text-center text-sm text-sky-400"></i>
+                <span>Publikasi Kandidat</span>
+            </div>
+            <span class="text-[10px] bg-sky-500/20 text-sky-300 group-hover:bg-sky-500 group-hover:text-white px-2 py-0.5 rounded font-mono font-bold">Publik</span>
+        </a>
+
         <a href="{{ route('live-count') }}" target="_blank"
             class="flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all group">
             <div class="flex items-center gap-3">

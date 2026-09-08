@@ -22,6 +22,11 @@
 @endphp
 <x-app-layout :page_title="$page_title" :page_description="$page_description">
     <x-slot name="actions">
+        <a href="{{ route('calon-public.index') }}" target="_blank"
+           class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-900 border border-white/10 text-slate-200 hover:text-white hover:bg-slate-800 rounded-2xl text-xs font-bold transition-all shadow-md">
+            <i class="fas fa-bullhorn text-sky-400"></i>
+            <span>Lihat Publikasi</span>
+        </a>
         <div class="flex items-center p-1 bg-slate-900 border border-white/10 rounded-2xl">
             <a href="{{ route('calon.index', ['tipe' => 'osis']) }}"
                class="px-4 py-2 rounded-xl text-xs font-heading font-extrabold transition-all {{ $tipe === 'osis' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white' }}">

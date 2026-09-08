@@ -74,7 +74,9 @@
                     <a href="{{ route('voting.index') }}" class="hover:text-indigo-400 transition-colors font-medium">
                         &larr; Bilik Suara
                     </a>
-                    <span>&copy; {{ date('Y') }} PILKETOS</span>
+                    <a href="{{ route('calon-public.index') }}" class="hover:text-sky-400 transition-colors font-medium">
+                        <i class="fas fa-bullhorn text-[10px] mr-1"></i> Publikasi Calon &rarr;
+                    </a>
                 </div>
             </div>
         </div>
