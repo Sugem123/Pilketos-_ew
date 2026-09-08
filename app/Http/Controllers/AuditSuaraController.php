@@ -208,9 +208,8 @@ class AuditSuaraController extends Controller
         $sessionId = strtoupper(substr(str_shuffle('ABCDEFGHJKLMNPQRSTUVWXYZ23456789'), 0, 8));
         \Illuminate\Support\Facades\Cache::put("audit_pair_{$sessionId}", [
             'created_at' => now()->timestamp,
-            'connected' => false,
-            'last_ping' => now()->timestamp,
-        ], now()->addHours(3));
+            'devices' => [], // list device [id => ['name' => ..., 'status' => 'pending|approved|rejected', 'last_ping' => ...]]
+        ], now()->addHours(4));
 
         $url = route('audit-suara.remote-view', ['session' => $sessionId]);
 
@@ -233,56 +232,189 @@ class AuditSuaraController extends Controller
             return view('audit-suara.remote-expired');
         }
 
-        // Tandai HP sudah terhubung
-        $cacheData['connected'] = true;
-        $cacheData['last_ping'] = now()->timestamp;
-        \Illuminate\Support\Facades\Cache::put("audit_pair_{$session}", $cacheData, now()->addHours(3));
-
         $config = $this->getConfig();
 
         return view('audit-suara.remote', compact('session', 'config'));
     }
 
     /**
-     * HP mengirimkan token yang di-scan ke Laptop
+     * Pendaftaran Device HP (Meminta Izin / Approval Admin Laptop)
+     */
+    public function remoteJoin(Request $request): JsonResponse
+    {
+        $request->validate([
+            'session_id' => 'required|string',
+            'device_name' => 'required|string|max:40',
+        ]);
+
+        $sessionId = strtoupper(trim($request->session_id));
+        $pair = \Illuminate\Support\Facades\Cache::get("audit_pair_{$sessionId}");
+
+        if (! $pair) {
+            return response()->json(['success' => false, 'message' => 'Sesi pairing kadaluarsa.'], 404);
+        }
+
+        $deviceId = 'dev_'.substr(md5(uniqid((string) mt_rand(), true)), 0, 10);
+        $name = trim($request->device_name);
+
+        $pair['devices'][$deviceId] = [
+            'id' => $deviceId,
+            'name' => $name,
+            'status' => 'pending', // Menunggu approval admin laptop
+            'joined_at' => now()->format('H:i:s'),
+            'last_ping' => now()->timestamp,
+        ];
+
+        \Illuminate\Support\Facades\Cache::put("audit_pair_{$sessionId}", $pair, now()->addHours(4));
+
+        return response()->json([
+            'success' => true,
+            'device_id' => $deviceId,
+            'device_name' => $name,
+            'status' => 'pending',
+        ]);
+    }
+
+    /**
+     * Cek status approval device oleh HP
+     */
+    public function remoteDeviceStatus(string $session, string $deviceId): JsonResponse
+    {
+        $sessionId = strtoupper(trim($session));
+        $pair = \Illuminate\Support\Facades\Cache::get("audit_pair_{$sessionId}");
+
+        if (! $pair || ! isset($pair['devices'][$deviceId])) {
+            return response()->json(['success' => false, 'status' => 'disconnected']);
+        }
+
+        $device = $pair['devices'][$deviceId];
+        $pair['devices'][$deviceId]['last_ping'] = now()->timestamp;
+        \Illuminate\Support\Facades\Cache::put("audit_pair_{$sessionId}", $pair, now()->addHours(4));
+
+        return response()->json([
+            'success' => true,
+            'status' => $device['status'], // 'pending', 'approved', 'rejected'
+            'device_name' => $device['name'],
+        ]);
+    }
+
+    /**
+     * Admin Laptop menyetujui (approve), menolak (reject), atau memutus (kick) HP
+     */
+    public function deviceAction(Request $request): JsonResponse
+    {
+        $request->validate([
+            'session_id' => 'required|string',
+            'device_id' => 'required|string',
+            'action' => 'required|in:approve,reject,kick',
+        ]);
+
+        $sessionId = strtoupper(trim($request->session_id));
+        $deviceId = trim($request->device_id);
+        $action = $request->action;
+
+        $pair = \Illuminate\Support\Facades\Cache::get("audit_pair_{$sessionId}");
+
+        if (! $pair || ! isset($pair['devices'][$deviceId])) {
+            return response()->json(['success' => false, 'message' => 'Device tidak ditemukan.'], 404);
+        }
+
+        if ($action === 'approve') {
+            $pair['devices'][$deviceId]['status'] = 'approved';
+        } elseif ($action === 'reject') {
+            $pair['devices'][$deviceId]['status'] = 'rejected';
+        } elseif ($action === 'kick') {
+            unset($pair['devices'][$deviceId]);
+        }
+
+        \Illuminate\Support\Facades\Cache::put("audit_pair_{$sessionId}", $pair, now()->addHours(4));
+
+        return response()->json([
+            'success' => true,
+            'action' => $action,
+            'device_id' => $deviceId,
+        ]);
+    }
+
+    /**
+     * HP mengirimkan token yang di-scan ke Laptop (hanya jika approved & token valid)
      */
     public function remotePush(Request $request): JsonResponse
     {
         $request->validate([
             'session_id' => 'required|string',
+            'device_id' => 'required|string',
             'token' => 'required|string',
         ]);
 
         $sessionId = strtoupper(trim($request->session_id));
-        $token = strtoupper(trim($request->token));
+        $deviceId = trim($request->device_id);
+        $rawToken = trim($request->token);
 
         $pair = \Illuminate\Support\Facades\Cache::get("audit_pair_{$sessionId}");
         if (! $pair) {
-            return response()->json(['success' => false, 'message' => 'Sesi pairing kadaluarsa atau tidak valid.'], 404);
+            return response()->json(['success' => false, 'message' => 'Sesi pairing kadaluarsa.'], 404);
         }
 
-        // Update ping dan taruh di antrian laptop
-        $pair['connected'] = true;
-        $pair['last_ping'] = now()->timestamp;
-        \Illuminate\Support\Facades\Cache::put("audit_pair_{$sessionId}", $pair, now()->addHours(3));
+        // 1. Validasi Otorisasi Device (Harus Approved)
+        if (! isset($pair['devices'][$deviceId]) || $pair['devices'][$deviceId]['status'] !== 'approved') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Perangkat ini belum disetujui atau koneksi telah diputus oleh admin laptop.',
+            ], 403);
+        }
 
-        // Tambahkan ke antrian token
+        $deviceName = $pair['devices'][$deviceId]['name'] ?? 'HP Panitia';
+
+        // 2. Validasi Keamanan Isi QR Code: HANYA BOLEH FORMAT TOKEN PILKETOS (6 karakter alfanumerik)
+        $cleanToken = strtoupper(trim($rawToken));
+        if (! preg_match('/^[A-Z0-9]{6}$/', $cleanToken)) {
+            return response()->json([
+                'success' => false,
+                'invalid_qr' => true,
+                'message' => 'QR Code Ditolak: Bukan QR token kartu pemilih Pilketos resmi (hanya 6 karakter alfanumerik).',
+            ], 422);
+        }
+
+        // Perbarui ping device
+        $pair['devices'][$deviceId]['last_ping'] = now()->timestamp;
+        \Illuminate\Support\Facades\Cache::put("audit_pair_{$sessionId}", $pair, now()->addHours(4));
+
+        // Masukkan ke antrian polling laptop
         $queue = \Illuminate\Support\Facades\Cache::get("audit_queue_{$sessionId}", []);
         $queue[] = [
-            'token' => $token,
+            'token' => $cleanToken,
+            'device_name' => $deviceName,
             'time' => now()->format('H:i:s'),
         ];
         \Illuminate\Support\Facades\Cache::put("audit_queue_{$sessionId}", $queue, now()->addMinutes(10));
 
         return response()->json([
             'success' => true,
-            'message' => "Token {$token} berhasil dikirim ke laptop!",
-            'token' => $token,
+            'message' => "Token {$cleanToken} berhasil dikirim ke laptop!",
+            'token' => $cleanToken,
         ]);
     }
 
     /**
-     * Laptop mem-poll token yang dikirim oleh HP
+     * Putus koneksi dari HP
+     */
+    public function remoteDisconnect(Request $request): JsonResponse
+    {
+        $sessionId = strtoupper(trim((string) $request->session_id));
+        $deviceId = trim((string) $request->device_id);
+
+        $pair = \Illuminate\Support\Facades\Cache::get("audit_pair_{$sessionId}");
+        if ($pair && isset($pair['devices'][$deviceId])) {
+            unset($pair['devices'][$deviceId]);
+            \Illuminate\Support\Facades\Cache::put("audit_pair_{$sessionId}", $pair, now()->addHours(4));
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Laptop mem-poll token yang dikirim oleh HP & memantau status device
      */
     public function remotePoll(string $session): JsonResponse
     {
@@ -296,11 +428,23 @@ class AuditSuaraController extends Controller
         $queue = \Illuminate\Support\Facades\Cache::get("audit_queue_{$sessionId}", []);
         \Illuminate\Support\Facades\Cache::forget("audit_queue_{$sessionId}");
 
-        $connected = (now()->timestamp - ($pair['last_ping'] ?? 0)) < 30 && ($pair['connected'] ?? false);
+        // Filter devices: hanya tampilkan device yang aktif dalam 2 menit terakhir
+        $devices = [];
+        $now = now()->timestamp;
+        foreach ($pair['devices'] as $dId => $d) {
+            $isOnline = ($now - ($d['last_ping'] ?? 0)) < 40;
+            $devices[] = [
+                'id' => $d['id'],
+                'name' => $d['name'],
+                'status' => $d['status'],
+                'is_online' => $isOnline,
+                'joined_at' => $d['joined_at'] ?? '-',
+            ];
+        }
 
         return response()->json([
             'success' => true,
-            'connected' => $connected,
+            'devices' => $devices,
             'tokens' => $queue,
         ]);
     }

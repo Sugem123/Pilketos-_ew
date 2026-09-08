@@ -36,9 +36,12 @@ Route::get('/live-count/data', [LiveCountController::class, 'data'])->name('live
 Route::get('/calon', [CalonPublicController::class, 'index'])->name('calon-public.index');
 Route::get('/calon/{calon}', [CalonPublicController::class, 'show'])->name('calon-public.show');
 
-// Remote Scanner Pairing untuk Audit Suara (Akses HP Panitia tanpa perlu login ulang)
+// Remote Scanner Pairing untuk Audit Suara (Akses HP Panitia Multi-Device)
 Route::get('/audit-suara/remote/{session}', [AuditSuaraController::class, 'remoteView'])->name('audit-suara.remote-view');
+Route::post('/audit-suara/remote/join', [AuditSuaraController::class, 'remoteJoin'])->name('audit-suara.remote-join');
+Route::get('/audit-suara/remote/status/{session}/{device_id}', [AuditSuaraController::class, 'remoteDeviceStatus'])->name('audit-suara.remote-status');
 Route::post('/audit-suara/remote/push', [AuditSuaraController::class, 'remotePush'])->name('audit-suara.remote-push');
+Route::post('/audit-suara/remote/disconnect', [AuditSuaraController::class, 'remoteDisconnect'])->name('audit-suara.remote-disconnect');
 
 Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -70,6 +73,7 @@ Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
         Route::get('/audit-suara', [AuditSuaraController::class, 'index'])->name('audit-suara.index');
         Route::get('/audit-suara/remote-session', [AuditSuaraController::class, 'createRemoteSession'])->name('audit-suara.create-remote');
         Route::get('/audit-suara/remote-poll/{session}', [AuditSuaraController::class, 'remotePoll'])->name('audit-suara.remote-poll');
+        Route::post('/audit-suara/device-action', [AuditSuaraController::class, 'deviceAction'])->name('audit-suara.device-action');
         Route::patch('/audit-suara/{vote}', [AuditSuaraController::class, 'verifySingle'])->name('audit-suara.verify-single');
         Route::post('/audit-suara/quick-verify', [AuditSuaraController::class, 'quickVerifyByToken'])->name('audit-suara.quick-verify');
         Route::post('/audit-suara/hanguskan-sisa', [AuditSuaraController::class, 'hanguskanSisa'])->name('audit-suara.hanguskan-sisa');

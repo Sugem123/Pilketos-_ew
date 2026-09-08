@@ -175,20 +175,36 @@
                 </div>
 
                 {{-- Status Bar Wireless HP --}}
-                <div x-show="pairingSession" x-cloak class="mb-5 p-3.5 rounded-2xl bg-teal-950/40 border border-teal-500/30 flex items-center justify-between text-xs font-mono">
-                    <div class="flex items-center gap-2.5">
+                <div x-show="pairingSession" x-cloak class="mb-5 p-3.5 rounded-2xl bg-teal-950/40 border border-teal-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+                    <div class="flex items-center gap-2.5 flex-wrap">
                         <i class="fas fa-mobile-screen-button text-teal-400 text-sm"></i>
-                        <span class="text-slate-300">Remote HP:</span>
+                        <span class="text-slate-300">Scanner HP:</span>
                         <code class="px-2 py-0.5 rounded bg-slate-900 text-amber-300 font-bold tracking-widest text-[11px]" x-text="pairingSession"></code>
-                        <span class="flex items-center gap-1.5 text-[10px] font-bold"
-                              :class="remoteConnected ? 'text-emerald-400' : 'text-amber-400'">
-                            <span class="w-2 h-2 rounded-full" :class="remoteConnected ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'"></span>
-                            <span x-text="remoteConnected ? 'HP Terhubung (Siap Scan)' : 'Menunggu HP terhubung...'"></span>
-                        </span>
+
+                        {{-- Indikator Perangkat --}}
+                        <template x-if="pendingDevicesCount > 0">
+                            <span @click="openPairingModal()" class="cursor-pointer px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold animate-pulse">
+                                <i class="fas fa-bell mr-1"></i> <span x-text="pendingDevicesCount"></span> HP Menunggu Izin!
+                            </span>
+                        </template>
+
+                        <template x-if="approvedDevicesCount > 0">
+                            <span class="flex items-center gap-1.5 text-emerald-400 font-bold">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                <span x-text="approvedDevicesSummary"></span>
+                            </span>
+                        </template>
+
+                        <template x-if="approvedDevicesCount === 0 && pendingDevicesCount === 0">
+                            <span class="text-slate-500 italic">Belum ada HP terhubung</span>
+                        </template>
                     </div>
-                    <button type="button" @click="openPairingModal()" class="text-[10px] text-teal-400 hover:text-white underline font-bold">
-                        Buka QR Pairing
-                    </button>
+
+                    <div class="flex items-center gap-2 self-end sm:self-auto">
+                        <button type="button" @click="openPairingModal()" class="px-3 py-1.5 rounded-xl bg-teal-600/30 hover:bg-teal-600 text-teal-300 hover:text-white transition-all font-bold text-[11px] flex items-center gap-1">
+                            <i class="fas fa-sliders"></i> Kelola HP (<span x-text="devices.length"></span>)
+                        </button>
+                    </div>
                 </div>
 
                 {{-- CAMERA SCANNER PANEL --}}
@@ -299,14 +315,14 @@
                 </div>
             </div>
 
-            {{-- ====== MODAL PAIRING HP SCANNER ====== --}}
+            {{-- ====== MODAL PAIRING HP SCANNER & MANAJEMEN MULTI-HP ====== --}}
             <div x-show="showPairingModal" x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition ease-in duration-200"
                  x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
                  x-cloak>
-                <div @click.stop class="w-full max-w-md bg-slate-900 border border-teal-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative text-center">
+                <div @click.stop class="w-full max-w-lg bg-slate-900 border border-teal-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative text-center my-8">
                     <button type="button" @click="closePairingModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/60">
                         <i class="fas fa-times text-sm"></i>
                     </button>
@@ -315,37 +331,84 @@
                         <i class="fas fa-mobile-screen-button"></i>
                     </div>
 
-                    <h3 class="font-heading font-black text-xl text-white mb-1">Sambungkan HP Scanner</h3>
+                    <h3 class="font-heading font-black text-xl text-white mb-1">Manajemen HP Scanner (Multi-HP)</h3>
                     <p class="text-xs text-slate-400 max-w-xs mx-auto mb-5 leading-relaxed">
-                        Buka kamera di smartphone panitia, lalu scan QR Code di bawah ini untuk membuka halaman scanner remote.
+                        Scan QR Code di bawah dengan smartphone panitia. Setiap HP yang terhubung harus disetujui (approve) oleh Admin di sini.
                     </p>
 
                     {{-- Canvas QR Code Pairing --}}
-                    <div class="p-4 bg-white rounded-2xl inline-block shadow-xl mb-4 border-2 border-teal-500/30">
-                        <div id="pairing-qr-canvas" class="w-[180px] h-[180px] flex items-center justify-center">
+                    <div class="p-3 bg-white rounded-2xl inline-block shadow-xl mb-4 border-2 border-teal-500/30">
+                        <div id="pairing-qr-canvas" class="w-[160px] h-[160px] flex items-center justify-center">
                             <span class="text-xs text-slate-400 font-mono">Membuat QR...</span>
                         </div>
                     </div>
 
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-center gap-2 text-xs font-mono">
-                            <span class="text-slate-400">Kode Sesi:</span>
-                            <code class="px-2.5 py-1 bg-slate-950 text-amber-300 font-bold rounded-lg border border-slate-800" x-text="pairingSession"></code>
-                        </div>
-
-                        {{-- Connection status indicator --}}
-                        <div class="p-3 rounded-2xl text-xs font-mono font-bold flex items-center justify-center gap-2"
-                             :class="remoteConnected ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'">
-                            <span class="w-2.5 h-2.5 rounded-full" :class="remoteConnected ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'"></span>
-                            <span x-text="remoteConnected ? 'HP TERHUBUNG! Silakan scan kartu suara.' : 'Menunggu HP melakukan scan QR ini...'"></span>
-                        </div>
-
-                        <div class="pt-2 flex gap-2">
-                            <button type="button" @click="copyPairingUrl()" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-white/10 flex items-center justify-center gap-1.5">
-                                <i class="fas fa-copy text-[11px]"></i> Salin Link
+                    <div class="space-y-4 text-left">
+                        <div class="flex items-center justify-between px-3 py-2 bg-slate-950/60 rounded-xl border border-white/5 text-xs font-mono">
+                            <span class="text-slate-400">Kode Sesi Pairing:</span>
+                            <code class="px-2 py-0.5 bg-slate-900 text-amber-300 font-bold rounded" x-text="pairingSession"></code>
+                            <button type="button" @click="copyPairingUrl()" class="text-teal-400 hover:text-white text-[11px] font-bold">
+                                <i class="fas fa-copy"></i> Salin Link
                             </button>
-                            <button type="button" @click="closePairingModal()" class="flex-1 py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow-md">
-                                Tutup &amp; Mulai
+                        </div>
+
+                        {{-- Section Permintaan Izin Masuk (Pending Approval) --}}
+                        <div x-show="pendingDevices.length > 0" class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
+                            <div class="flex items-center justify-between text-xs font-mono font-bold text-amber-300">
+                                <span><i class="fas fa-bell mr-1 animate-bounce"></i> Permintaan Koneksi Masuk:</span>
+                                <span x-text="pendingDevices.length + ' HP'"></span>
+                            </div>
+                            <template x-for="dev in pendingDevices" :key="dev.id">
+                                <div class="p-3 bg-slate-950/90 rounded-xl border border-amber-500/20 flex items-center justify-between gap-3">
+                                    <div>
+                                        <h5 class="text-xs font-bold text-white" x-text="dev.name"></h5>
+                                        <span class="text-[10px] text-slate-400 font-mono" x-text="'Masuk pukul ' + dev.joined_at"></span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <button type="button" @click="handleDevice(dev.id, 'approve')"
+                                                class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1">
+                                            <i class="fas fa-check"></i> Setujui
+                                        </button>
+                                        <button type="button" @click="handleDevice(dev.id, 'reject')"
+                                                class="px-3 py-1.5 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white font-bold text-xs flex items-center gap-1">
+                                            <i class="fas fa-times"></i> Tolak
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- Section Daftar HP Aktif / Terkoneksi (Approved) --}}
+                        <div class="p-4 rounded-2xl bg-slate-950/80 border border-white/5 space-y-2">
+                            <div class="flex items-center justify-between text-xs font-mono font-bold text-slate-400">
+                                <span><i class="fas fa-network-wired mr-1 text-teal-400"></i> HP Yang Sedang Terhubung:</span>
+                                <span class="text-emerald-400" x-text="approvedDevices.length + ' Aktif'"></span>
+                            </div>
+
+                            <template x-for="dev in approvedDevices" :key="dev.id">
+                                <div class="p-3 bg-slate-900/90 rounded-xl border border-emerald-500/30 flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                                        <div>
+                                            <h5 class="text-xs font-bold text-white" x-text="dev.name"></h5>
+                                            <span class="text-[10px] text-emerald-400 font-mono">Status: Terkoneksi &bull; Aktif</span>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click="handleDevice(dev.id, 'kick')"
+                                            class="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white font-bold text-[11px] transition-all">
+                                        <i class="fas fa-power-off mr-1"></i> Putus
+                                    </button>
+                                </div>
+                            </template>
+
+                            <div x-show="approvedDevices.length === 0" class="text-center py-4 text-xs text-slate-500 font-mono">
+                                Belum ada HP yang disetujui. Scan QR di atas untuk menghubungkan.
+                            </div>
+                        </div>
+
+                        <div class="pt-2 text-center">
+                            <button type="button" @click="closePairingModal()" class="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow-md">
+                                Selesai &amp; Mulai Hitung Suara
                             </button>
                         </div>
                     </div>
@@ -398,6 +461,7 @@
                     <p class="text-sm text-slate-300 mb-1" x-text="overlayMessage"></p>
                     <p class="text-xs text-slate-500" x-show="overlayVoterName" x-text="'Pemilih: ' + overlayVoterName"></p>
                     <p class="text-xs text-slate-500 mt-0.5" x-show="overlayCalon" x-text="'Memilih: ' + overlayCalon"></p>
+                    <p class="text-[11px] text-teal-400 font-mono mt-1 font-bold" x-show="overlayDeviceName" x-text="'Discan via: ' + overlayDeviceName"></p>
 
                     {{-- Auto-close hint --}}
                     <p class="text-[10px] text-slate-600 mt-6 font-mono">Klik di mana saja atau tekan Enter untuk lanjut</p>
@@ -571,9 +635,28 @@
                 showPairingModal: false,
                 pairingSession: '',
                 pairingUrl: '',
-                remoteConnected: false,
+                devices: [],
                 _pollInterval: null,
                 _qrRendered: false,
+
+                get pendingDevices() {
+                    return this.devices.filter(d => d.status === 'pending');
+                },
+                get pendingDevicesCount() {
+                    return this.pendingDevices.length;
+                },
+                get approvedDevices() {
+                    return this.devices.filter(d => d.status === 'approved');
+                },
+                get approvedDevicesCount() {
+                    return this.approvedDevices.length;
+                },
+                get approvedDevicesSummary() {
+                    const count = this.approvedDevicesCount;
+                    if (count === 0) return 'Belum ada HP terhubung';
+                    const names = this.approvedDevices.map(d => d.name).join(', ');
+                    return `HP Terkoneksi (${count} HP): ${names}`;
+                },
 
                 // Camera Scanner State
                 cameraRunning: false,
@@ -590,6 +673,7 @@
                 overlayMessage: '',
                 overlayVoterName: '',
                 overlayCalon: '',
+                overlayDeviceName: '',
                 _overlayTimer: null,
 
                 init() {
@@ -655,6 +739,37 @@
                     this.showPairingModal = false;
                 },
 
+                async handleDevice(deviceId, action) {
+                    try {
+                        const res = await fetch('{{ route("audit-suara.device-action") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                session_id: this.pairingSession,
+                                device_id: deviceId,
+                                action: action
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            if (action === 'kick') {
+                                this.devices = this.devices.filter(d => d.id !== deviceId);
+                            } else if (action === 'approve') {
+                                const d = this.devices.find(dev => dev.id === deviceId);
+                                if (d) d.status = 'approved';
+                            } else if (action === 'reject') {
+                                const d = this.devices.find(dev => dev.id === deviceId);
+                                if (d) d.status = 'rejected';
+                            }
+                        }
+                    } catch (e) {
+                        alert('Gagal memproses aksi perangkat.');
+                    }
+                },
+
                 copyPairingUrl() {
                     if (navigator.clipboard && this.pairingUrl) {
                         navigator.clipboard.writeText(this.pairingUrl);
@@ -679,17 +794,18 @@
                                 return;
                             }
 
-                            this.remoteConnected = !!data.connected;
+                            this.devices = data.devices || [];
 
                             // Handle token yang masuk dari HP
                             if (data.tokens && data.tokens.length > 0) {
                                 for (const item of data.tokens) {
                                     const token = item.token.trim().toUpperCase();
+                                    const devName = item.device_name || '';
                                     this.tokenValue = token;
 
                                     if (this.autoValidate) {
                                         // Mode Validasi Otomatis: langsung eksekusi validasi
-                                        await this.validateToken();
+                                        await this.validateToken(devName);
                                     } else {
                                         // Mode Manual: cukup masukkan token ke textbox dan mainkan suara info
                                         this.playSound('sudah');
@@ -801,7 +917,7 @@
                     }
                 },
 
-                async validateToken() {
+                async validateToken(fromDevice = '') {
                     const token = this.tokenValue.trim().toUpperCase();
                     if (!token || this.processing) return;
 
@@ -823,7 +939,8 @@
                         this.history.unshift({
                             token: token,
                             verdict: data.verdict || 'tidak_sah',
-                            name: data.voter_name || ''
+                            name: data.voter_name || '',
+                            device: fromDevice
                         });
 
                         // Show overlay
@@ -832,7 +949,8 @@
                             token,
                             data.message,
                             data.voter_name || '',
-                            data.calon || ''
+                            data.calon || '',
+                            fromDevice
                         );
 
                         // Update counts
@@ -847,18 +965,19 @@
                         this.tokenValue = '';
 
                     } catch (err) {
-                        this.showVerdict('tidak_sah', token, 'Kesalahan komunikasi dengan server.', '', '');
+                        this.showVerdict('tidak_sah', token, 'Kesalahan komunikasi dengan server.', '', '', fromDevice);
                     } finally {
                         this.processing = false;
                     }
                 },
 
-                showVerdict(verdict, token, message, voterName, calon) {
+                showVerdict(verdict, token, message, voterName, calon, deviceName = '') {
                     this.overlayVerdict = verdict;
                     this.overlayToken = token;
                     this.overlayMessage = message;
                     this.overlayVoterName = voterName;
                     this.overlayCalon = calon;
+                    this.overlayDeviceName = deviceName;
                     this.showOverlay = true;
 
                     // Play sound effect

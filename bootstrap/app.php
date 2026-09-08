@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            'audit-suara/remote/push',
+            'audit-suara/remote/*',
         ]);
 
         // Trust all proxies (Cloudflare Zero Trust Tunnel / Docker reverse proxy)
