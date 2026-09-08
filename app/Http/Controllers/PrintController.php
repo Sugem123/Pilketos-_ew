@@ -12,12 +12,24 @@ class PrintController extends Controller
     {
         $query = HakSuara::with('kelas');
 
+        if ($request->filled('search')) {
+            $query->where('nisn', 'like', '%' . $request->search . '%');
+        }
+
         if ($request->filled('tipe')) {
             $query->where('tipe', $request->tipe);
         }
 
         if ($request->filled('id_kelas')) {
             $query->where('id_kelas', $request->id_kelas);
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'sudah') {
+                $query->has('votes');
+            } elseif ($request->status === 'belum') {
+                $query->doesntHave('votes');
+            }
         }
 
         if ($request->filled('id')) {
@@ -47,12 +59,24 @@ class PrintController extends Controller
     {
         $query = HakSuara::with('kelas');
 
+        if ($request->filled('search')) {
+            $query->where('nisn', 'like', '%' . $request->search . '%');
+        }
+
         if ($request->filled('tipe')) {
             $query->where('tipe', $request->tipe);
         }
 
         if ($request->filled('id_kelas')) {
             $query->where('id_kelas', $request->id_kelas);
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'sudah') {
+                $query->has('votes');
+            } elseif ($request->status === 'belum') {
+                $query->doesntHave('votes');
+            }
         }
 
         if ($request->filled('id')) {

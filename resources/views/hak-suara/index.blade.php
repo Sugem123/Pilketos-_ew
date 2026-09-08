@@ -4,16 +4,16 @@
 @endphp
 <x-app-layout :page_title="$page_title" :page_description="$page_description">
     <x-slot name="actions">
-        <a href="{{ route('cetak.undangan') }}" target="_blank"
+        <a href="{{ route('cetak.undangan', request()->query()) }}" target="_blank"
            class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-900 border border-white/10 text-slate-200 hover:text-white hover:bg-slate-800 rounded-2xl text-xs font-bold transition-all shadow-md">
             <i class="fas fa-envelope-open-text text-indigo-400"></i>
-            <span>Cetak Undangan</span>
+            <span>Cetak Undangan (Filter)</span>
         </a>
 
-        <a href="{{ route('cetak.kartu') }}" target="_blank"
+        <a href="{{ route('cetak.kartu', request()->query()) }}" target="_blank"
            class="inline-flex items-center gap-1.5 px-4 py-2.5 luxury-btn-primary text-white rounded-2xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/30">
             <i class="fas fa-address-card"></i>
-            <span>Cetak Kartu Pemilih</span>
+            <span>Cetak Kartu (Filter)</span>
         </a>
 
         <x-admin-button variant="success" icon="fas fa-file-excel" onclick="openImportModal()">
