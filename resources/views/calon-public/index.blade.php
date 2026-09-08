@@ -26,9 +26,9 @@
 
     {{-- Header --}}
     <header class="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 z-20">
-        <div class="glass-panel-dark rounded-3xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl border border-white/10">
+        <div class="glass-panel-dark rounded-3xl px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl border border-white/10">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-400 flex items-center justify-center p-2.5 shadow-xl shadow-indigo-500/30 ring-2 ring-white/20">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-400 flex items-center justify-center p-2.5 shadow-xl shadow-indigo-500/30 ring-2 ring-white/20 flex-shrink-0">
                     <img src="{{ !empty($config['url_logo']) ? asset($config['url_logo']) : asset('img/logo.png') }}" alt="Logo" class="w-full h-full object-contain">
                 </div>
                 <div>
@@ -40,12 +40,35 @@
                             <i class="fa-solid fa-bullhorn text-[10px]"></i> PUBLIKASI KANDIDAT
                         </span>
                     </div>
-                    <p class="text-xs text-slate-400 font-medium mt-0.5">{{ $config['nama_kegiatan'] ?? 'Pemilihan Ketua OSIS' }} &bull; Periode {{ $config['tahun_ajaran'] ?? date('Y') }}</p>
+                    <p class="text-xs text-slate-400 font-medium mt-0.5">{{ $config['nama_kegiatan'] ?? 'Pemilihan Ketua OSIS & Ketua MPK' }} &bull; Periode {{ $config['tahun_ajaran'] ?? date('Y') }}</p>
                 </div>
             </div>
-            <div class="text-center px-5 py-2.5 bg-slate-900/80 border border-slate-800 rounded-2xl">
-                <span class="text-[10px] uppercase tracking-wider text-slate-400 font-mono block">Calon Bertanding</span>
-                <span class="font-heading font-black text-2xl text-indigo-400 font-mono">{{ $calonOsis->count() + $calonMpk->count() }}</span>
+
+            <div class="flex items-center gap-3 flex-wrap justify-center sm:justify-end">
+                <div class="text-center px-4 py-2 bg-slate-900/80 border border-slate-800 rounded-2xl hidden sm:block">
+                    <span class="text-[9px] uppercase tracking-wider text-slate-400 font-mono block">Kandidat</span>
+                    <span class="font-heading font-black text-lg text-indigo-400 font-mono">{{ $calonOsis->count() + $calonMpk->count() }}</span>
+                </div>
+
+                <a href="{{ route('live-count') }}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all shadow-md">
+                    <i class="fa-solid fa-chart-pie text-rose-400"></i>
+                    <span>Live Count</span>
+                </a>
+
+                @auth
+                    <a href="{{ route('dashboard') }}"
+                       class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/30">
+                        <i class="fa-solid fa-gauge"></i>
+                        <span>Panel Admin</span>
+                    </a>
+                @else
+                    <a href="{{ route('login') }}"
+                       class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/30">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                        <span>Masuk Sesi / Login</span>
+                    </a>
+                @endauth
             </div>
         </div>
     </header>
@@ -172,11 +195,20 @@
         @endif
     </main>
 
-    <footer class="w-full border-t border-white/5 py-4 z-10">
-        <div class="max-w-[1400px] mx-auto px-4 text-center">
+    <footer class="w-full border-t border-white/5 py-6 z-10 bg-slate-950/60 mt-12">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
             <p class="text-xs text-slate-500">
-                &copy; {{ date('Y') }} {{ $config['nama_sekolah'] ?? 'PILKETOS' }} &bull; Halaman Publikasi Resmi Kandidat
+                &copy; {{ date('Y') }} {{ $config['nama_sekolah'] ?? 'PILKETOS' }} &bull; Sistem E-Voting Pemilihan Ketua OSIS &amp; Ketua MPK
             </p>
+            <div class="flex items-center gap-4 text-xs text-slate-400">
+                <a href="{{ route('live-count') }}" class="hover:text-white transition-colors flex items-center gap-1.5">
+                    <i class="fa-solid fa-chart-pie text-rose-400"></i> Live Count
+                </a>
+                <span class="text-slate-700">&bull;</span>
+                <a href="{{ route('login') }}" class="hover:text-indigo-400 transition-colors flex items-center gap-1.5">
+                    <i class="fa-solid fa-lock text-indigo-400"></i> Login Petugas / Admin
+                </a>
+            </div>
         </div>
     </footer>
 </body>

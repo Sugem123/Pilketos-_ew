@@ -14,7 +14,7 @@ use App\Http\Controllers\TokenController;
 use App\Http\Controllers\VotingController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => redirect()->route('voting.index'));
+Route::get('/', [CalonPublicController::class, 'index'])->name('landing');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
