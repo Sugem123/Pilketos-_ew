@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-slate-950">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Publikasi Kandidat | {{ $config['nama_sekolah'] ?? 'PILKETOS' }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/35d8865ade.js" crossorigin="anonymous"></script>
+    <link rel="icon" type="image/x-icon" href="{{ asset('img/logo.png') }}" />
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-heading { font-family: 'Outfit', sans-serif; }
+        .ambient-grid {
+            background-size: 50px 50px;
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        .candidate-pub-card:hover .candidate-photo { transform: scale(1.06); }
+    </style>
+</head>
+<body class="ambient-mesh-voting text-slate-100 min-h-screen antialiased overflow-x-hidden relative ambient-grid">
+
+    {{-- Header --}}
+    <header class="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 z-20">
+        <div class="glass-panel-dark rounded-3xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl border border-white/10">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-400 flex items-center justify-center p-2.5 shadow-xl shadow-indigo-500/30 ring-2 ring-white/20">
+                    <img src="{{ !empty($config['url_logo']) ? asset($config['url_logo']) : asset('img/logo.png') }}" alt="Logo" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <h1 class="font-heading font-black text-xl sm:text-2xl text-white tracking-tight uppercase">
+                            {{ $config['nama_sekolah'] ?? 'PILKETOS' }}
+                        </h1>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40 tracking-wider">
+                            <i class="fa-solid fa-bullhorn text-[10px]"></i> PUBLIKASI KANDIDAT
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-medium mt-0.5">{{ $config['nama_kegiatan'] ?? 'Pemilihan Ketua OSIS' }} &bull; Periode {{ $config['tahun_ajaran'] ?? date('Y') }}</p>
+                </div>
+            </div>
+            <div class="text-center px-5 py-2.5 bg-slate-900/80 border border-slate-800 rounded-2xl">
+                <span class="text-[10px] uppercase tracking-wider text-slate-400 font-mono block">Calon Bertanding</span>
+                <span class="font-heading font-black text-2xl text-indigo-400 font-mono">{{ $calonOsis->count() + $calonMpk->count() }}</span>
+            </div>
+        </div>
+    </header>
+
+    {{-- Candidate Grid --}}
+    <main class="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 z-10">
+        <div class="text-center max-w-2xl mx-auto mb-10">
+            <h2 class="text-3xl lg:text-4xl font-extrabold font-heading text-white tracking-tight leading-tight mb-3">
+                Kenali Calon Pemimpinmu
+            </h2>
+            <p class="text-sm lg:text-base text-slate-400">
+                Klik pada kartu kandidat untuk melihat visi, misi, dan profil lengkap.
+            </p>
+        </div>
+
+        @if ($calonOsis->isNotEmpty())
+            {{-- Seksi Ketua OSIS --}}
+            <section class="mb-14">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-heading font-extrabold uppercase tracking-widest">
+                        <i class="fa-solid fa-user-tie"></i> Calon Ketua OSIS
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-500">{{ $calonOsis->count() }} kandidat</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+                    @foreach ($calonOsis as $calon)
+                        <a href="{{ route('calon-public.show', $calon) }}"
+                           class="candidate-pub-card group relative bg-slate-900/90 backdrop-blur-2xl rounded-3xl border-2 border-slate-800 hover:border-indigo-500/60 shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col">
+                            <div class="p-6 pb-4 border-b border-slate-800/80 bg-slate-950/40 flex items-center justify-between">
+                                <div>
+                                    <span class="text-[11px] font-bold uppercase tracking-widest text-indigo-400 font-mono">KETUA OSIS 0{{ $calon->nomor }}</span>
+                                    <h2 class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-tight mt-0.5">{{ $calon->nama }}</h2>
+                                    <p class="text-xs text-slate-400 font-mono mt-0.5">Kelas {{ $calon->kelas->name ?? '-' }}</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center font-heading font-black text-indigo-300 text-xl">
+                                    {{ $calon->nomor }}
+                                </div>
+                            </div>
+
+                            <div class="relative h-[20rem] sm:h-[23rem] bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950 flex items-center justify-center overflow-hidden p-3">
+                                <h1 class="absolute bottom-2 left-3 font-heading font-black text-slate-800/25 text-8xl select-none pointer-events-none z-0">
+                                    0{{ $calon->nomor }}
+                                </h1>
+                                @if ($calon->url_foto)
+                                    <img class="candidate-photo w-full h-full object-contain object-center relative z-10 transition-transform duration-500 drop-shadow-2xl"
+                                         src="{{ asset($calon->url_foto) }}" alt="{{ $calon->nama }}" loading="lazy" decoding="async" />
+                                @else
+                                    <div class="w-28 h-28 rounded-full bg-slate-800 flex items-center justify-center text-slate-600 text-5xl relative z-10">
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="p-6 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Visi &amp; Misi</span>
+                                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                    Lihat Profil <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                </span>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
+        @if ($calonMpk->isNotEmpty())
+            {{-- Seksi Ketua MPK --}}
+            <section class="mb-4">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-heading font-extrabold uppercase tracking-widest">
+                        <i class="fa-solid fa-scale-balanced"></i> Calon Ketua MPK
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-500">{{ $calonMpk->count() }} kandidat</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+                    @foreach ($calonMpk as $calon)
+                        <a href="{{ route('calon-public.show', $calon) }}"
+                           class="candidate-pub-card group relative bg-slate-900/90 backdrop-blur-2xl rounded-3xl border-2 border-slate-800 hover:border-emerald-500/60 shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col">
+                            <div class="p-6 pb-4 border-b border-slate-800/80 bg-slate-950/40 flex items-center justify-between">
+                                <div>
+                                    <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-400 font-mono">KETUA MPK 0{{ $calon->nomor }}</span>
+                                    <h2 class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-tight mt-0.5">{{ $calon->nama }}</h2>
+                                    <p class="text-xs text-slate-400 font-mono mt-0.5">Kelas {{ $calon->kelas->name ?? '-' }}</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center font-heading font-black text-emerald-300 text-xl">
+                                    {{ $calon->nomor }}
+                                </div>
+                            </div>
+
+                            <div class="relative h-[20rem] sm:h-[23rem] bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950 flex items-center justify-center overflow-hidden p-3">
+                                <h1 class="absolute bottom-2 left-3 font-heading font-black text-slate-800/25 text-8xl select-none pointer-events-none z-0">
+                                    0{{ $calon->nomor }}
+                                </h1>
+                                @if ($calon->url_foto)
+                                    <img class="candidate-photo w-full h-full object-contain object-center relative z-10 transition-transform duration-500 drop-shadow-2xl"
+                                         src="{{ asset($calon->url_foto) }}" alt="{{ $calon->nama }}" loading="lazy" decoding="async" />
+                                @else
+                                    <div class="w-28 h-28 rounded-full bg-slate-800 flex items-center justify-center text-slate-600 text-5xl relative z-10">
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="p-6 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Visi &amp; Misi</span>
+                                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                    Lihat Profil <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                </span>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
+        @if ($calonOsis->isEmpty() && $calonMpk->isEmpty())
+            <div class="text-center py-20 bg-slate-900/60 rounded-3xl border border-slate-800 max-w-lg mx-auto p-8">
+                <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fa-solid fa-users-slash"></i>
+                </div>
+                <h3 class="text-xl font-heading font-bold text-white mb-2">Belum Ada Kandidat</h3>
+                <p class="text-sm text-slate-400">Daftar kandidat akan dipublikasikan oleh panitia pemilihan.</p>
+            </div>
+        @endif
+    </main>
+
+    <footer class="w-full border-t border-white/5 py-4 z-10">
+        <div class="max-w-[1400px] mx-auto px-4 text-center">
+            <p class="text-xs text-slate-500">
+                &copy; {{ date('Y') }} {{ $config['nama_sekolah'] ?? 'PILKETOS' }} &bull; Halaman Publikasi Resmi Kandidat
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

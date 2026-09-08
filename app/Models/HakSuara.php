@@ -43,7 +43,34 @@ class HakSuara extends Model
 
     public function hasVoted(): bool
     {
-        return $this->votes()->exists() || $this->token_used;
+        return $this->token_used
+            || $this->votes()->exists();
+    }
+
+    public function hasVotedFor(string $tipe): bool
+    {
+        return $this->votes()->where('tipe_pemilihan', $tipe)->exists();
+    }
+
+    public function hasVotedBothElections(): bool
+    {
+        return $this->hasVotedFor(CalonKetua::TIPE_OSIS)
+            && $this->hasVotedFor(CalonKetua::TIPE_MPK);
+    }
+
+    public function remainingElections(): array
+    {
+        $sisa = [];
+
+        if (! $this->hasVotedFor(CalonKetua::TIPE_OSIS)) {
+            $sisa[] = CalonKetua::TIPE_OSIS;
+        }
+
+        if (! $this->hasVotedFor(CalonKetua::TIPE_MPK)) {
+            $sisa[] = CalonKetua::TIPE_MPK;
+        }
+
+        return $sisa;
     }
 }
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminConfigController;
 use App\Http\Controllers\AuditSuaraController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CalonController;
+use App\Http\Controllers\CalonPublicController;
 use App\Http\Controllers\CheckTokenController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HakSuaraController;
@@ -19,14 +20,21 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-Route::post('/check-token', [CheckTokenController::class, 'check'])->name('check-token');
+// Bilik Suara — hanya panitia/admin yang login (mencegah voting liar)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/check-token', [CheckTokenController::class, 'check'])->name('check-token');
 
-Route::get('/voting', [VotingController::class, 'index'])->name('voting.index');
-Route::post('/voting/vote', [VotingController::class, 'vote'])->name('voting.vote');
+    Route::get('/voting', [VotingController::class, 'index'])->name('voting.index');
+    Route::post('/voting/vote', [VotingController::class, 'vote'])->name('voting.vote');
+});
 
 // Live Counting Public & Projector Display
 Route::get('/live-count', [LiveCountController::class, 'index'])->name('live-count');
 Route::get('/live-count/data', [LiveCountController::class, 'data'])->name('live-count.data');
+
+// Publikasi Kandidat (publik, tanpa login)
+Route::get('/calon', [CalonPublicController::class, 'index'])->name('calon-public.index');
+Route::get('/calon/{calon}', [CalonPublicController::class, 'show'])->name('calon-public.show');
 
 Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -58,6 +66,7 @@ Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
     Route::get('/admin-config', [AdminConfigController::class, 'index'])->name('admin-config.index');
     Route::post('/admin-config/school-profile', [AdminConfigController::class, 'updateSchoolProfile'])->name('admin-config.school-profile');
     Route::post('/admin-config/undangan-template', [AdminConfigController::class, 'updateUndanganTemplate'])->name('admin-config.undangan-template');
+    Route::post('/admin-config/voting-settings', [AdminConfigController::class, 'updateVotingSettings'])->name('admin-config.voting-settings');
     Route::post('/admin-config', [AdminConfigController::class, 'store'])->name('admin-config.store');
     Route::put('/admin-config/{user}', [AdminConfigController::class, 'update'])->name('admin-config.update');
     Route::delete('/admin-config/{user}', [AdminConfigController::class, 'destroy'])->name('admin-config.destroy');

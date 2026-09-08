@@ -196,7 +196,85 @@
             </form>
         </div>
 
-        {{-- Section 3: Daftar Administrator --}}
+        {{-- Section 3: Pengaturan Timer Voting & Jeda Live Count --}}
+        <div class="luxury-card rounded-3xl overflow-hidden p-6 sm:p-8">
+            <div class="border-b border-white/5 pb-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="font-heading font-black text-lg sm:text-xl text-white flex items-center gap-2.5">
+                        <i class="fas fa-stopwatch text-emerald-400"></i>
+                        <span>Pengaturan Voting &amp; Jeda Live Count</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Timer memilih, jeda live count, dan jumlah kandidat per pemilihan (OSIS &amp; MPK).</p>
+                </div>
+                <span class="text-xs font-mono font-bold px-3 py-1 bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded-xl self-start sm:self-auto">
+                    Pengaturan Waktu
+                </span>
+            </div>
+
+            <form action="{{ route('admin-config.voting-settings') }}" method="POST" class="space-y-5">
+                @csrf
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
+                            <i class="fas fa-hourglass-half text-indigo-400 mr-1"></i> Waktu Memilih di Bilik Suara (detik)
+                        </label>
+                        <div class="relative">
+                            <input type="number" name="voting_timer" value="{{ old('voting_timer', $config['voting_timer'] ?? 30) }}" required min="5" max="3600"
+                                   class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-mono font-bold pr-16">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 font-mono">detik</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1.5">Hitungan mundur mulai berjalan setelah token diterima. Habis waktu &rarr; kembali ke halaman token. Token tetap bisa dipakai ulang. Default 30 detik, rentang 5&ndash;3600.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
+                            <i class="fas fa-clock-rotate-left text-emerald-400 mr-1"></i> Jeda Sinkronisasi Live Count (menit)
+                        </label>
+                        <div class="relative">
+                            <input type="number" name="livecount_interval" value="{{ old('livecount_interval', $config['livecount_interval'] ?? 15) }}" required min="1" max="1440"
+                                   class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-mono font-bold pr-16">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 font-mono">menit</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1.5">Data live count tidak real-time penuh; diperbarui setiap jeda ini. Default 15 menit, rentang 1&ndash;1440 (maks 24 jam).</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
+                            <i class="fas fa-user-tie text-indigo-400 mr-1"></i> Jumlah Kandidat Ketua OSIS
+                        </label>
+                        <div class="relative">
+                            <input type="number" name="jumlah_calon_osis" value="{{ old('jumlah_calon_osis', $config['jumlah_calon_osis'] ?? 3) }}" required min="1" max="20"
+                                   class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-mono font-bold pr-16">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 font-mono">pasang</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1.5">Nomor urut kandidat OSIS dibatasi 1 sampai angka ini. Default 3.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
+                            <i class="fas fa-scale-balanced text-emerald-400 mr-1"></i> Jumlah Kandidat Ketua MPK
+                        </label>
+                        <div class="relative">
+                            <input type="number" name="jumlah_calon_mpk" value="{{ old('jumlah_calon_mpk', $config['jumlah_calon_mpk'] ?? 5) }}" required min="1" max="20"
+                                   class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-mono font-bold pr-16">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 font-mono">pasang</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1.5">Nomor urut kandidat MPK dibatasi 1 sampai angka ini. Default 5.</p>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end">
+                    <x-admin-button type="submit" icon="fas fa-save" class="px-6 py-3">
+                        Simpan Pengaturan Waktu
+                    </x-admin-button>
+                </div>
+            </form>
+        </div>
+
+        {{-- Section 4: Daftar Administrator --}}
         <div class="luxury-card rounded-3xl overflow-hidden p-6 sm:p-8">
             <div class="border-b border-white/5 pb-5 mb-6 flex items-center justify-between">
                 <div>

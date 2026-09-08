@@ -6,13 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('calon_ketua', function (Blueprint $table) {
             $table->id();
+            $table->string('tipe', 20)->default('osis')->index();
             $table->string('nama', 256);
             $table->integer('nomor');
             $table->string('visi', 521);

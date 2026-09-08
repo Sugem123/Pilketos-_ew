@@ -9,15 +9,29 @@
                 'id_kelas' => $c->id_kelas,
                 'kelas' => $c->kelas->name ?? '-',
                 'nomor' => $c->nomor,
+                'tipe' => $c->tipe,
                 'visi' => $c->visi,
                 'misi' => $c->misi,
                 'url_foto' => $c->url_foto ? asset($c->url_foto) : '',
             ],
         ],
     );
+
+    $maxKandidat = (int) ($tipe === 'mpk' ? ($config['jumlah_calon_mpk'] ?? 5) : ($config['jumlah_calon_osis'] ?? 3));
+    $labelTipe = $tipe === 'mpk' ? 'Ketua MPK' : 'Ketua OSIS';
 @endphp
 <x-app-layout :page_title="$page_title" :page_description="$page_description">
     <x-slot name="actions">
+        <div class="flex items-center p-1 bg-slate-900 border border-white/10 rounded-2xl">
+            <a href="{{ route('calon.index', ['tipe' => 'osis']) }}"
+               class="px-4 py-2 rounded-xl text-xs font-heading font-extrabold transition-all {{ $tipe === 'osis' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white' }}">
+                <i class="fas fa-user-tie mr-1"></i> Ketua OSIS
+            </a>
+            <a href="{{ route('calon.index', ['tipe' => 'mpk']) }}"
+               class="px-4 py-2 rounded-xl text-xs font-heading font-extrabold transition-all {{ $tipe === 'mpk' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white' }}">
+                <i class="fas fa-scale-balanced mr-1"></i> Ketua MPK
+            </a>
+        </div>
         <x-admin-button icon="fas fa-plus" onclick="openSidebar('add')">
             Tambah Kandidat
         </x-admin-button>
@@ -150,7 +164,7 @@
                 class="space-y-5">
                 @csrf
                 <input type="hidden" id="form-method" name="_method" value="POST">
-                <input type="hidden" id="calon-id" name="id" value="">
+                <input type="hidden" id="input-tipe" name="tipe" value="{{ $tipe }}">
 
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Nama Lengkap</label>
@@ -169,11 +183,12 @@
                             @endforeach
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Nomor Urut</label>
-                        <input type="number" id="input-nomor" name="nomor" required min="1"
-                            class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-bold font-mono">
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Nomor Urut</label>
+                    <input type="number" id="input-nomor" name="nomor" required min="1" max="{{ $maxKandidat }}"
+                        class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-bold font-mono">
+                    <p class="text-[11px] text-slate-500 mt-1.5">Nomor urut 1&ndash;{{ $maxKandidat }} (sesuai pengaturan jumlah kandidat {{ $labelTipe }}).</p>
+                </div>
                 </div>
 
                 <div>
@@ -270,14 +285,12 @@
             const title = document.getElementById('sidebar-title');
             const form = document.getElementById('calon-form');
             const methodInput = document.getElementById('form-method');
-            const idInput = document.getElementById('calon-id');
 
             if (mode === 'edit' && id) {
                 const data = calonData[id];
                 title.textContent = 'Edit Data Paslon';
                 form.action = '{{ url('/admin/calon') }}/' + id;
                 methodInput.value = 'PUT';
-                idInput.value = id;
                 document.getElementById('input-nama').value = data.nama;
                 document.getElementById('input-kelas').value = data.id_kelas;
                 document.getElementById('input-nomor').value = data.nomor;
@@ -295,8 +308,8 @@
                 title.textContent = 'Tambah Paslon Baru';
                 form.action = '{{ route('calon.store') }}';
                 methodInput.value = 'POST';
-                idInput.value = '';
                 form.reset();
+                document.getElementById('input-tipe').value = '{{ $tipe }}';
                 document.getElementById('preview-container').classList.add('hidden');
             }
 

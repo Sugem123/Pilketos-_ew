@@ -49,8 +49,12 @@ class CalonSeeder extends Seeder
         ];
 
         foreach ($calons as $calon) {
+            $calon['tipe'] = CalonKetua::TIPE_OSIS;
             CalonKetua::firstOrCreate(
-                ['nomor' => $calon['nomor']],
+                [
+                    'tipe' => CalonKetua::TIPE_OSIS,
+                    'nomor' => $calon['nomor'],
+                ],
                 $calon
             );
         }

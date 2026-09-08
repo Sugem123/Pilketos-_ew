@@ -8,11 +8,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CalonKetua extends Model
 {
+    public const TIPE_OSIS = 'osis';
+    public const TIPE_MPK = 'mpk';
+
     protected $table = 'calon_ketua';
 
     public $timestamps = false;
 
-    protected $fillable = ['nama', 'nomor', 'visi', 'misi', 'id_kelas', 'url_foto'];
+    protected $fillable = ['tipe', 'nama', 'nomor', 'visi', 'misi', 'id_kelas', 'url_foto'];
 
     public function kelas(): BelongsTo
     {
@@ -27,5 +30,20 @@ class CalonKetua extends Model
     public function voteCount(): int
     {
         return $this->votes()->count();
+    }
+
+    public function scopeOsis($query)
+    {
+        return $query->where('tipe', self::TIPE_OSIS);
+    }
+
+    public function scopeMpk($query)
+    {
+        return $query->where('tipe', self::TIPE_MPK);
+    }
+
+    public function labelTipe(): string
+    {
+        return $this->tipe === self::TIPE_MPK ? 'Ketua MPK' : 'Ketua OSIS';
     }
 }

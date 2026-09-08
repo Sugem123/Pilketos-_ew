@@ -22,19 +22,36 @@ class CheckTokenController extends Controller
 
         // Cek apakah token berasal dari DPT personal (Kartu Pemilih)
         $hakSuara = HakSuara::where('token', $tokenInput)->first();
+
         if ($hakSuara) {
-            if ($hakSuara->token_used || $hakSuara->hasVoted()) {
+            if ($hakSuara->token_used) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Token ini sudah pernah digunakan untuk voting dan telah hangus.',
+                    'message' => 'Token ini sudah hangus (kedua pemilihan sudah diikuti).',
                 ]);
             }
+
+            $sisa = $hakSuara->remainingElections();
+
+            if (empty($sisa)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pemilih ini sudah menyelesaikan kedua pemilihan.',
+                ]);
+            }
+
+            $labelSisa = array_map(
+                fn ($t) => $t === 'mpk' ? 'MPK' : 'OSIS',
+                $sisa
+            );
 
             return response()->json([
                 'success' => true,
                 'message' => 'Token personal valid.',
                 'voter_name' => $hakSuara->nisn,
                 'type' => 'personal',
+                'sisa_pemilihan' => $sisa,
+                'sisa_label' => implode(' & ', $labelSisa),
             ]);
         }
 
@@ -57,4 +74,3 @@ class CheckTokenController extends Controller
         ]);
     }
 }
-

@@ -7,38 +7,55 @@ use App\Models\HakSuara;
 use App\Models\Token;
 use App\Models\Vote;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class VotingController extends Controller
 {
     public function index()
     {
-        $calons = CalonKetua::with('kelas')
+        $calonOsis = CalonKetua::with('kelas')
+            ->osis()
             ->withCount('votes')
-            ->orderBy('id')
+            ->orderBy('nomor')
+            ->get();
+
+        $calonMpk = CalonKetua::with('kelas')
+            ->mpk()
+            ->withCount('votes')
+            ->orderBy('nomor')
             ->get();
 
         $totalVote = Vote::count();
         $totalHakSuara = HakSuara::count();
         $config = json_decode(file_get_contents(base_path('config.json')), true);
 
-        return view('voting.index', compact('calons', 'totalVote', 'totalHakSuara', 'config'));
+        return view('voting.index', compact(
+            'calonOsis', 'calonMpk', 'totalVote', 'totalHakSuara', 'config'
+        ));
     }
 
     public function vote(Request $request)
     {
         $request->validate([
-            'id_calon' => 'required|exists:calon_ketua,id',
+            'id_calon_osis' => 'required|exists:calon_ketua,id',
+            'id_calon_mpk' => 'required|exists:calon_ketua,id',
             'nisn' => 'required|string|max:255',
             'display_token' => 'required|string',
         ]);
 
         $displayToken = trim((string) $request->display_token);
+
         $personalHakSuara = HakSuara::where('token', $displayToken)->first();
 
         if ($personalHakSuara) {
-            if ($personalHakSuara->token_used || $personalHakSuara->hasVoted()) {
-                return back()->with('error', 'Token pada Kartu Pemilih ini sudah pernah digunakan dan telah hangus.');
+            if ($personalHakSuara->token_used) {
+                return $this->gagal('Token pada Kartu Pemilih ini sudah hangus (kedua pemilihan sudah diikuti).');
             }
+
+            if ($personalHakSuara->hasVotedFor(CalonKetua::TIPE_OSIS) || $personalHakSuara->hasVotedFor(CalonKetua::TIPE_MPK)) {
+                return $this->gagal('Pemilih ini sudah pernah memberikan suara dan tidak dapat memilih dua kali.');
+            }
+
             $hakSuara = $personalHakSuara;
         } else {
             $token = Token::where('token', $displayToken)
@@ -46,42 +63,63 @@ class VotingController extends Controller
                 ->first();
 
             if (! $token) {
-                return back()->with('error', 'Token bilik suara tidak valid atau kadaluarsa.');
+                return $this->gagal('Token bilik suara tidak valid atau kadaluarsa.');
             }
 
             $hakSuara = HakSuara::where('nisn', $request->nisn)->first();
 
             if (! $hakSuara) {
-                return back()->with('error', 'Nama anda tidak terdaftar sebagai pemilih sah.');
+                return $this->gagal('Nama anda tidak terdaftar sebagai pemilih sah.');
+            }
+
+            if ($hakSuara->hasVotedFor(CalonKetua::TIPE_OSIS) || $hakSuara->hasVotedFor(CalonKetua::TIPE_MPK)) {
+                return $this->gagal('Pemilih ini sudah pernah memberikan suara dan tidak dapat memilih dua kali.');
             }
         }
 
-        $calon = CalonKetua::find($request->id_calon);
-        if (! $calon) {
-            return back()->with('error', 'Calon yang dipilih tidak valid.');
+        $calonOsis = CalonKetua::where('id', $request->id_calon_osis)->where('tipe', CalonKetua::TIPE_OSIS)->first();
+        $calonMpk = CalonKetua::where('id', $request->id_calon_mpk)->where('tipe', CalonKetua::TIPE_MPK)->first();
+
+        if (! $calonOsis || ! $calonMpk) {
+            return $this->gagal('Pilihan kandidat tidak valid untuk pemilihan OSIS/MPK.');
         }
 
-        $existingVote = Vote::where('id_nisn', $hakSuara->id)->first();
-        if ($existingVote || $hakSuara->token_used) {
-            return back()->with('error', 'Anda atau token ini sudah pernah melakukan voting dan tidak dapat memilih dua kali.');
-        }
-
-        Vote::create([
-            'id_calon' => $request->id_calon,
-            'id_nisn' => $hakSuara->id,
-        ]);
-
-        // Hanguskan token personal pemilih setelah suara masuk
-        $hakSuara->update(['token_used' => true]);
-
-        if ($request->expectsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Terima kasih telah berpartisipasi dalam pemilihan ketua OSIS!',
-                'voter_name' => $hakSuara->nisn,
+        DB::transaction(function () use ($hakSuara, $calonOsis, $calonMpk) {
+            Vote::create([
+                'id_calon' => $calonOsis->id,
+                'id_nisn' => $hakSuara->id,
+                'tipe_pemilihan' => CalonKetua::TIPE_OSIS,
             ]);
+
+            Vote::create([
+                'id_calon' => $calonMpk->id,
+                'id_nisn' => $hakSuara->id,
+                'tipe_pemilihan' => CalonKetua::TIPE_MPK,
+            ]);
+
+            // Kedua pemilihan selesai dalam satu sesi — hanguskan token
+            $hakSuara->update(['token_used' => true]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Terima kasih! Suara Ketua OSIS dan Ketua MPK berhasil dicatat.',
+            'voter_name' => $hakSuara->nisn,
+            'osis_name' => $calonOsis->nama,
+            'mpk_name' => $calonMpk->nama,
+            'selesai' => true,
+        ]);
+    }
+
+    private function gagal(string $pesan)
+    {
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => $pesan,
+            ], 422);
         }
 
-        return back()->with('success', 'Terima kasih telah berpartisipasi dalam pemilihan ketua OSIS!');
+        return back()->with('error', $pesan);
     }
 }

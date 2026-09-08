@@ -2,7 +2,7 @@
 <x-voting-layout>
     {{-- Preload candidate photos so they load before SweetAlert overlay --}}
     @push('head')
-        @foreach ($calons as $calon)
+        @foreach ($calonOsis->merge($calonMpk) as $calon)
             @if ($calon->url_foto)
                 <link rel="preload" as="image" href="{{ asset($calon->url_foto) }}">
             @endif
@@ -22,11 +22,22 @@
                             <span class="font-heading font-extrabold text-base lg:text-lg tracking-tight text-white">{{ $config['nama_sekolah'] ?? 'PILKETOS' }}</span>
                             <span class="px-2 py-0.5 text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full">E-VOTING</span>
                         </div>
-                        <p class="text-xs text-slate-400 font-medium">{{ $config['nama_kegiatan'] ?? 'Pemilihan Ketua OSIS' }} &bull; TP {{ $config['tahun_ajaran'] ?? date('Y') }}</p>
+                        <p class="text-xs text-slate-400 font-medium">Pemilihan Ketua OSIS & Ketua MPK &bull; TP {{ $config['tahun_ajaran'] ?? date('Y') }}</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
+                    {{-- Countdown Timer Bilik Suara (durasi diatur admin) --}}
+                    <div id="vote-timer-badge" class="hidden items-center gap-3 px-4 py-2 rounded-2xl bg-slate-950/80 border border-indigo-500/30 shadow-lg">
+                        <i class="fa-solid fa-stopwatch text-indigo-400 text-sm"></i>
+                        <div class="flex flex-col leading-none">
+                            <span class="text-[9px] uppercase tracking-wider text-slate-400 font-mono mb-1">Sisa Waktu Memilih</span>
+                            <span id="vote-timer-display" class="font-heading font-black text-lg text-white font-mono tabular-nums">00:30</span>
+                        </div>
+                        <div class="w-12 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                            <div id="vote-timer-bar" class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-400" style="width:100%"></div>
+                        </div>
+                    </div>
                     <div class="hidden sm:flex flex-col text-right">
                         <span class="text-xs text-slate-400">Hak Suara Terpakai</span>
                         <span class="text-sm font-semibold text-indigo-300 font-mono">{{ $totalVote }} / {{ $config['haksuara'] }}</span>
@@ -37,162 +48,284 @@
         </header>
 
         {{-- Main Voting Stage --}}
-        <main class="flex-grow flex items-center justify-center px-4 py-8 lg:py-12 z-10">
+        <main class="flex-grow flex flex-col justify-center px-4 py-8 lg:py-10 z-10">
             <div class="mx-auto w-full max-w-7xl">
-                <div class="text-center max-w-2xl mx-auto mb-8 lg:mb-12">
+                <div class="text-center max-w-2xl mx-auto mb-8 lg:mb-10">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">
                         <i class="fa-solid fa-check-to-slot text-[11px]"></i> E-Voting Bilik Suara
                     </span>
-                    <h1 class="text-3xl lg:text-5xl font-extrabold font-heading text-white tracking-tight leading-tight mb-3">
-                        Pilih Pemimpin Masa Depan
+                    <h1 class="text-3xl lg:text-4xl font-extrabold font-heading text-white tracking-tight leading-tight mb-3">
+                        Pilih Ketua OSIS &amp; Ketua MPK
                     </h1>
-                    @if (($config['haksuara'] ?? 150) - $totalVote > 0)
-                        <p class="text-sm lg:text-base text-slate-400">
-                            Gunakan hak suaramu secara bijak, jujur, dan adil. Klik kartu untuk melihat visi & misi kandidat.
-                        </p>
-                    @else
-                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm font-medium">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            Pemilihan suara ditutup! Kuota hak suara telah mencapai batas maksimum.
-                        </div>
-                    @endif
+                    <p class="text-sm lg:text-base text-slate-400">
+                        Pilih <strong class="text-white">1 kandidat Ketua OSIS</strong> dan <strong class="text-white">1 kandidat Ketua MPK</strong>, lalu kirim keduanya sekaligus.
+                    </p>
                 </div>
 
                 <form id="votingForm" method="POST" action="{{ route('voting.vote') }}" class="space-y-10">
                     @csrf
 
-                    @if ($calons->isNotEmpty())
-                        <div class="flex flex-wrap lg:flex-nowrap gap-6 lg:gap-8 items-center justify-center">
-                            @php $no = 1; @endphp
-                            @foreach ($calons as $calon)
-                                @php
-                                    $words = explode(' ', $calon->nama);
-                                    $first = $words[0];
-                                    $second = $words[1] ?? '';
-                                    $third = $words[2] ?? '';
-                                @endphp
-                                <div id="caketos-container-{{ $no }}" class="caketos-item relative transition-all duration-300">
-                                    <div class="cursor-pointer flex w-[18rem] lg:w-[22rem] group items-center relative">
-                                        
-                                        {{-- Candidate Card --}}
-                                        <div class="bg-slate-900/90 backdrop-blur-xl z-10 card w-full border-2 border-slate-800 hover:border-indigo-500/60 rounded-3xl shadow-2xl transition-all duration-300 overflow-hidden group relative hover:shadow-indigo-500/10 hover:-translate-y-1.5"
-                                            data-calon-id="{{ $calon->id }}" data-visi="{{ $calon->visi }}"
-                                            data-misi="{{ $calon->misi }}" data-nama="{{ $calon->nama }}"
-                                            data-kelas="{{ $calon->kelas->name }}">
-                                            
-                                            {{-- Selection Indicator Badge --}}
-                                            <div class="selection-indicator opacity-0 absolute top-4 right-4 z-20 transition-all duration-300 transform scale-75 group-[.selected]:opacity-100 group-[.selected]:scale-100">
-                                                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/50">
-                                                    <i class="fa-solid fa-check text-sm font-bold"></i>
+                    @if ($calonOsis->isNotEmpty())
+                        {{-- ====== SEKSI KETUA OSIS ====== --}}
+                        <section>
+                            <div class="flex items-center gap-3 mb-5">
+                                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-heading font-extrabold uppercase tracking-widest">
+                                    <i class="fa-solid fa-user-tie"></i> Pilihan 1 &mdash; Ketua OSIS
+                                </span>
+                                <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider hidden sm:inline">Pilih salah satu</span>
+                            </div>
+
+                            <div class="flex flex-wrap lg:flex-nowrap gap-6 lg:gap-8 items-center justify-center">
+                                @php $no = 1; @endphp
+                                @foreach ($calonOsis as $calon)
+                                    @php
+                                        $words = explode(' ', $calon->nama);
+                                        $first = $words[0];
+                                        $second = $words[1] ?? '';
+                                        $third = $words[2] ?? '';
+                                    @endphp
+                                    <div id="caketos-container-{{ $calon->id }}" class="caketos-item relative transition-all duration-300">
+                                        <div class="cursor-pointer flex w-[18rem] lg:w-[21rem] group items-center relative">
+                                            {{-- Candidate Card --}}
+                                            <div class="bg-slate-900/90 backdrop-blur-xl z-10 card w-full border-2 border-slate-800 hover:border-indigo-500/60 rounded-3xl shadow-2xl transition-all duration-300 overflow-hidden group relative hover:shadow-indigo-500/10 hover:-translate-y-1.5"
+                                                data-calon-id="{{ $calon->id }}" data-visi="{{ $calon->visi }}"
+                                                data-misi="{{ $calon->misi }}" data-nama="{{ $calon->nama }}"
+                                                data-kelas="{{ $calon->kelas->name }}" data-tipe="osis">
+
+                                                {{-- Selection Indicator Badge --}}
+                                                <div class="selection-indicator opacity-0 absolute top-4 right-4 z-20 transition-all duration-300 transform scale-75 group-[.selected]:opacity-100 group-[.selected]:scale-100">
+                                                    <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/50">
+                                                        <i class="fa-solid fa-check text-sm font-bold"></i>
+                                                    </div>
                                                 </div>
+
+                                                <input type="radio" name="id_calon_osis"
+                                                    value="{{ $calon->id }}" id="calon_osis_{{ $calon->id }}"
+                                                    class="hidden candidate-radio" data-tipe="osis">
+
+                                                <label for="calon_osis_{{ $calon->id }}" class="cursor-pointer block select-none">
+                                                    {{-- Card Top Header --}}
+                                                    <div class="p-5 lg:p-6 border-b border-slate-800/80 bg-slate-950/40 flex items-center justify-between">
+                                                        <div>
+                                                            <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-400 font-mono">KETUA OSIS</span>
+                                                            <h3 class="font-heading font-extrabold text-xl lg:text-2xl text-white leading-snug mt-0.5">
+                                                                {{ $first }}
+                                                                <span class="block text-slate-400 font-semibold text-sm lg:text-base font-sans mt-0.5">{{ $second }} {{ $third }}</span>
+                                                            </h3>
+                                                        </div>
+                                                        <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center font-heading font-black text-indigo-300 text-lg">
+                                                            {{ $calon->nomor }}
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- Card Photo Area --}}
+                                                    <div class="h-[15rem] lg:h-[19rem] bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950 flex items-center justify-center overflow-hidden relative group-hover:brightness-105 transition-all p-3">
+                                                        <h1 class="absolute bottom-2 left-3 font-heading font-black text-slate-800/25 text-8xl lg:text-9xl pointer-events-none select-none z-0">
+                                                            {{ sprintf('%02d', $calon->nomor) }}
+                                                        </h1>
+
+                                                        @if ($calon->url_foto)
+                                                            <img class="w-full h-full object-contain object-center relative z-10 transition-transform duration-500 group-hover:scale-105 drop-shadow-2xl"
+                                                                src="{{ asset($calon->url_foto) }}"
+                                                                alt="{{ $calon->nama }}"
+                                                                loading="eager"
+                                                                fetchpriority="high"
+                                                                decoding="async" />
+                                                        @else
+                                                            <div class="w-24 h-24 rounded-full bg-slate-800 flex items-center justify-center text-slate-600 relative z-10">
+                                                                <i class="fa-solid fa-user text-4xl"></i>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+
+                                                    {{-- Card Info Bottom --}}
+                                                    <div class="p-5 lg:p-6 bg-slate-900/90 border-t border-slate-800/80 flex items-center justify-between">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kelas</span>
+                                                        </div>
+                                                        <span class="text-sm font-bold text-white px-3 py-1 bg-slate-800 border border-slate-700 rounded-xl font-mono">
+                                                            {{ $calon->kelas->name }}
+                                                        </span>
+                                                    </div>
+                                                </label>
                                             </div>
 
-                                            <input type="radio" name="id_calon"
-                                                {{ $config['haksuara'] - $totalVote <= 0 ? 'disabled' : '' }}
-                                                value="{{ $calon->id }}" id="calon_{{ $calon->id }}"
-                                                class="hidden candidate-radio">
+                                            {{-- Detail Panel (Slides behind card) --}}
+                                            <div class="detail-panel absolute top-[3%] left-0 w-[18rem] lg:w-[21rem] h-[94%] bg-slate-900/95 backdrop-blur-2xl border-2 border-indigo-500/50 rounded-3xl shadow-2xl overflow-hidden pointer-events-none z-0 text-slate-200"
+                                                style="transform: translateX(0);">
+                                                <div class="p-5 pl-8 lg:p-6 lg:pl-10 h-full overflow-y-auto space-y-4">
+                                                    <div class="border-b border-slate-800 pb-3">
+                                                        <span class="text-[10px] font-bold uppercase tracking-widest text-indigo-400 font-mono">Profil Kandidat</span>
+                                                        <h3 class="font-heading font-extrabold text-lg lg:text-xl text-white detail-nama mt-0.5"></h3>
+                                                        <p class="text-xs font-medium text-slate-400 detail-kelas font-mono"></p>
+                                                    </div>
 
-                                            <label for="calon_{{ $calon->id }}"
-                                                class="{{ $config['haksuara'] - $totalVote <= 0 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer' }} block select-none">
-                                                
-                                                {{-- Card Top Header --}}
-                                                <div class="p-5 lg:p-6 border-b border-slate-800/80 bg-slate-950/40 flex items-center justify-between">
                                                     <div>
-                                                        <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-400 font-mono">KANDIDAT KETUA</span>
-                                                        <h3 class="font-heading font-extrabold text-xl lg:text-2xl text-white leading-snug mt-0.5">
-                                                            {{ $first }}
-                                                            <span class="block text-slate-400 font-semibold text-sm lg:text-base font-sans mt-0.5">{{ $second }} {{ $third }}</span>
-                                                        </h3>
-                                                    </div>
-                                                    <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center font-heading font-black text-indigo-300 text-lg">
-                                                        {{ $calon->nomor }}
-                                                    </div>
-                                                </div>
-
-                                                {{-- Card Photo Area (Full Contain Photo) --}}
-                                                <div class="h-[15rem] lg:h-[22rem] bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950 flex items-center justify-center overflow-hidden relative group-hover:brightness-105 transition-all p-3">
-                                                    <h1 class="absolute bottom-2 left-3 font-heading font-black text-slate-800/25 text-8xl lg:text-9xl pointer-events-none select-none z-0">
-                                                        {{ sprintf('%02d', $calon->nomor) }}
-                                                    </h1>
-                                                    
-                                                    @if ($calon->url_foto)
-                                                        <img class="w-full h-full object-contain object-center relative z-10 transition-transform duration-500 group-hover:scale-105 drop-shadow-2xl"
-                                                            src="{{ asset($calon->url_foto) }}"
-                                                            alt="{{ $calon->nama }}"
-                                                            loading="eager"
-                                                            fetchpriority="high"
-                                                            decoding="async" />
-                                                    @else
-                                                        <div class="w-24 h-24 rounded-full bg-slate-800 flex items-center justify-center text-slate-600 relative z-10">
-                                                            <i class="fa-solid fa-user text-4xl"></i>
+                                                        <div class="flex items-center gap-2 mb-1.5">
+                                                            <div class="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-indigo-400 to-indigo-600"></div>
+                                                            <h4 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Visi</h4>
                                                         </div>
-                                                    @endif
-                                                </div>
-
-                                                {{-- Card Info Bottom --}}
-                                                <div class="p-5 lg:p-6 bg-slate-900/90 border-t border-slate-800/80 flex items-center justify-between">
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kelas</span>
+                                                        <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 border border-slate-800 rounded-2xl p-3.5 detail-visi shadow-inner"></p>
                                                     </div>
-                                                    <span class="text-sm font-bold text-white px-3 py-1 bg-slate-800 border border-slate-700 rounded-xl font-mono">
-                                                        {{ $calon->kelas->name }}
-                                                    </span>
-                                                </div>
-                                            </label>
-                                        </div>
 
-                                        {{-- Detail Panel (Slides smoothly behind card) --}}
-                                        <div class="detail-panel absolute top-[3%] left-0 w-[18rem] lg:w-[22rem] h-[94%] bg-slate-900/95 backdrop-blur-2xl border-2 border-indigo-500/50 rounded-3xl shadow-2xl overflow-hidden pointer-events-none z-0 text-slate-200"
-                                            style="transform: translateX(0);">
-                                            <div class="p-5 pl-8 lg:p-6 lg:pl-10 h-full overflow-y-auto space-y-4">
-                                                <div class="border-b border-slate-800 pb-3">
-                                                    <span class="text-[10px] font-bold uppercase tracking-widest text-indigo-400 font-mono">Profil Kandidat</span>
-                                                    <h3 class="font-heading font-extrabold text-lg lg:text-xl text-white detail-nama mt-0.5"></h3>
-                                                    <p class="text-xs font-medium text-slate-400 detail-kelas font-mono"></p>
-                                                </div>
-
-                                                <div>
-                                                    <div class="flex items-center gap-2 mb-1.5">
-                                                        <div class="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-indigo-400 to-indigo-600"></div>
-                                                        <h4 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Visi</h4>
+                                                    <div>
+                                                        <div class="flex items-center gap-2 mb-1.5">
+                                                            <div class="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-amber-400 to-amber-600"></div>
+                                                            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">Misi</h4>
+                                                        </div>
+                                                        <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 border border-slate-800 rounded-2xl p-3.5 whitespace-pre-line detail-misi shadow-inner"></p>
                                                     </div>
-                                                    <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 border border-slate-800 rounded-2xl p-3.5 detail-visi shadow-inner"></p>
-                                                </div>
-
-                                                <div>
-                                                    <div class="flex items-center gap-2 mb-1.5">
-                                                        <div class="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-amber-400 to-amber-600"></div>
-                                                        <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">Misi</h4>
-                                                    </div>
-                                                    <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 border border-slate-800 rounded-2xl p-3.5 whitespace-pre-line detail-misi shadow-inner"></p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                @php $no++; @endphp
-                            @endforeach
-                        </div>
-
-                        {{-- Action Vote Button --}}
-                        <div class="text-center pt-4">
-                            <button type="submit" id="voteButton" disabled
-                                class="inline-flex items-center justify-center gap-3 bg-slate-800 text-slate-500 py-4 px-12 rounded-2xl font-heading font-extrabold text-base lg:text-lg transition-all duration-300 cursor-not-allowed border border-slate-700 shadow-lg">
-                                <i class="fa-solid fa-lock text-sm"></i>
-                                <span>PILIH KANDIDAT</span>
-                            </button>
-                            <p class="text-xs text-slate-500 mt-3 font-medium">Klik pada salah satu kartu kandidat untuk menentukan pilihan</p>
-                        </div>
-                    @else
-                        <div class="text-center py-20 bg-slate-900/60 rounded-3xl border border-slate-800 max-w-lg mx-auto p-8">
-                            <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-4 text-2xl">
-                                <i class="fa-solid fa-users-slash"></i>
+                                    @php $no++; @endphp
+                                @endforeach
                             </div>
-                            <h3 class="text-xl font-heading font-bold text-white mb-2">Belum Ada Kandidat</h3>
-                            <p class="text-sm text-slate-400">Saat ini data kandidat ketua OSIS belum ditambahkan oleh panitia.</p>
+                        </section>
+                    @else
+                        <div class="text-center py-12 bg-slate-900/60 rounded-3xl border border-slate-800 max-w-lg mx-auto p-8">
+                            <h3 class="text-xl font-heading font-bold text-white mb-2">Belum Ada Kandidat Ketua OSIS</h3>
+                            <p class="text-sm text-slate-400">Panitia belum menambahkan kandidat Ketua OSIS.</p>
                         </div>
                     @endif
+
+                    @if ($calonMpk->isNotEmpty())
+                        {{-- ====== SEKSI KETUA MPK ====== --}}
+                        <section>
+                            <div class="flex items-center gap-3 mb-5">
+                                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-heading font-extrabold uppercase tracking-widest">
+                                    <i class="fa-solid fa-scale-balanced"></i> Pilihan 2 &mdash; Ketua MPK
+                                </span>
+                                <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider hidden sm:inline">Pilih salah satu</span>
+                            </div>
+
+                            <div class="flex flex-wrap lg:flex-nowrap gap-6 lg:gap-8 items-center justify-center">
+                                @php $no = 1; @endphp
+                                @foreach ($calonMpk as $calon)
+                                    @php
+                                        $words = explode(' ', $calon->nama);
+                                        $first = $words[0];
+                                        $second = $words[1] ?? '';
+                                        $third = $words[2] ?? '';
+                                    @endphp
+                                    <div id="caketos-container-{{ $calon->id }}" class="caketos-item relative transition-all duration-300">
+                                        <div class="cursor-pointer flex w-[18rem] lg:w-[21rem] group items-center relative">
+                                            {{-- Candidate Card --}}
+                                            <div class="bg-slate-900/90 backdrop-blur-xl z-10 card w-full border-2 border-slate-800 hover:border-emerald-500/60 rounded-3xl shadow-2xl transition-all duration-300 overflow-hidden group relative hover:shadow-emerald-500/10 hover:-translate-y-1.5"
+                                                data-calon-id="{{ $calon->id }}" data-visi="{{ $calon->visi }}"
+                                                data-misi="{{ $calon->misi }}" data-nama="{{ $calon->nama }}"
+                                                data-kelas="{{ $calon->kelas->name }}" data-tipe="mpk">
+
+                                                {{-- Selection Indicator Badge --}}
+                                                <div class="selection-indicator opacity-0 absolute top-4 right-4 z-20 transition-all duration-300 transform scale-75 group-[.selected]:opacity-100 group-[.selected]:scale-100">
+                                                    <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/50">
+                                                        <i class="fa-solid fa-check text-sm font-bold"></i>
+                                                    </div>
+                                                </div>
+
+                                                <input type="radio" name="id_calon_mpk"
+                                                    value="{{ $calon->id }}" id="calon_mpk_{{ $calon->id }}"
+                                                    class="hidden candidate-radio" data-tipe="mpk">
+
+                                                <label for="calon_mpk_{{ $calon->id }}" class="cursor-pointer block select-none">
+                                                    {{-- Card Top Header --}}
+                                                    <div class="p-5 lg:p-6 border-b border-slate-800/80 bg-slate-950/40 flex items-center justify-between">
+                                                        <div>
+                                                            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400 font-mono">KETUA MPK</span>
+                                                            <h3 class="font-heading font-extrabold text-xl lg:text-2xl text-white leading-snug mt-0.5">
+                                                                {{ $first }}
+                                                                <span class="block text-slate-400 font-semibold text-sm lg:text-base font-sans mt-0.5">{{ $second }} {{ $third }}</span>
+                                                            </h3>
+                                                        </div>
+                                                        <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center font-heading font-black text-emerald-300 text-lg">
+                                                            {{ $calon->nomor }}
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- Card Photo Area --}}
+                                                    <div class="h-[15rem] lg:h-[19rem] bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950 flex items-center justify-center overflow-hidden relative group-hover:brightness-105 transition-all p-3">
+                                                        <h1 class="absolute bottom-2 left-3 font-heading font-black text-slate-800/25 text-8xl lg:text-9xl pointer-events-none select-none z-0">
+                                                            {{ sprintf('%02d', $calon->nomor) }}
+                                                        </h1>
+
+                                                        @if ($calon->url_foto)
+                                                            <img class="w-full h-full object-contain object-center relative z-10 transition-transform duration-500 group-hover:scale-105 drop-shadow-2xl"
+                                                                src="{{ asset($calon->url_foto) }}"
+                                                                alt="{{ $calon->nama }}"
+                                                                loading="eager"
+                                                                fetchpriority="high"
+                                                                decoding="async" />
+                                                        @else
+                                                            <div class="w-24 h-24 rounded-full bg-slate-800 flex items-center justify-center text-slate-600 relative z-10">
+                                                                <i class="fa-solid fa-user text-4xl"></i>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+
+                                                    {{-- Card Info Bottom --}}
+                                                    <div class="p-5 lg:p-6 bg-slate-900/90 border-t border-slate-800/80 flex items-center justify-between">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kelas</span>
+                                                        </div>
+                                                        <span class="text-sm font-bold text-white px-3 py-1 bg-slate-800 border border-slate-700 rounded-xl font-mono">
+                                                            {{ $calon->kelas->name }}
+                                                        </span>
+                                                    </div>
+                                                </label>
+                                            </div>
+
+                                            {{-- Detail Panel (Slides behind card) --}}
+                                            <div class="detail-panel absolute top-[3%] left-0 w-[18rem] lg:w-[21rem] h-[94%] bg-slate-900/95 backdrop-blur-2xl border-2 border-emerald-500/50 rounded-3xl shadow-2xl overflow-hidden pointer-events-none z-0 text-slate-200"
+                                                style="transform: translateX(0);">
+                                                <div class="p-5 pl-8 lg:p-6 lg:pl-10 h-full overflow-y-auto space-y-4">
+                                                    <div class="border-b border-slate-800 pb-3">
+                                                        <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-400 font-mono">Profil Kandidat</span>
+                                                        <h3 class="font-heading font-extrabold text-lg lg:text-xl text-white detail-nama mt-0.5"></h3>
+                                                        <p class="text-xs font-medium text-slate-400 detail-kelas font-mono"></p>
+                                                    </div>
+
+                                                    <div>
+                                                        <div class="flex items-center gap-2 mb-1.5">
+                                                            <div class="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-indigo-400 to-indigo-600"></div>
+                                                            <h4 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Visi</h4>
+                                                        </div>
+                                                        <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 border border-slate-800 rounded-2xl p-3.5 detail-visi shadow-inner"></p>
+                                                    </div>
+
+                                                    <div>
+                                                        <div class="flex items-center gap-2 mb-1.5">
+                                                            <div class="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-amber-400 to-amber-600"></div>
+                                                            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">Misi</h4>
+                                                        </div>
+                                                        <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 border border-slate-800 rounded-2xl p-3.5 whitespace-pre-line detail-misi shadow-inner"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @php $no++; @endphp
+                                @endforeach
+                            </div>
+                        </section>
+                    @else
+                        <div class="text-center py-12 bg-slate-900/60 rounded-3xl border border-slate-800 max-w-lg mx-auto p-8">
+                            <h3 class="text-xl font-heading font-bold text-white mb-2">Belum Ada Kandidat Ketua MPK</h3>
+                            <p class="text-sm text-slate-400">Panitia belum menambahkan kandidat Ketua MPK.</p>
+                        </div>
+                    @endif
+
+                    {{-- Action Vote Button --}}
+                    <div class="text-center pt-2">
+                        <button type="submit" id="voteButton" disabled
+                            class="inline-flex items-center justify-center gap-3 bg-slate-800 text-slate-500 py-4 px-12 rounded-2xl font-heading font-extrabold text-base lg:text-lg transition-all duration-300 cursor-not-allowed border border-slate-700 shadow-lg">
+                            <i class="fa-solid fa-lock text-sm"></i>
+                            <span>PILIH KEDUA KANDIDAT</span>
+                        </button>
+                        <p class="text-xs text-slate-500 mt-3 font-medium" id="voteHint">Pilih 1 kandidat Ketua OSIS dan 1 kandidat Ketua MPK untuk mengaktifkan tombol</p>
+                    </div>
                 </form>
             </div>
         </main>
@@ -201,7 +334,7 @@
         <footer class="w-full border-t border-white/5 py-4 z-10">
             <div class="max-w-7xl mx-auto px-4 text-center">
                 <p class="text-xs text-slate-500">
-                    &copy; {{ date('Y') }} PILKETOS Official E-Voting System &bull; Realtime & Terpercaya
+                    &copy; {{ date('Y') }} PILKETOS Official E-Voting System &bull; Realtime &amp; Terpercaya
                 </p>
             </div>
         </footer>
@@ -211,6 +344,7 @@
         const candidateRadios = document.querySelectorAll('.candidate-radio');
         const candidateCards = document.querySelectorAll('.card');
         const voteButton = document.getElementById('voteButton');
+        const voteHint = document.getElementById('voteHint');
         const allItems = document.querySelectorAll('.caketos-item');
         let currentlyExpanded = null;
         const activeAnimations = new Map();
@@ -337,23 +471,46 @@
             });
         });
 
+        function updateVoteButton() {
+            const osis = document.querySelector('input[name="id_calon_osis"]:checked');
+            const mpk = document.querySelector('input[name="id_calon_mpk"]:checked');
+
+            if (osis && mpk) {
+                voteButton.disabled = false;
+                voteButton.classList.remove('bg-slate-800', 'text-slate-500', 'cursor-not-allowed', 'border-slate-700');
+                voteButton.classList.add('bg-gradient-to-r', 'from-indigo-600', 'to-indigo-500', 'text-white', 'hover:shadow-indigo-500/50', 'hover:scale-[1.02]', 'cursor-pointer', 'border-indigo-400');
+                voteButton.innerHTML = '<i class="fa-solid fa-circle-check text-base"></i> <span>KIRIM SUARA SEKARANG</span>';
+                voteHint.textContent = 'Klik tombol di atas untuk konfirmasi dan kirimkan suara Anda';
+            } else {
+                voteButton.disabled = true;
+                voteButton.classList.add('bg-slate-800', 'text-slate-500', 'cursor-not-allowed', 'border-slate-700');
+                voteButton.classList.remove('bg-gradient-to-r', 'from-indigo-600', 'to-indigo-500', 'text-white', 'hover:shadow-indigo-500/50', 'hover:scale-[1.02]', 'cursor-pointer', 'border-indigo-400');
+                voteButton.innerHTML = '<i class="fa-solid fa-lock text-sm"></i> <span>PILIH KEDUA KANDIDAT</span>';
+                voteHint.textContent = 'Pilih 1 kandidat Ketua OSIS dan 1 kandidat Ketua MPK untuk mengaktifkan tombol';
+            }
+        }
+
         candidateRadios.forEach((radio) => {
             radio.addEventListener('change', function() {
+                const tipe = this.dataset.tipe;
+
+                // Un-highlight semua kartu pada grup yang sama
                 candidateCards.forEach(card => {
-                    card.classList.remove('selected', 'border-indigo-500', 'ring-4', 'ring-indigo-500/30');
-                    card.classList.add('border-slate-800');
+                    if (card.dataset.tipe === tipe) {
+                        const color = tipe === 'mpk' ? 'emerald' : 'indigo';
+                        card.classList.remove('selected', `border-${color}-500`, `ring-4`, `ring-${color}-500/30`);
+                        card.classList.add('border-slate-800');
+                    }
                 });
+
                 if (this.checked) {
                     const activeCard = this.closest('.card');
-                    activeCard.classList.add('selected', 'border-indigo-500', 'ring-4', 'ring-indigo-500/30');
+                    const color = tipe === 'mpk' ? 'emerald' : 'indigo';
+                    activeCard.classList.add('selected', `border-${color}-500`, `ring-4`, `ring-${color}-500/30`);
                     activeCard.classList.remove('border-slate-800');
-                    
-                    voteButton.disabled = false;
-                    voteButton.classList.remove('bg-slate-800', 'text-slate-500', 'cursor-not-allowed', 'border-slate-700');
-                    voteButton.classList.add('bg-gradient-to-r', 'from-indigo-600', 'to-indigo-500', 'text-white', 'hover:shadow-indigo-500/50', 'hover:scale-[1.02]', 'cursor-pointer', 'border-indigo-400');
-                    voteButton.innerHTML = '<i class="fa-solid fa-circle-check text-base"></i> <span>KIRIM SUARA SEKARANG</span>';
-                    voteButton.nextElementSibling.textContent = 'Klik tombol di atas untuk konfirmasi dan kirimkan suara Anda';
                 }
+
+                updateVoteButton();
             });
         });
 
@@ -370,26 +527,27 @@
                 return;
             }
 
-            const selectedCandidate = document.querySelector('input[name="id_calon"]:checked');
-            if (!selectedCandidate) {
+            const osisCandidate = document.querySelector('input[name="id_calon_osis"]:checked');
+            const mpkCandidate = document.querySelector('input[name="id_calon_mpk"]:checked');
+
+            if (!osisCandidate || !mpkCandidate) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Kandidat Belum Dipilih',
-                    text: 'Silakan pilih salah satu kandidat terlebih dahulu!',
+                    title: 'Kandidat Belum Lengkap',
+                    text: 'Silakan pilih 1 kandidat Ketua OSIS dan 1 kandidat Ketua MPK terlebih dahulu!',
                     confirmButtonText: 'Mengerti'
                 });
                 return;
             }
 
-            const candidateCard = selectedCandidate.closest('.card');
-            const candidateName = candidateCard.dataset.nama;
-            const candidateId = selectedCandidate.value;
+            const osisName = osisCandidate.closest('.card').dataset.nama;
+            const mpkName = mpkCandidate.closest('.card').dataset.nama;
             const prefillName = sessionStorage.getItem('voter_name') || '';
 
             const confirmResult = await Swal.fire({
                 icon: 'question',
                 title: 'Konfirmasi Pilihan',
-                html: `Apakah Anda yakin ingin memberikan suara kepada <strong class="text-indigo-400">${candidateName}</strong>?`,
+                html: `Ketua OSIS: <strong class="text-indigo-400">${osisName}</strong><br>Ketua MPK: <strong class="text-emerald-400">${mpkName}</strong>`,
                 input: 'text',
                 inputValue: prefillName,
                 inputLabel: 'Nama Lengkap Anda Sesuai DPT / Kartu Pemilih',
@@ -418,10 +576,15 @@
 
             const nisn = confirmResult.value;
 
+            // Hentikan timer selama proses simpan
+            stopVoteTimer();
+            voteTimerBadge.classList.add('hidden');
+            voteTimerBadge.classList.remove('flex');
+
             // Tampilkan loading modal
             Swal.fire({
                 title: 'Menyimpan Suara...',
-                text: 'Mencatat suara Anda ke sistem...',
+                text: 'Mencatat suara Ketua OSIS & Ketua MPK...',
                 allowOutsideClick: false,
                 allowEscapeKey: false,
                 showConfirmButton: false,
@@ -437,7 +600,8 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({
-                        id_calon: candidateId,
+                        id_calon_osis: osisCandidate.value,
+                        id_calon_mpk: mpkCandidate.value,
                         nisn: nisn,
                         display_token: token
                     })
@@ -451,15 +615,18 @@
                         title: 'Gagal Menyimpan Suara',
                         text: data.message || (data.errors ? Object.values(data.errors).flat().join('\n') : 'Terjadi kesalahan sistem.'),
                         confirmButtonText: 'Coba Lagi'
+                    }).then(() => {
+                        sessionStorage.setItem('display_token', token);
+                        startVoteTimer();
                     });
                     return;
                 }
 
-                // Sukses instan tanpa freeze
+                // Sukses — token hangus (kedua pemilihan selesai)
                 await Swal.fire({
                     icon: 'success',
                     title: 'Suara Berhasil Dicatat!',
-                    html: `Terima kasih <strong class="text-indigo-400">${data.voter_name || nisn}</strong>, suara Anda telah resmi masuk.`,
+                    html: `Terima kasih <strong class="text-indigo-400">${data.voter_name || nisn}</strong>, suara Ketua OSIS &amp; Ketua MPK telah resmi masuk.`,
                     confirmButtonText: 'Selesai',
                     timer: 3000,
                     timerProgressBar: true
@@ -473,6 +640,9 @@
                     title: 'Koneksi Error',
                     text: 'Gagal menghubungi server saat menyimpan suara.',
                     confirmButtonText: 'Coba Lagi'
+                }).then(() => {
+                    sessionStorage.setItem('display_token', token);
+                    startVoteTimer();
                 });
             }
         });
@@ -501,18 +671,17 @@
             });
         @endif
 
-        function resetForm() {
+        function resetForm(silent = false) {
+            stopVoteTimer();
+            voteTimerBadge.classList.add('hidden');
+            voteTimerBadge.classList.remove('flex');
             document.getElementById('votingForm').reset();
             candidateCards.forEach(card => {
-                card.classList.remove('selected', 'border-indigo-500', 'ring-4', 'ring-indigo-500/30');
+                card.classList.remove('selected', 'border-indigo-500', 'border-emerald-500', 'ring-4', 'ring-indigo-500/30', 'ring-emerald-500/30');
                 card.classList.add('border-slate-800');
             });
-            voteButton.disabled = true;
-            voteButton.classList.remove('bg-gradient-to-r', 'from-indigo-600', 'to-indigo-500', 'text-white', 'hover:shadow-indigo-500/50', 'hover:scale-[1.02]', 'cursor-pointer', 'border-indigo-400');
-            voteButton.classList.add('bg-slate-800', 'text-slate-500', 'cursor-not-allowed', 'border-slate-700');
-            voteButton.innerHTML = '<i class="fa-solid fa-lock text-sm"></i> <span>PILIH KANDIDAT</span>';
-            voteButton.nextElementSibling.textContent = 'Klik pada salah satu kartu kandidat untuk menentukan pilihan';
-            
+            updateVoteButton();
+
             sessionStorage.removeItem('display_token');
             sessionStorage.removeItem('voter_name');
 
@@ -527,7 +696,65 @@
                 }
             });
             currentlyExpanded = null;
-            setTimeout(() => showTokenPopup(), 1200);
+            if (!silent) {
+                setTimeout(() => showTokenPopup(), 1200);
+            }
+        }
+
+        // ── Voting Timer Engine (durasi diatur dari halaman admin) ──
+        const VOTE_TIME_LIMIT = {{ (int) ($config['voting_timer'] ?? 30) }};
+        const voteTimerBadge = document.getElementById('vote-timer-badge');
+        const voteTimerDisplay = document.getElementById('vote-timer-display');
+        const voteTimerBar = document.getElementById('vote-timer-bar');
+        let voteTimerInterval = null;
+        let voteDeadline = null;
+
+        function stopVoteTimer() {
+            if (voteTimerInterval) { clearInterval(voteTimerInterval); voteTimerInterval = null; }
+        }
+
+        function startVoteTimer() {
+            stopVoteTimer();
+            voteDeadline = Date.now() + VOTE_TIME_LIMIT * 1000;
+            voteTimerBadge.classList.remove('hidden');
+            voteTimerBadge.classList.add('flex');
+
+            const tick = function() {
+                const remainSec = Math.max(0, Math.round((voteDeadline - Date.now()) / 1000));
+                const mm = String(Math.floor(remainSec / 60)).padStart(2, '0');
+                const ss = String(remainSec % 60).padStart(2, '0');
+                voteTimerDisplay.textContent = mm + ':' + ss;
+                const pct = VOTE_TIME_LIMIT > 0 ? (remainSec / VOTE_TIME_LIMIT) * 100 : 0;
+                voteTimerBar.style.width = pct + '%';
+
+                if (remainSec <= 10 && remainSec > 0) {
+                    voteTimerDisplay.classList.remove('text-white', 'text-emerald-400');
+                    voteTimerDisplay.classList.add('text-rose-400');
+                    voteTimerBar.classList.remove('from-indigo-500', 'to-emerald-400');
+                    voteTimerBar.classList.add('from-rose-500', 'to-rose-400');
+                } else if (remainSec > 10) {
+                    voteTimerDisplay.classList.remove('text-rose-400');
+                    voteTimerDisplay.classList.add('text-white');
+                    voteTimerBar.classList.remove('from-rose-500', 'to-rose-400');
+                    voteTimerBar.classList.add('from-indigo-500', 'to-emerald-400');
+                }
+
+                if (remainSec <= 0) {
+                    stopVoteTimer();
+                    voteTimerBadge.classList.add('hidden');
+                    voteTimerBadge.classList.remove('flex');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Waktu Memilih Habis',
+                        text: 'Waktu {{ (int) ($config['voting_timer'] ?? 30) }} detik untuk memilih telah berakhir. Token Anda tidak hangus dan masih dapat digunakan kembali.',
+                        timer: 4000,
+                        timerProgressBar: true,
+                        allowOutsideClick: false
+                    }).then(() => resetForm());
+                }
+            };
+            tick();
+            voteTimerInterval = setInterval(tick, 500);
         }
 
         function showTokenPopup() {
@@ -562,6 +789,7 @@
                             if (data.voter_name) {
                                 sessionStorage.setItem('voter_name', data.voter_name);
                             }
+                            startVoteTimer();
                             return true;
                         })
                         .catch(() => {
@@ -605,6 +833,8 @@
                             if (!data.success) {
                                 sessionStorage.removeItem('display_token');
                                 showTokenPopup();
+                            } else {
+                                startVoteTimer();
                             }
                         })
                         .catch(() => {

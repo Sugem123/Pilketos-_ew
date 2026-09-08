@@ -9,20 +9,49 @@ use Illuminate\Support\Facades\Storage;
 
 class CalonController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $calons = CalonKetua::with('kelas')->orderBy('nomor')->get();
-        $kelas = Kelas::orderBy('name')->get();
+        $tipe = $request->query('tipe', CalonKetua::TIPE_OSIS);
 
-        return view('calon.index', compact('calons', 'kelas'));
+        if (! in_array($tipe, [CalonKetua::TIPE_OSIS, CalonKetua::TIPE_MPK])) {
+            $tipe = CalonKetua::TIPE_OSIS;
+        }
+
+        $calons = CalonKetua::with('kelas')
+            ->where('tipe', $tipe)
+            ->orderBy('nomor')
+            ->get();
+
+        $kelas = Kelas::orderBy('name')->get();
+        $config = json_decode(file_get_contents(base_path('config.json')), true);
+
+        return view('calon.index', compact('calons', 'kelas', 'tipe', 'config'));
     }
 
     public function store(Request $request)
     {
+        $tipe = $request->input('tipe', CalonKetua::TIPE_OSIS);
+
+        if (! in_array($tipe, [CalonKetua::TIPE_OSIS, CalonKetua::TIPE_MPK])) {
+            $tipe = CalonKetua::TIPE_OSIS;
+        }
+
         $request->validate([
             'nama' => 'required|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
-            'nomor' => 'required|integer|min:1',
+            'nomor' => [
+                'required', 'integer', 'min:1',
+                function (string $attribute, mixed $value, \Closure $fail) use ($tipe) {
+                    $config = json_decode(file_get_contents(base_path('config.json')), true);
+                    $max = (int) ($tipe === CalonKetua::TIPE_MPK
+                        ? ($config['jumlah_calon_mpk'] ?? 5)
+                        : ($config['jumlah_calon_osis'] ?? 3));
+
+                    if ((int) $value > $max) {
+                        $fail("Nomor urut maksimal {$max} sesuai pengaturan jumlah kandidat pemilihan {$tipe}.");
+                    }
+                },
+            ],
             'foto_calon' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'visi' => 'required|string|max:521',
             'misi' => 'required|string|max:1000',
@@ -31,9 +60,16 @@ class CalonController extends Controller
             'nomor.integer' => 'Nomor urut harus berupa angka bulat.',
         ]);
 
+        $exists = CalonKetua::where('tipe', $tipe)->where('nomor', $request->nomor)->exists();
+        if ($exists) {
+            return back()->withErrors(['nomor' => 'Nomor urut sudah dipakai kandidat lain pada pemilihan ini.'])
+                ->withInput();
+        }
+
         $path = $request->file('foto_calon')->store('foto_calon', 'public');
 
         CalonKetua::create([
+            'tipe' => $tipe,
             'nama' => $request->nama,
             'nomor' => $request->nomor,
             'visi' => $request->visi,
@@ -42,15 +78,30 @@ class CalonController extends Controller
             'url_foto' => 'storage/'.$path,
         ]);
 
-        return redirect()->route('calon.index')->with('success', 'Calon berhasil ditambahkan!');
+        return redirect()->route('calon.index', ['tipe' => $tipe])
+            ->with('success', 'Kandidat '.strtoupper($tipe).' berhasil ditambahkan!');
     }
 
     public function update(Request $request, CalonKetua $calon)
     {
+        $tipe = $calon->tipe;
+
         $request->validate([
             'nama' => 'required|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
-            'nomor' => 'required|integer|min:1',
+            'nomor' => [
+                'required', 'integer', 'min:1',
+                function (string $attribute, mixed $value, \Closure $fail) use ($tipe) {
+                    $config = json_decode(file_get_contents(base_path('config.json')), true);
+                    $max = (int) ($tipe === CalonKetua::TIPE_MPK
+                        ? ($config['jumlah_calon_mpk'] ?? 5)
+                        : ($config['jumlah_calon_osis'] ?? 3));
+
+                    if ((int) $value > $max) {
+                        $fail("Nomor urut maksimal {$max} sesuai pengaturan jumlah kandidat pemilihan {$tipe}.");
+                    }
+                },
+            ],
             'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'visi' => 'required|string|max:521',
             'misi' => 'required|string|max:1000',
@@ -58,6 +109,16 @@ class CalonController extends Controller
             'nomor.min'     => 'Nomor urut harus minimal 1.',
             'nomor.integer' => 'Nomor urut harus berupa angka bulat.',
         ]);
+
+        $exists = CalonKetua::where('tipe', $tipe)
+            ->where('nomor', $request->nomor)
+            ->where('id', '!=', $calon->id)
+            ->exists();
+
+        if ($exists) {
+            return back()->withErrors(['nomor' => 'Nomor urut sudah dipakai kandidat lain pada pemilihan ini.'])
+                ->withInput();
+        }
 
         $data = [
             'nama' => $request->nama,
@@ -80,16 +141,25 @@ class CalonController extends Controller
 
         $calon->update($data);
 
-        return redirect()->route('calon.index')->with('success', 'Data calon berhasil diupdate!');
+        return redirect()->route('calon.index', ['tipe' => $tipe])
+            ->with('success', 'Data kandidat '.strtoupper($tipe).' berhasil diupdate!');
     }
 
     public function destroy(CalonKetua $calon)
     {
+        $tipe = $calon->tipe;
+
+        if ($calon->votes()->exists()) {
+            return redirect()->route('calon.index', ['tipe' => $tipe])
+                ->with('error', 'Kandidat sudah memiliki suara dan tidak dapat dihapus.');
+        }
+
         if ($calon->url_foto) {
             Storage::disk('public')->delete(str_replace('storage/', '', $calon->url_foto));
         }
         $calon->delete();
 
-        return redirect()->route('calon.index')->with('success', 'Calon berhasil dihapus!');
+        return redirect()->route('calon.index', ['tipe' => $tipe])
+            ->with('success', 'Kandidat berhasil dihapus!');
     }
 }

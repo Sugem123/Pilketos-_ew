@@ -6,15 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('votes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_calon')->constrained('calon_ketua')->cascadeOnDelete();
             $table->foreignId('id_nisn')->constrained('hak_suara')->cascadeOnDelete();
+            $table->string('tipe_pemilihan', 20)->default('osis')->index();
             $table->timestamp('created_at')->useCurrent();
         });
     }

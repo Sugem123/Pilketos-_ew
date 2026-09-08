@@ -84,6 +84,27 @@ class AdminConfigController extends Controller
         return redirect()->route('admin-config.index')->with('success', 'Format surat undangan panggilan berhasil diperbarui!');
     }
 
+    public function updateVotingSettings(Request $request)
+    {
+        $request->validate([
+            'voting_timer' => 'required|integer|min:5|max:3600',
+            'livecount_interval' => 'required|integer|min:1|max:1440',
+            'jumlah_calon_osis' => 'required|integer|min:1|max:20',
+            'jumlah_calon_mpk' => 'required|integer|min:1|max:20',
+        ]);
+
+        $config = $this->getConfig();
+
+        $config['voting_timer'] = (int) $request->voting_timer;
+        $config['livecount_interval'] = (int) $request->livecount_interval;
+        $config['jumlah_calon_osis'] = (int) $request->jumlah_calon_osis;
+        $config['jumlah_calon_mpk'] = (int) $request->jumlah_calon_mpk;
+
+        file_put_contents(base_path('config.json'), json_encode($config, JSON_PRETTY_PRINT));
+
+        return redirect()->route('admin-config.index')->with('success', 'Pengaturan voting & live count berhasil diperbarui!');
+    }
+
     public function store(Request $request)
     {
         $request->validate([

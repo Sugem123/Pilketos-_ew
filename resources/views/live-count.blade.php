@@ -69,6 +69,15 @@
                 </button>
             </div>
 
+            {{-- Jeda Sinkronisasi Data (delay antar pengambilan data, diatur admin) --}}
+            <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-900/80 border border-slate-800 rounded-2xl">
+                <i class="fa-solid fa-clock-rotate-left text-indigo-400 text-xs"></i>
+                <div class="flex flex-col leading-none">
+                    <span class="text-[10px] uppercase tracking-wider text-slate-400 font-mono mb-1">Jeda Sinkron</span>
+                    <span id="next-sync-countdown" class="font-heading font-black text-sm text-slate-200 font-mono tabular-nums">--:--</span>
+                </div>
+            </div>
+
             <div class="text-center px-4 py-2 bg-slate-900/80 border border-slate-800 rounded-2xl">
                 <span class="text-[10px] uppercase tracking-wider text-slate-400 font-mono block">Suara Masuk</span>
                 <span id="header-total-vote" class="font-heading font-black text-lg sm:text-2xl text-emerald-400 font-mono">0</span>
@@ -90,9 +99,31 @@
     {{-- Main Live Stage --}}
     <main class="w-full max-w-[1700px] mx-auto flex-1 flex flex-col justify-center gap-6 z-10">
 
-        {{-- Candidate Showcase Cards --}}
-        <div id="candidates-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
-            {{-- Injected dynamically by Javascript for live animated transitions --}}
+        {{-- Candidate Showcase: OSIS + MPK --}}
+        <div class="space-y-6">
+            <section>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-heading font-extrabold uppercase tracking-widest">
+                        <i class="fa-solid fa-user-tie"></i> Ketua OSIS
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-500">Total suara: <strong id="osis-total-badge" class="text-indigo-300">0</strong></span>
+                </div>
+                <div id="osis-candidates-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+                    {{-- Injected dynamically --}}
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-heading font-extrabold uppercase tracking-widest">
+                        <i class="fa-solid fa-scale-balanced"></i> Ketua MPK
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-500">Total suara: <strong id="mpk-total-badge" class="text-emerald-300">0</strong></span>
+                </div>
+                <div id="mpk-candidates-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+                    {{-- Injected dynamically --}}
+                </div>
+            </section>
         </div>
 
         {{-- Secondary Live Analytics Row (Class tracking + Role Split + Feed) --}}
@@ -172,7 +203,7 @@
     {{-- Minimal Live Footer --}}
     <footer class="w-full max-w-[1700px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-white/10 pt-4 mt-6 text-xs text-slate-500 z-10">
         <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Auto-Sync: 3s</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Auto-Sync: <span id="sync-interval-label">15 menit</span></span>
             <span>&bull;</span>
             <span>Terakhir Diperbarui: <strong id="last-sync-time" class="text-slate-400 font-mono">--:--:--</strong></span>
         </div>
@@ -199,6 +230,37 @@
             fetchLiveCount();
         }
 
+        // ── Live Polling Engine — jeda pengambilan data diatur dari halaman admin ──
+        const SYNC_INTERVAL_SEC = {{ (int) ($config['livecount_interval'] ?? 15) }} * 60;
+        let syncCountdownSec = 5; // sinkron pertama tetap cepat agar layar tidak kosong
+        let syncTicker = null;
+
+        function formatCountdown(sec) {
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+
+        function updateSyncLabel() {
+            const minutes = Math.max(1, Math.round(SYNC_INTERVAL_SEC / 60));
+            document.getElementById('sync-interval-label').textContent =
+                minutes >= 60 ? (minutes / 60) + ' jam' : minutes + ' menit';
+        }
+
+        function startSyncTicker() {
+            if (syncTicker) clearInterval(syncTicker);
+            updateSyncLabel();
+            syncTicker = setInterval(() => {
+                syncCountdownSec--;
+                const el = document.getElementById('next-sync-countdown');
+                if (el) el.textContent = formatCountdown(Math.max(0, syncCountdownSec));
+                if (syncCountdownSec <= 0) {
+                    clearInterval(syncTicker);
+                    fetchLiveCount();
+                }
+            }, 1000);
+        }
+
         async function fetchLiveCount() {
             try {
                 const res = await fetch(`{{ route('live-count.data') }}?mode=${currentMode}`);
@@ -208,22 +270,27 @@
             } catch (err) {
                 console.error('Failed to sync live data:', err);
             }
+            // Sinkron berikutnya sesuai jeda yang diatur admin
+            syncCountdownSec = SYNC_INTERVAL_SEC;
+            startSyncTicker();
         }
 
-        function renderLiveDashboard(data) {
-            // Header counters
-            document.getElementById('header-total-vote').textContent = `${data.total_vote} / ${data.total_hak_suara}`;
-            document.getElementById('header-partisipasi').textContent = `${data.partisipasi}%`;
+        function renderCandidateSection(containerId, candidates, tipe) {
+            const container = document.getElementById(containerId);
+            const isMpk = tipe === 'mpk';
+            const colorAccent = isMpk ? 'text-emerald-400' : 'text-indigo-400';
+            const colorAccentSoft = isMpk ? 'text-emerald-300' : 'text-indigo-300';
+            const colorBoxBg = isMpk ? 'bg-emerald-500/10' : 'bg-indigo-500/10';
+            const colorBoxBorder = isMpk ? 'border-emerald-500/30' : 'border-indigo-500/30';
+            const colorBar = isMpk ? 'bg-gradient-to-r from-emerald-600 to-emerald-400' : 'bg-gradient-to-r from-indigo-600 to-indigo-400';
+            const labelTipe = isMpk ? 'KETUA MPK' : 'KETUA OSIS';
+            const maxVotes = Math.max(...candidates.map(c => c.votes), 0);
 
-            // Candidates rendering
-            const maxVotes = Math.max(...data.candidates.map(c => c.votes), 0);
-            const container = document.getElementById('candidates-container');
-            
-            container.innerHTML = data.candidates.map((c, index) => {
+            container.innerHTML = candidates.map((c) => {
                 const isLeading = maxVotes > 0 && c.votes === maxVotes;
                 return `
                     <div class="relative bg-slate-900/90 backdrop-blur-2xl rounded-3xl border-2 ${isLeading ? 'border-amber-400/90 shadow-2xl shadow-amber-500/10 ring-4 ring-amber-400/20' : 'border-slate-800 shadow-xl'} overflow-hidden transition-all duration-500 flex flex-col justify-between group">
-                        
+
                         ${isLeading ? `
                             <div class="absolute top-4 right-4 z-20 px-3 py-1 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-xs rounded-full shadow-lg flex items-center gap-1.5 font-heading tracking-wider animate-bounce">
                                 <i class="fa-solid fa-crown text-[11px]"></i>
@@ -231,19 +298,17 @@
                             </div>
                         ` : ''}
 
-                        {{-- Card Header --}}
                         <div class="p-6 pb-4 border-b border-slate-800/80 bg-slate-950/40 flex items-center justify-between">
                             <div>
-                                <span class="text-[11px] font-bold uppercase tracking-widest text-indigo-400 font-mono">KANDIDAT 0${c.nomor}</span>
+                                <span class="text-[11px] font-bold uppercase tracking-widest ${colorAccent} font-mono">${labelTipe} 0${c.nomor}</span>
                                 <h2 class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-tight mt-0.5">${c.nama}</h2>
                                 <p class="text-xs text-slate-400 font-mono mt-0.5">Kelas ${c.kelas}</p>
                             </div>
-                            <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center font-heading font-black text-indigo-300 text-xl">
+                            <div class="w-12 h-12 rounded-2xl ${colorBoxBg} ${colorBoxBorder} border flex items-center justify-center font-heading font-black ${colorAccentSoft} text-xl">
                                 ${c.nomor}
                             </div>
                         </div>
 
-                        {{-- Card Photo & Watermark Number (Full Photo Display) --}}
                         <div class="relative h-[20rem] sm:h-[23rem] bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950 flex items-center justify-center overflow-hidden p-3">
                             <h1 class="absolute bottom-2 left-3 font-heading font-black text-slate-800/25 text-8xl select-none pointer-events-none z-0">
                                 0${c.nomor}
@@ -258,7 +323,6 @@
                             `}
                         </div>
 
-                        {{-- Card Score & Live Progress --}}
                         <div class="p-6 bg-slate-950/80 border-t border-slate-800 space-y-4">
                             <div class="flex items-end justify-between">
                                 <div>
@@ -268,15 +332,14 @@
                                     </h3>
                                 </div>
                                 <div class="text-right">
-                                    <span class="font-heading font-black text-2xl sm:text-3xl ${isLeading ? 'text-amber-400' : 'text-indigo-400'} font-mono leading-none">
+                                    <span class="font-heading font-black text-2xl sm:text-3xl ${isLeading ? 'text-amber-400' : colorAccent} font-mono leading-none">
                                         ${c.percentage}%
                                     </span>
                                 </div>
                             </div>
 
-                            {{-- Live Progress Bar --}}
                             <div class="w-full bg-slate-900 rounded-full h-3 border border-slate-800 overflow-hidden p-0.5">
-                                <div class="h-full rounded-full transition-all duration-700 ${isLeading ? 'bg-gradient-to-r from-amber-500 to-yellow-400' : 'bg-gradient-to-r from-indigo-600 to-indigo-400'}"
+                                <div class="h-full rounded-full transition-all duration-700 ${isLeading ? 'bg-gradient-to-r from-amber-500 to-yellow-400' : colorBar}"
                                      style="width: ${c.percentage}%"></div>
                             </div>
                         </div>
@@ -284,6 +347,18 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        function renderLiveDashboard(data) {
+            // Header counters
+            document.getElementById('header-total-vote').textContent = `${data.total_vote} / ${data.total_hak_suara}`;
+            document.getElementById('header-partisipasi').textContent = `${data.partisipasi}%`;
+
+            // OSIS + MPK candidate sections
+            renderCandidateSection('osis-candidates-container', data.osis_candidates, 'osis');
+            renderCandidateSection('mpk-candidates-container', data.mpk_candidates, 'mpk');
+            document.getElementById('osis-total-badge').textContent = data.osis_total_vote;
+            document.getElementById('mpk-total-badge').textContent = data.mpk_total_vote;
 
             // Class progress rendering
             const kelasContainer = document.getElementById('kelas-progress-grid');
@@ -351,9 +426,8 @@
             }
         }
 
-        // Initial fetch & Polling every 3 seconds
+        // Initial fetch — sinkronisasi lanjutan otomatis sesuai jeda (Admin Config)
         fetchLiveCount();
-        setInterval(fetchLiveCount, 3000);
     </script>
 </body>
 </html>
