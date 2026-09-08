@@ -42,17 +42,19 @@
             Hak Suara (DPT)
         </a>
 
-        <a href="{{ route('tokens.index') }}"
-            class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'tokens') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-            <i class="fas fa-key w-5 text-center text-sm {{ str_starts_with($currentRoute, 'tokens') ? 'text-white' : 'text-indigo-400' }}"></i>
-            Display Token
-        </a>
+        @if(auth()->user()?->isAdmin())
+            <a href="{{ route('tokens.index') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'tokens') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+                <i class="fas fa-key w-5 text-center text-sm {{ str_starts_with($currentRoute, 'tokens') ? 'text-white' : 'text-indigo-400' }}"></i>
+                Display Token
+            </a>
 
-        <a href="{{ route('audit-suara.index') }}"
-            class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'audit-suara') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-            <i class="fas fa-check-double w-5 text-center text-sm {{ str_starts_with($currentRoute, 'audit-suara') ? 'text-white' : 'text-indigo-400' }}"></i>
-            Audit Suara Manual
-        </a>
+            <a href="{{ route('audit-suara.index') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'audit-suara') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+                <i class="fas fa-check-double w-5 text-center text-sm {{ str_starts_with($currentRoute, 'audit-suara') ? 'text-white' : 'text-indigo-400' }}"></i>
+                Audit Suara Manual
+            </a>
+        @endif
 
         <div class="pt-5 px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Sistem & Live</div>
 
@@ -65,11 +67,13 @@
             <span class="text-[10px] bg-rose-500/20 text-rose-300 group-hover:bg-rose-500 group-hover:text-white px-2 py-0.5 rounded font-mono font-bold">TPS</span>
         </a>
 
-        <a href="{{ route('admin-config.index') }}"
-            class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'admin-config') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-            <i class="fas fa-user-shield w-5 text-center text-sm {{ str_starts_with($currentRoute, 'admin-config') ? 'text-white' : 'text-indigo-400' }}"></i>
-            Akun Admin
-        </a>
+        @if(auth()->user()?->isAdmin())
+            <a href="{{ route('admin-config.index') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'admin-config') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+                <i class="fas fa-user-shield w-5 text-center text-sm {{ str_starts_with($currentRoute, 'admin-config') ? 'text-white' : 'text-indigo-400' }}"></i>
+                Akun Admin
+            </a>
+        @endif
 
         <a href="{{ route('voting.index') }}" target="_blank"
             class="flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all group">
@@ -84,11 +88,16 @@
     {{-- User Footer --}}
     <div class="p-4 bg-slate-950/60 border-t border-slate-800/80">
         <div class="flex items-center gap-3 mb-3 p-2 rounded-xl bg-slate-900/80 border border-slate-800">
-            <div class="w-9 h-9 bg-gradient-to-tr from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center font-bold text-white text-sm shadow-md">
+            <div class="w-9 h-9 bg-gradient-to-tr {{ auth()->user()?->isOperator() ? 'from-emerald-500 to-teal-700' : 'from-indigo-500 to-indigo-700' }} rounded-lg flex items-center justify-center font-bold text-white text-sm shadow-md">
                 {{ substr(auth()->user()->nama_lengkap ?? 'A', 0, 1) }}
             </div>
             <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-white truncate">{{ auth()->user()->nama_lengkap ?? 'Admin' }}</p>
+                <div class="flex items-center gap-1.5">
+                    <p class="text-xs font-bold text-white truncate">{{ auth()->user()->nama_lengkap ?? 'Admin' }}</p>
+                    <span class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold uppercase {{ auth()->user()?->isOperator() ? 'bg-emerald-500/20 text-emerald-300' : 'bg-indigo-500/20 text-indigo-300' }}">
+                        {{ auth()->user()?->role ?? 'admin' }}
+                    </span>
+                </div>
                 <p class="text-[11px] text-slate-400 truncate">{{ auth()->user()->email ?? 'admin@system.local' }}</p>
             </div>
         </div>

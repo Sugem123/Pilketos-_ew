@@ -10,12 +10,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['nama_lengkap', 'email', 'password'])]
+#[Fillable(['nama_lengkap', 'email', 'password', 'role'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_OPERATOR = 'operator';
 
     protected function casts(): array
     {
@@ -23,5 +26,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return ($this->role ?? self::ROLE_ADMIN) === self::ROLE_ADMIN;
+    }
+
+    public function isOperator(): bool
+    {
+        return ($this->role ?? '') === self::ROLE_OPERATOR;
     }
 }

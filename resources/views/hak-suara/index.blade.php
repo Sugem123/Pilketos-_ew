@@ -138,11 +138,17 @@
                                 <td class="px-6 py-4 text-xs font-mono text-slate-500">{{ $index + 1 }}</td>
                                 <td class="px-6 py-4 text-xs font-bold text-white">{{ $hs->nisn }}</td>
                                 <td class="px-6 py-4">
-                                    <code class="px-3 py-1 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono font-black {{ $hs->token_used ? 'line-through text-slate-600' : 'text-amber-400' }}">
-                                        {{ $hs->token ?? '-' }}
-                                    </code>
-                                    @if($hs->token_used)
-                                        <span class="ml-1.5 text-[9px] text-rose-400 font-bold font-mono px-1.5 py-0.5 bg-rose-500/10 border border-rose-500/20 rounded">HANGUS</span>
+                                    @if($hs->token)
+                                        <code class="px-3 py-1 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono font-black {{ $hs->token_used ? 'line-through text-slate-600' : 'text-amber-400' }}">
+                                            {{ $hs->token }}
+                                        </code>
+                                        @if($hs->token_used)
+                                            <span class="ml-1.5 text-[9px] text-rose-400 font-bold font-mono px-1.5 py-0.5 bg-rose-500/10 border border-rose-500/20 rounded">HANGUS</span>
+                                        @endif
+                                    @else
+                                        <span class="px-2.5 py-1 bg-slate-900 border border-white/5 rounded-xl text-[10px] font-mono text-slate-500 italic">
+                                            Belum Di-generate (Admin)
+                                        </span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">

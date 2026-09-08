@@ -298,6 +298,9 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
                                 <h3 class="font-bold text-white text-sm truncate">{{ $user->nama_lengkap }}</h3>
+                                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full font-mono uppercase {{ ($user->role ?? 'admin') === 'operator' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30' }}">
+                                    {{ $user->role ?? 'admin' }}
+                                </span>
                                 @if($user->id === auth()->id())
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">Akun Anda</span>
                                 @endif
@@ -349,9 +352,17 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Alamat Email</label>
-                    <input type="email" id="input-email" name="email" required
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Alamat Email / Username</label>
+                    <input type="text" id="input-email" name="email" required
                            class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold font-mono">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Peran / Hak Akses (Role)</label>
+                    <select id="input-role" name="role" required class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold">
+                        <option value="admin">Administrator (Akses Penuh)</option>
+                        <option value="operator">Operator (Kelola Calon, Input DPT tanpa Token, Cetak Undangan/Kartu)</option>
+                    </select>
                 </div>
 
                 <div>
@@ -398,15 +409,17 @@
                 methodInput.value = 'PUT';
                 document.getElementById('input-nama').value = user.nama_lengkap;
                 document.getElementById('input-email').value = user.email;
+                document.getElementById('input-role').value = user.role || 'admin';
                 document.getElementById('input-password').value = '';
                 document.getElementById('input-password-confirm').value = '';
                 passwordHint.style.display = 'block';
                 document.getElementById('input-password').removeAttribute('required');
             } else {
-                title.textContent = 'Tambah Administrator Baru';
+                title.textContent = 'Tambah Akun Pengguna';
                 form.action = '{{ route('admin-config.store') }}';
                 methodInput.value = 'POST';
                 form.reset();
+                document.getElementById('input-role').value = 'admin';
                 passwordHint.style.display = 'none';
                 document.getElementById('input-password').setAttribute('required', 'required');
             }

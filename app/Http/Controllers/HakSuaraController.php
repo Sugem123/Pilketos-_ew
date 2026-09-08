@@ -66,15 +66,21 @@ class HakSuaraController extends Controller
             'id_kelas.required' => 'Kelas wajib dipilih untuk pemilih tipe Siswa.',
         ]);
 
+        $canGenerateToken = ! $request->user()?->isOperator();
+
         HakSuara::create([
             'nisn' => $request->nisn,
             'tipe' => $request->tipe,
             'id_kelas' => $request->tipe === 'siswa' ? $request->id_kelas : null,
-            'token' => HakSuara::generateUniqueToken(),
+            'token' => $canGenerateToken ? HakSuara::generateUniqueToken() : null,
             'token_used' => false,
         ]);
 
-        return redirect()->route('hak-suara.index')->with('success', 'Hak suara dan token pemilih berhasil ditambahkan!');
+        $pesan = $canGenerateToken
+            ? 'Hak suara dan token pemilih berhasil ditambahkan!'
+            : 'Data pemilih berhasil ditambahkan (Token di-generate oleh Administrator)!';
+
+        return redirect()->route('hak-suara.index')->with('success', $pesan);
     }
 
     public function destroy(HakSuara $hakSuara)
@@ -137,11 +143,13 @@ class HakSuaraController extends Controller
                     }
                 }
 
+                $canGenerateToken = ! $request->user()?->isOperator();
+
                 HakSuara::create([
                     'nisn' => $nama,
                     'tipe' => $tipe,
                     'id_kelas' => $idKelas,
-                    'token' => HakSuara::generateUniqueToken(),
+                    'token' => $canGenerateToken ? HakSuara::generateUniqueToken() : null,
                     'token_used' => false,
                 ]);
 

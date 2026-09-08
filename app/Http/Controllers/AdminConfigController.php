@@ -111,15 +111,17 @@ class AdminConfigController extends Controller
             'nama_lengkap' => 'required|string|max:256',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
+            'role' => 'nullable|in:admin,operator',
         ]);
 
         User::create([
             'nama_lengkap' => $request->nama_lengkap,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->input('role', User::ROLE_ADMIN),
         ]);
 
-        return redirect()->route('admin-config.index')->with('success', 'Admin berhasil ditambahkan!');
+        return redirect()->route('admin-config.index')->with('success', 'Akun pengguna berhasil ditambahkan!');
     }
 
     public function update(Request $request, User $user)
@@ -128,6 +130,7 @@ class AdminConfigController extends Controller
             'nama_lengkap' => 'required|string|max:256',
             'email' => 'required|email|unique:users,email,'.$user->id,
             'password' => 'nullable|string|min:6|confirmed',
+            'role' => 'nullable|in:admin,operator',
         ]);
 
         $data = [
@@ -135,13 +138,17 @@ class AdminConfigController extends Controller
             'email' => $request->email,
         ];
 
+        if ($request->filled('role')) {
+            $data['role'] = $request->role;
+        }
+
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
 
         $user->update($data);
 
-        return redirect()->route('admin-config.index')->with('success', 'Data admin berhasil diupdate!');
+        return redirect()->route('admin-config.index')->with('success', 'Data akun berhasil diupdate!');
     }
 
     public function destroy(User $user)

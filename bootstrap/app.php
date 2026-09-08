@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'desktop' => EnsureDesktopAccess::class,
+            'role.admin' => \App\Http\Middleware\EnsureAdminRole::class,
         ]);
 
         // Trust all proxies (Cloudflare Zero Trust Tunnel / Docker reverse proxy)
