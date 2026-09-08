@@ -58,5 +58,63 @@ class CalonSeeder extends Seeder
                 $calon
             );
         }
+
+        $calonMpk = [
+            [
+                'tipe' => CalonKetua::TIPE_MPK,
+                'nomor' => 1,
+                'nama' => 'Arya Danendra Kusuma',
+                'id_kelas' => 11,
+                'url_foto' => 'storage/foto_calon/mpk-01-arya-danendra.png',
+                'visi' => 'Mewujudkan MPK sebagai lembaga legislatif siswa yang independen, kritis, dan transparan dalam mengawal aspirasi siswa serta mengawasi kinerja OSIS secara konstruktif.',
+                'misi' => "1. Menampung dan memperjuangkan aspirasi seluruh siswa melalui forum dengar pendapat terbuka secara berkala.\n2. Menjalankan fungsi pengawasan dan evaluasi program kerja OSIS secara objektif, berkala, dan transparan.\n3. Mengoptimalkan komunikasi aktif antara siswa, pengurus OSIS, dan pihak sekolah.\n4. Menyelenggarakan sidang pleno evaluasi kinerja yang akuntabel dan dapat diakses laporannya oleh seluruh warga sekolah.",
+            ],
+            [
+                'tipe' => CalonKetua::TIPE_MPK,
+                'nomor' => 2,
+                'nama' => 'Nabila Aulia Rahmawati',
+                'id_kelas' => 12,
+                'url_foto' => 'storage/foto_calon/mpk-02-nabila-aulia.png',
+                'visi' => 'Menjadikan MPK sebagai mitra strategis sekolah yang responsif, berintegritas, dan solutif dalam menjembatani kebutuhan siswa dengan kebijakan sekolah.',
+                'misi' => "1. Membangun kanal aspirasi digital yang cepat tanggap, aman, dan mudah dijangkau seluruh kelas.\n2. Meningkatkan kapasitas kepemimpinan dan wawasan legislatif seluruh perwakilan kelas.\n3. Mengawal realisasi anggaran dan transparansi laporan pertanggungjawaban kegiatan kesiswaan.\n4. Menegakkan kode etik dan kedisiplinan organisasi demi terciptanya iklim sekolah yang harmonis.",
+            ],
+            [
+                'tipe' => CalonKetua::TIPE_MPK,
+                'nomor' => 3,
+                'nama' => 'Rayhan Bintang Pratama',
+                'id_kelas' => 13,
+                'url_foto' => 'storage/foto_calon/mpk-03-rayhan-bintang.png',
+                'visi' => 'Transformasi MPK yang progresif, berlandaskan musyawarah mufakat, serta aktif mewujudkan iklim demokrasi sekolah yang adil dan berkeadaban.',
+                'misi' => "1. Menguatkan fungsi perwakilan kelas melalui rapat koordinasi rutin dwimingguan yang produktif.\n2. Memberikan telaah kritis dan pendampingan solutif terhadap setiap rancangan program kerja OSIS.\n3. Mengadakan sosialisasi peran legislatif siswa guna membangun kesadaran demokrasi sehat di kalangan pelajar.\n4. Membuka ruang advokasi bagi hak-hak akademik dan non-akademik siswa yang membutuhkan pendampingan.",
+            ],
+            [
+                'tipe' => CalonKetua::TIPE_MPK,
+                'nomor' => 4,
+                'nama' => 'Zahra Putri Ramadhani',
+                'id_kelas' => 14,
+                'url_foto' => 'storage/foto_calon/mpk-04-zahra-putri.png',
+                'visi' => 'Membentuk MPK yang inklusif, aspiratif, dan bersinergi harmonis untuk menyuarakan keberagaman potensi siswa menuju kemajuan sekolah.',
+                'misi' => "1. Menyelenggarakan polling aspirasi tematik secara digital sebelum penetapan kebijakan kesiswaan besar.\n2. Menjaga harmonisasi kerja sama bilateral antara MPK, OSIS, dan seluruh ekstrakurikuler.\n3. Mengoptimalkan sistem pengarsipan dan publikasi regulasi internal siswa agar mudah dipahami.\n4. Mengembangkan budaya musyawarah yang solutif dalam menyelesaikan setiap kendala organisasi siswa.",
+            ],
+            [
+                'tipe' => CalonKetua::TIPE_MPK,
+                'nomor' => 5,
+                'nama' => 'Dimas Satria Wibowo',
+                'id_kelas' => 15,
+                'url_foto' => 'storage/foto_calon/mpk-05-dimas-satria.png',
+                'visi' => 'Mewujudkan MPK yang berwibawa, tegas, dan akuntabel sebagai pilar penegak disiplin aturan serta pembawa perubahan positif bagi almamater.',
+                'misi' => "1. Mengawal implementasi Anggaran Dasar dan Anggaran Rumah Tangga (AD/ART) OSIS/MPK secara konsisten.\n2. Meningkatkan efektivitas monitoring dan audit kepanitiaan setiap kegiatan sekolah.\n3. Menjadi wadah mediasi dan penyelesaian kendala antar kelas dengan pendekatan kekeluargaan yang berkeadilan.\n4. Mendorong keterlibatan aktif siswa dalam memberikan evaluasi terhadap fasilitas dan mutu lingkungan belajar.",
+            ],
+        ];
+
+        foreach ($calonMpk as $mpk) {
+            CalonKetua::firstOrCreate(
+                [
+                    'tipe' => CalonKetua::TIPE_MPK,
+                    'nomor' => $mpk['nomor'],
+                ],
+                $mpk
+            );
+        }
     }
 }
