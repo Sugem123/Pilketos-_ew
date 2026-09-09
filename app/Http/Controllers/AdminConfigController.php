@@ -89,6 +89,8 @@ class AdminConfigController extends Controller
         $request->validate([
             'voting_timer' => 'required|integer|min:5|max:3600',
             'livecount_interval' => 'required|integer|min:1|max:1440',
+            'livecount_status' => 'required|in:open,closed',
+            'livecount_closed_message' => 'nullable|string|max:500',
             'jumlah_calon_osis' => 'required|integer|min:1|max:20',
             'jumlah_calon_mpk' => 'required|integer|min:1|max:20',
         ]);
@@ -97,6 +99,8 @@ class AdminConfigController extends Controller
 
         $config['voting_timer'] = (int) $request->voting_timer;
         $config['livecount_interval'] = (int) $request->livecount_interval;
+        $config['livecount_status'] = $request->livecount_status;
+        $config['livecount_closed_message'] = $request->livecount_closed_message ?: 'Perolehan suara langsung (Live Count) ditutup sementara oleh panitia.';
         $config['jumlah_calon_osis'] = (int) $request->jumlah_calon_osis;
         $config['jumlah_calon_mpk'] = (int) $request->jumlah_calon_mpk;
 

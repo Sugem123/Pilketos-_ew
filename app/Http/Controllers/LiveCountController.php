@@ -8,25 +8,43 @@ use App\Models\Kelas;
 use App\Models\Vote;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LiveCountController extends Controller
 {
     public function index()
     {
+        $config = json_decode(file_get_contents(base_path('config.json')), true) ?: [];
+        $isClosed = ($config['livecount_status'] ?? 'open') === 'closed';
+
+        // Jika live count ditutup dan pengunjung bukan admin/panitia yang login
+        if ($isClosed && ! Auth::check()) {
+            return view('live-count-closed', compact('config'));
+        }
+
         $calonOsis = CalonKetua::with('kelas')->osis()->orderBy('nomor')->get();
         $calonMpk = CalonKetua::with('kelas')->mpk()->orderBy('nomor')->get();
 
         $totalVote = Vote::count();
         $totalHakSuara = HakSuara::count();
-        $config = json_decode(file_get_contents(base_path('config.json')), true);
 
         return view('live-count', compact(
-            'calonOsis', 'calonMpk', 'totalVote', 'totalHakSuara', 'config'
+            'calonOsis', 'calonMpk', 'totalVote', 'totalHakSuara', 'config', 'isClosed'
         ));
     }
 
     public function data(Request $request): JsonResponse
     {
+        $config = json_decode(file_get_contents(base_path('config.json')), true) ?: [];
+        $isClosed = ($config['livecount_status'] ?? 'open') === 'closed';
+
+        if ($isClosed && ! Auth::check()) {
+            return response()->json([
+                'closed' => true,
+                'message' => $config['livecount_closed_message'] ?? 'Live count ditutup sementara.',
+            ]);
+        }
+
         $mode = $request->query('mode', 'quick'); // 'quick' (suara digital) or 'pleno' (hanya suara sah)
 
         $calons = CalonKetua::with('kelas')

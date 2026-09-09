@@ -266,6 +266,41 @@
                     </div>
                 </div>
 
+                {{-- Pengaturan Status Live Count: Buka / Tutup --}}
+                <div class="p-5 rounded-2xl bg-slate-950/80 border border-white/10 space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2 font-mono">
+                            <i class="fas fa-tower-broadcast text-rose-400 mr-1"></i> Status Akses Publik Live Count
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all {{ ($config['livecount_status'] ?? 'open') === 'open' ? 'bg-emerald-500/10 border-emerald-500 text-white' : 'bg-slate-900 border-white/10 text-slate-400' }}">
+                                <input type="radio" name="livecount_status" value="open" {{ ($config['livecount_status'] ?? 'open') === 'open' ? 'checked' : '' }} class="text-emerald-500">
+                                <div>
+                                    <span class="text-xs font-bold block text-white">Buka Live Count (Aktif)</span>
+                                    <span class="text-[10px] text-slate-400 block">Dapat diakses bebas oleh siswa/publik &amp; proyektor</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all {{ ($config['livecount_status'] ?? 'open') === 'closed' ? 'bg-rose-500/10 border-rose-500 text-white' : 'bg-slate-900 border-white/10 text-slate-400' }}">
+                                <input type="radio" name="livecount_status" value="closed" {{ ($config['livecount_status'] ?? 'open') === 'closed' ? 'checked' : '' }} class="text-rose-500">
+                                <div>
+                                    <span class="text-xs font-bold block text-white">Tutup Live Count (Sementara)</span>
+                                    <span class="text-[10px] text-slate-400 block">Pengunjung publik diarahkan ke halaman siaran ditutup</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
+                            Pesan Keterangan Penutupan Live Count
+                        </label>
+                        <textarea name="livecount_closed_message" rows="2"
+                                  class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-xs leading-relaxed"
+                                  placeholder="Pesan yang tampil pada layar ketika live count ditutup...">{{ old('livecount_closed_message', $config['livecount_closed_message'] ?? 'Perolehan suara langsung (Live Count) ditutup sementara oleh panitia dan akan dibuka kembali saat pleno pengumuman resmi.') }}</textarea>
+                    </div>
+                </div>
+
                 <div class="pt-2 flex justify-end">
                     <x-admin-button type="submit" icon="fas fa-save" class="px-6 py-3">
                         Simpan Pengaturan Waktu
