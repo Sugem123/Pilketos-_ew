@@ -35,6 +35,7 @@ Route::get('/live-count/data', [LiveCountController::class, 'data'])->name('live
 // Publikasi Kandidat (publik, tanpa login)
 Route::get('/calon', [CalonPublicController::class, 'index'])->name('calon-public.index');
 Route::get('/calon/{calon}', [CalonPublicController::class, 'show'])->name('calon-public.show');
+Route::post('/cek-dpt', [CalonPublicController::class, 'checkDpt'])->name('calon-public.check-dpt');
 
 // Remote Scanner Pairing untuk Audit Suara (Akses HP Panitia Multi-Device)
 Route::get('/audit-suara/remote/{session}', [AuditSuaraController::class, 'remoteView'])->name('audit-suara.remote-view');
@@ -60,9 +61,11 @@ Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
     Route::post('/hak-suara/import', [HakSuaraController::class, 'import'])->name('hak-suara.import');
     Route::get('/hak-suara/download-sample', [HakSuaraController::class, 'downloadSample'])->name('hak-suara.download-sample');
 
-    // 3. Mencetak kartu undangan & kartu pemilih — bisa diakses Admin & Operator
+    // 3. Mencetak kartu undangan, kartu pemilih, buku DPT & daftar hadir — bisa diakses Admin & Operator
     Route::get('/cetak/undangan', [PrintController::class, 'undangan'])->name('cetak.undangan');
     Route::get('/cetak/kartu', [PrintController::class, 'kartu'])->name('cetak.kartu');
+    Route::get('/cetak/dpt', [PrintController::class, 'daftarDpt'])->name('cetak.dpt');
+    Route::get('/cetak/daftar-hadir', [PrintController::class, 'daftarHadir'])->name('cetak.daftar-hadir');
 
     // ─── KHUSUS ADMINISTRATOR (Operator DILARANG) ───
     Route::middleware(['role.admin'])->group(function () {

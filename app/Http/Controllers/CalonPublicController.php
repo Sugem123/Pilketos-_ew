@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\CalonKetua;
+use App\Models\HakSuara;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CalonPublicController extends Controller
 {
@@ -23,5 +26,49 @@ class CalonPublicController extends Controller
         $totalCalon = CalonKetua::where('tipe', $calon->tipe)->count();
 
         return view('calon-public.show', compact('calon', 'config', 'totalCalon'));
+    }
+
+    public function checkDpt(Request $request): JsonResponse
+    {
+        $request->validate([
+            'nama' => 'required|string|min:2|max:100',
+        ]);
+
+        $query = trim($request->nama);
+
+        $pemilihs = HakSuara::with('kelas')
+            ->where('nisn', 'like', "%{$query}%")
+            ->orderBy('tipe')
+            ->orderBy('id_kelas')
+            ->orderBy('nisn')
+            ->limit(10)
+            ->get();
+
+        if ($pemilihs->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => "Nama \"{$query}\" tidak ditemukan dalam Daftar Pemilih Tetap (DPT). Pastikan ejaan nama sesuai atau hubungi panitia pemilihan.",
+            ]);
+        }
+
+        $results = $pemilihs->map(function ($p) {
+            $hasVoted = $p->hasVoted();
+            return [
+                'id' => $p->id,
+                'nama' => $p->nisn,
+                'tipe' => $p->tipe,
+                'tipe_label' => $p->tipe === 'guru' ? 'Guru / Tendik' : 'Siswa',
+                'kelas' => $p->kelas->name ?? '-',
+                'has_voted' => $hasVoted,
+                'status_label' => $hasVoted ? 'Sudah Menggunakan Hak Pilih' : 'Belum Memilih (Siap di TPS)',
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'total' => $results->count(),
+            'query' => $query,
+            'data' => $results,
+        ]);
     }
 }

@@ -75,14 +75,83 @@
 
     {{-- Candidate Grid --}}
     <main class="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 z-10">
-        <div class="text-center max-w-2xl mx-auto mb-10">
+        <div class="text-center max-w-2xl mx-auto mb-8">
             <h2 class="text-3xl lg:text-4xl font-extrabold font-heading text-white tracking-tight leading-tight mb-3">
                 Kenali Calon Pemimpinmu
             </h2>
             <p class="text-sm lg:text-base text-slate-400">
-                Klik pada kartu kandidat untuk melihat visi, misi, dan profil lengkap.
+                Pilih pemimpin terbaik untuk masa depan sekolah. Klik kartu kandidat untuk meninjau visi, misi, dan profil lengkap.
             </p>
         </div>
+
+        {{-- WIDGET CEK STATUS DPT PEMILIH --}}
+        <section class="max-w-2xl mx-auto mb-14" x-data="dptChecker()">
+            <div class="bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-indigo-500/30 p-6 sm:p-7 shadow-2xl shadow-indigo-500/10">
+                <div class="flex items-center gap-3.5 mb-2">
+                    <div class="w-10 h-10 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fa-solid fa-address-card"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-heading font-black text-lg text-white">Cek Status DPT Pemilih</h3>
+                        <p class="text-xs text-slate-400">Ketik nama lengkap Anda untuk memeriksa apakah sudah terdaftar di DPT Pemilu OSIS &amp; MPK</p>
+                    </div>
+                </div>
+
+                <form @submit.prevent="checkDpt()" class="flex flex-col sm:flex-row gap-3 mt-4">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                        <input type="text" x-model="searchQuery" required minlength="2"
+                               placeholder="Ketik nama Anda (contoh: Aditya, Faiz, Bowo)..."
+                               class="w-full pl-10 pr-4 py-3.5 bg-slate-950 border border-white/10 rounded-2xl text-xs font-semibold text-white outline-none focus:border-indigo-500 transition-colors">
+                    </div>
+                    <button type="submit" :disabled="loading"
+                            class="px-6 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-heading font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+                        <i class="fa-solid fa-magnifying-glass" x-show="!loading"></i>
+                        <i class="fa-solid fa-spinner fa-spin" x-show="loading" x-cloak></i>
+                        <span>Cek Status</span>
+                    </button>
+                </form>
+
+                {{-- Hasil Pencarian DPT --}}
+                <div x-show="searched" x-cloak class="mt-5 pt-4 border-t border-white/10">
+                    <template x-if="found">
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between text-xs font-mono">
+                                <span class="text-emerald-400 font-bold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    <span>TERDAFTAR DALAM DPT</span>
+                                </span>
+                                <span class="text-slate-500" x-text="'Ditemukan: ' + results.length + ' pemilih'"></span>
+                            </div>
+
+                            <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                                <template x-for="item in results" :key="item.id">
+                                    <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                        <div>
+                                            <h4 class="text-sm font-bold text-white" x-text="item.nama"></h4>
+                                            <p class="text-xs text-slate-400 font-mono mt-0.5" x-text="item.tipe === 'guru' ? 'Tenaga Pendidik / Guru' : 'Siswa &bull; Kelas ' + item.kelas"></p>
+                                        </div>
+                                        <div class="flex items-center gap-2 self-start sm:self-auto">
+                                            <span class="px-3 py-1 rounded-xl text-[10px] font-mono font-bold"
+                                                  :class="item.has_voted ? 'bg-blue-500/15 text-blue-300 border border-blue-500/30' : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'"
+                                                  x-text="item.status_label">
+                                            </span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="!found">
+                        <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-3">
+                            <i class="fa-solid fa-circle-xmark text-lg text-rose-400 flex-shrink-0"></i>
+                            <span x-text="errorMessage"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </section>
 
         @if ($calonOsis->isNotEmpty())
             {{-- Seksi Ketua OSIS --}}
@@ -211,5 +280,54 @@
             </div>
         </div>
     </footer>
+    <script>
+        function dptChecker() {
+            return {
+                searchQuery: '',
+                loading: false,
+                searched: false,
+                found: false,
+                results: [],
+                errorMessage: '',
+
+                async checkDpt() {
+                    const q = this.searchQuery.trim();
+                    if (!q || q.length < 2 || this.loading) return;
+
+                    this.loading = true;
+                    this.searched = false;
+
+                    try {
+                        const res = await fetch('{{ route("calon-public.check-dpt") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ nama: q })
+                        });
+
+                        const data = await res.json();
+                        this.searched = true;
+
+                        if (data.success && data.data.length > 0) {
+                            this.found = true;
+                            this.results = data.data;
+                        } else {
+                            this.found = false;
+                            this.results = [];
+                            this.errorMessage = data.message || 'Nama tidak ditemukan dalam DPT.';
+                        }
+                    } catch (e) {
+                        this.searched = true;
+                        this.found = false;
+                        this.errorMessage = 'Terjadi kesalahan saat memeriksa data. Silakan coba kembali.';
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            };
+        }
+    </script>
 </body>
 </html>

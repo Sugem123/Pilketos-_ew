@@ -96,6 +96,70 @@ class PrintController extends Controller
         return view('print.kartu', compact('pemilihs', 'config'));
     }
 
+    public function daftarDpt(Request $request)
+    {
+        $query = HakSuara::with('kelas');
+
+        if ($request->filled('search')) {
+            $query->where('nisn', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('tipe')) {
+            $query->where('tipe', $request->tipe);
+        }
+
+        if ($request->filled('id_kelas')) {
+            $query->where('id_kelas', $request->id_kelas);
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'sudah') {
+                $query->has('votes');
+            } elseif ($request->status === 'belum') {
+                $query->doesntHave('votes');
+            }
+        }
+
+        $pemilihs = $query->orderBy('tipe')->orderBy('id_kelas')->orderBy('nisn')->get();
+        $config = $this->getConfig();
+
+        $selectedKelas = $request->filled('id_kelas') ? Kelas::find($request->id_kelas) : null;
+
+        return view('print.daftar-dpt', compact('pemilihs', 'config', 'selectedKelas'));
+    }
+
+    public function daftarHadir(Request $request)
+    {
+        $query = HakSuara::with('kelas');
+
+        if ($request->filled('search')) {
+            $query->where('nisn', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('tipe')) {
+            $query->where('tipe', $request->tipe);
+        }
+
+        if ($request->filled('id_kelas')) {
+            $query->where('id_kelas', $request->id_kelas);
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'sudah') {
+                $query->has('votes');
+            } elseif ($request->status === 'belum') {
+                $query->doesntHave('votes');
+            }
+        }
+
+        $pemilihs = $query->orderBy('tipe')->orderBy('id_kelas')->orderBy('nisn')->get();
+        $config = $this->getConfig();
+
+        $selectedKelas = $request->filled('id_kelas') ? Kelas::find($request->id_kelas) : null;
+
+        return view('print.daftar-hadir', compact('pemilihs', 'config', 'selectedKelas'));
+    }
+
     public function beritaAcara(Request $request)
     {
         $config = $this->getConfig();
