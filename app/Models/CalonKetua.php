@@ -44,6 +44,6 @@ class CalonKetua extends Model
 
     public function labelTipe(): string
     {
-        return $this->tipe === self::TIPE_MPK ? 'Ketua MPK' : 'Ketua OSIS';
+        return $this->tipe === self::TIPE_MPK ? 'Calon Ketua MPK' : 'Calon Ketua OSIS';
     }
 }
