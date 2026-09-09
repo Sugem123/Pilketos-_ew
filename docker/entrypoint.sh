@@ -6,8 +6,9 @@ cd /var/www/html
 # Ensure writable dirs
 mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views \
     storage/logs storage/app/public bootstrap/cache database
-chown -R www-data:www-data storage bootstrap/cache database 2>/dev/null || true
+chown -R www-data:www-data storage bootstrap/cache database config.json 2>/dev/null || true
 chmod -R ug+rwx storage bootstrap/cache database 2>/dev/null || true
+chmod 664 config.json 2>/dev/null || true
 
 # Create SQLite database if not exists
 DB_FRESH=false
