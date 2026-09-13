@@ -88,8 +88,5 @@
     }
   },
   "minimum-stability": "stable",
-  "prefer-stable": true,
-  "support": {
-    "forum": "#8db1fef809551d3f313fcb70"
-  }
+  "prefer-stable": true
 }
