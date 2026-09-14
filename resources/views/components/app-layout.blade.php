@@ -24,6 +24,7 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
+    @stack('head')
 </head>
 <body class="h-full luxury-ambient text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white" x-data="{ sidebarOpen: false }">
     <div class="flex h-screen overflow-hidden">
@@ -100,5 +101,6 @@
             @endif
         });
     </script>
+    @stack('scripts')
 </body>
 </html>

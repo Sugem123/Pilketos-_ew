@@ -271,8 +271,8 @@
         onclick="closeSidebar()"></div>
 
     {{-- ====== MODAL CROPPER FOTO KANDIDAT ====== --}}
-    <div id="cropper-modal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
-        <div class="w-full max-w-xl bg-slate-900 border border-indigo-500/30 rounded-3xl p-6 shadow-2xl flex flex-col max-h-[92vh]">
+    <div id="cropper-modal" class="fixed inset-0 z-[99999] hidden items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
+        <div class="w-full max-w-xl bg-slate-900 border border-indigo-500/40 rounded-3xl p-6 shadow-2xl flex flex-col max-h-[92vh] relative z-10">
             <div class="flex items-center justify-between pb-4 border-b border-white/10">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-sm">
@@ -289,8 +289,8 @@
             </div>
 
             {{-- Container Viewport Gambar Cropper --}}
-            <div class="my-4 flex-1 overflow-hidden bg-black/90 rounded-2xl border border-white/10 h-[340px] flex items-center justify-center relative">
-                <img id="cropper-target-img" src="" alt="Target Crop" class="max-w-full max-h-full block">
+            <div class="my-4 w-full bg-slate-950 rounded-2xl border border-white/10 overflow-hidden flex items-center justify-center relative" style="height: 380px;">
+                <img id="cropper-target-img" src="" alt="Target Crop" class="max-w-full block" style="display: block; max-width: 100%;">
             </div>
 
             {{-- Toolbar Tombol Kontrol --}}
@@ -454,27 +454,44 @@
 
         // Buka modal cropper dengan gambar yang sedang aktif di preview
         function startCroppingCurrent() {
-            const currentSrc = document.getElementById('preview-image').src;
+            const previewEl = document.getElementById('preview-image');
+            const currentSrc = previewEl ? previewEl.src : null;
             if (currentSrc) {
                 startCropping(currentSrc);
+            } else {
+                alert('Belum ada foto yang dipilih.');
             }
         }
 
         // Inisialisasi dan buka modal cropper
         function startCropping(imageSrc) {
+            if (!imageSrc) {
+                alert('Pilih foto terlebih dahulu.');
+                return;
+            }
+
             const modal = document.getElementById('cropper-modal');
             const targetImg = document.getElementById('cropper-target-img');
 
-            targetImg.src = imageSrc;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
 
             if (cropperInstance) {
                 cropperInstance.destroy();
+                cropperInstance = null;
             }
 
-            // Tunggu gambar ter-load di DOM baru pasang Cropper
-            targetImg.onload = function() {
+            function setupCropper() {
+                if (cropperInstance) {
+                    cropperInstance.destroy();
+                    cropperInstance = null;
+                }
+
+                if (typeof Cropper === 'undefined') {
+                    console.error('Cropper.js library tidak terdeteksi.');
+                    return;
+                }
+
                 cropperInstance = new Cropper(targetImg, {
                     aspectRatio: 3 / 4,
                     viewMode: 1,
@@ -486,7 +503,15 @@
                     rotatable: true,
                     scalable: true
                 });
-            };
+            }
+
+            targetImg.onload = setupCropper;
+            targetImg.src = imageSrc;
+
+            // Jika gambar sudah di-cache / complete di browser
+            if (targetImg.complete && targetImg.naturalWidth > 0) {
+                setupCropper();
+            }
         }
 
         // Tombol aksi toolbar cropper (zoom, rotate, reset)
