@@ -60,6 +60,7 @@ class AdminConfigController extends Controller
         $request->validate([
             'undangan_judul_kop' => 'required|string|max:255',
             'undangan_sub_kop' => 'required|string|max:255',
+            'undangan_mode_penerima' => 'required|in:sistem,kosong',
             'undangan_pembuka' => 'required|string|max:1000',
             'undangan_hari_tanggal' => 'required|string|max:100',
             'undangan_waktu' => 'required|string|max:100',
@@ -72,6 +73,7 @@ class AdminConfigController extends Controller
 
         $config['undangan_judul_kop'] = $request->undangan_judul_kop;
         $config['undangan_sub_kop'] = $request->undangan_sub_kop;
+        $config['undangan_mode_penerima'] = $request->undangan_mode_penerima;
         $config['undangan_pembuka'] = $request->undangan_pembuka;
         $config['undangan_hari_tanggal'] = $request->undangan_hari_tanggal;
         $config['undangan_waktu'] = $request->undangan_waktu;

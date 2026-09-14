@@ -174,33 +174,61 @@
             right: 15px;
             z-index: 999;
             display: flex;
+            align-items: center;
             gap: 10px;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 8px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+        }
+        .mode-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #cbd5e1;
+        }
+        .mode-selector select, .mode-selector input {
+            background: #1e293b;
+            color: #ffffff;
+            border: 1px solid #475569;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            outline: none;
         }
         .btn-print {
             background: #4f46e5;
             color: #ffffff;
             border: none;
-            padding: 10px 20px;
-            font-size: 13px;
+            padding: 8px 16px;
+            font-size: 12px;
             font-weight: 700;
             border-radius: 10px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         .btn-print:hover { background: #4338ca; }
         .btn-back {
-            background: #ffffff;
-            color: #334155;
-            border: 1px solid #cbd5e1;
-            padding: 10px 16px;
-            font-size: 13px;
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            padding: 8px 12px;
+            font-size: 12px;
             font-weight: 600;
             border-radius: 10px;
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
+        .btn-back:hover { background: #334155; }
 
         @media print {
             body { background: transparent; }
@@ -238,8 +266,32 @@
         <a href="{{ route('hak-suara.index') }}" class="btn-back">
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
+
+        <form method="GET" action="{{ route('cetak.undangan') }}" style="display: flex; align-items: center; gap: 8px;">
+            {{-- Pertahankan filter DPT jika ada --}}
+            @if(request('tipe')) <input type="hidden" name="tipe" value="{{ request('tipe') }}"> @endif
+            @if(request('id_kelas')) <input type="hidden" name="id_kelas" value="{{ request('id_kelas') }}"> @endif
+            @if(request('status')) <input type="hidden" name="status" value="{{ request('status') }}"> @endif
+            @if(request('search')) <input type="hidden" name="search" value="{{ request('search') }}"> @endif
+
+            <div class="mode-selector">
+                <span>Penerima:</span>
+                <select name="mode_penerima" onchange="this.form.submit()">
+                    <option value="sistem" {{ $modePenerima === 'sistem' ? 'selected' : '' }}>Diisi Sistem (DPT)</option>
+                    <option value="kosong" {{ $modePenerima === 'kosong' ? 'selected' : '' }}>Kosongan (Tulis Tangan)</option>
+                </select>
+            </div>
+
+            @if($modePenerima === 'kosong')
+                <div class="mode-selector">
+                    <span>Jumlah Lembar:</span>
+                    <input type="number" name="jumlah_kosong" value="{{ $jumlahKosong }}" min="1" max="500" style="width: 65px;" onchange="this.form.submit()">
+                </div>
+            @endif
+        </form>
+
         <button onclick="window.print()" class="btn-print">
-            <i class="fas fa-print"></i> Cetak Semua Undangan ({{ $pemilihs->count() }})
+            <i class="fas fa-print"></i> Cetak ({{ $pemilihs->count() }} Undangan)
         </button>
     </div>
 
@@ -261,7 +313,9 @@
                                 @if(!empty($config['url_logo']))
                                     <img src="{{ asset($config['url_logo']) }}" style="height: 28px; width: 28px; object-fit: contain;">
                                 @endif
-                                @if($p->tipe === 'guru')
+                                @if($modePenerima === 'kosong')
+                                    <span class="badge-kategori" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">UNDANGAN TPS</span>
+                                @elseif($p->tipe === 'guru')
                                     <span class="badge-kategori badge-guru">Guru / Tendik</span>
                                 @else
                                     <span class="badge-kategori badge-siswa">Siswa &bull; {{ $p->kelas->name ?? 'X' }}</span>
@@ -273,13 +327,24 @@
                             <p>{{ $config['undangan_pembuka'] ?? 'Bersama ini Panitia Pemilihan Ketua OSIS mengundang Saudara/i untuk menggunakan hak pilih pada pemilihan umum ketua OSIS dengan data identitas terdaftar sebagai berikut:' }}</p>
                             
                             <div class="voter-box">
-                                <div class="voter-details">
-                                    <span class="label">Nama Pemilih Terdaftar (DPT)</span>
-                                    <div class="name">{{ $p->nisn }}</div>
-                                    @if($p->tipe === 'siswa')
-                                        <div class="class-info">Kelas: {{ $p->kelas->name ?? '-' }}</div>
+                                <div class="voter-details" style="width: 100%;">
+                                    @if($modePenerima === 'kosong')
+                                        <div style="display: flex; align-items: center; margin-bottom: 7px;">
+                                            <span class="label" style="width: 160px; flex-shrink: 0;">Nama Pemilih Terdaftar :</span>
+                                            <span style="flex: 1; border-bottom: 1.5px dotted #64748b; height: 16px;">&nbsp;</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <span class="label" style="width: 160px; flex-shrink: 0;">Kelas / Kategori :</span>
+                                            <span style="flex: 1; border-bottom: 1.5px dotted #64748b; height: 16px;">&nbsp;</span>
+                                        </div>
                                     @else
-                                        <div class="class-info">Kategori: Tenaga Pendidik / Guru</div>
+                                        <span class="label">Nama Pemilih Terdaftar (DPT)</span>
+                                        <div class="name">{{ $p->nisn }}</div>
+                                        @if($p->tipe === 'siswa')
+                                            <div class="class-info">Kelas: {{ $p->kelas->name ?? '-' }}</div>
+                                        @else
+                                            <div class="class-info">Kategori: Tenaga Pendidik / Guru</div>
+                                        @endif
                                     @endif
                                 </div>
                             </div>

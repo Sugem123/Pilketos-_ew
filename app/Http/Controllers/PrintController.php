@@ -10,49 +10,62 @@ class PrintController extends Controller
 {
     public function undangan(Request $request)
     {
-        $query = HakSuara::with('kelas');
-
-        if ($request->filled('search')) {
-            $query->where('nisn', 'like', '%' . $request->search . '%');
-        }
-
-        if ($request->filled('tipe')) {
-            $query->where('tipe', $request->tipe);
-        }
-
-        if ($request->filled('id_kelas')) {
-            $query->where('id_kelas', $request->id_kelas);
-        }
-
-        if ($request->filled('status')) {
-            if ($request->status === 'sudah') {
-                $query->has('votes');
-            } elseif ($request->status === 'belum') {
-                $query->doesntHave('votes');
-            }
-        }
-
-        if ($request->filled('id')) {
-            $query->where('id', $request->id);
-        }
-
-        $pemilihs = $query->orderBy('tipe')->orderBy('id_kelas')->orderBy('nisn')->get();
-
-        // Pastikan setiap pemilih memiliki token
-        foreach ($pemilihs as $p) {
-            if (empty($p->token)) {
-                $p->update(['token' => HakSuara::generateUniqueToken()]);
-            }
-        }
-
         $config = $this->getConfig();
+        $modePenerima = $request->query('mode_penerima', $config['undangan_mode_penerima'] ?? 'sistem');
+        $jumlahKosong = max(1, min(500, (int) $request->query('jumlah_kosong', 10)));
+
+        if ($modePenerima === 'kosong') {
+            // Mode kosongan: buat kartu kosong untuk ditulis tangan / cadangan TPS
+            $pemilihs = collect(range(1, $jumlahKosong))->map(fn ($i) => (object) [
+                'id' => $i,
+                'nisn' => null,
+                'tipe' => null,
+                'kelas' => null,
+                'token' => null,
+            ]);
+        } else {
+            $query = HakSuara::with('kelas');
+
+            if ($request->filled('search')) {
+                $query->where('nisn', 'like', '%' . $request->search . '%');
+            }
+
+            if ($request->filled('tipe')) {
+                $query->where('tipe', $request->tipe);
+            }
+
+            if ($request->filled('id_kelas')) {
+                $query->where('id_kelas', $request->id_kelas);
+            }
+
+            if ($request->filled('status')) {
+                if ($request->status === 'sudah') {
+                    $query->has('votes');
+                } elseif ($request->status === 'belum') {
+                    $query->doesntHave('votes');
+                }
+            }
+
+            if ($request->filled('id')) {
+                $query->where('id', $request->id);
+            }
+
+            $pemilihs = $query->orderBy('tipe')->orderBy('id_kelas')->orderBy('nisn')->get();
+
+            // Pastikan setiap pemilih memiliki token
+            foreach ($pemilihs as $p) {
+                if (empty($p->token)) {
+                    $p->update(['token' => HakSuara::generateUniqueToken()]);
+                }
+            }
+        }
 
         // Baca dari config.json field undangan_*, fallback ke default
         $tanggal = $config['undangan_hari_tanggal'] ?? now()->translatedFormat('l, d F Y');
         $waktu = $config['undangan_waktu'] ?? '08.00 - 13.00 WIB';
         $lokasi = $config['undangan_lokasi'] ?? ($config['alamat_sekolah'] ?? 'Bilik Suara TPS Pemilihan OSIS');
 
-        return view('print.undangan', compact('pemilihs', 'tanggal', 'waktu', 'lokasi', 'config'));
+        return view('print.undangan', compact('pemilihs', 'tanggal', 'waktu', 'lokasi', 'config', 'modePenerima', 'jumlahKosong'));
     }
 
     public function kartu(Request $request)

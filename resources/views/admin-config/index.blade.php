@@ -136,6 +136,30 @@
                     </div>
                 </div>
 
+                {{-- Pengaturan Format Penerima Undangan: Diisi Sistem vs Kosongan --}}
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-white/10">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2 font-mono">
+                        <i class="fas fa-users text-amber-400 mr-1"></i> Format Penerima Undangan Saat Dicetak
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all {{ ($config['undangan_mode_penerima'] ?? 'sistem') === 'sistem' ? 'bg-indigo-500/10 border-indigo-500 text-white' : 'bg-slate-900 border-white/10 text-slate-400' }}">
+                            <input type="radio" name="undangan_mode_penerima" value="sistem" {{ ($config['undangan_mode_penerima'] ?? 'sistem') === 'sistem' ? 'checked' : '' }} class="text-indigo-500">
+                            <div>
+                                <span class="text-xs font-bold block text-white">Diisi Otomatis oleh Sistem</span>
+                                <span class="text-[10px] text-slate-400 block">Nama dan kelas otomatis dicetak sesuai data DPT</span>
+                            </div>
+                        </label>
+
+                        <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all {{ ($config['undangan_mode_penerima'] ?? 'sistem') === 'kosong' ? 'bg-indigo-500/10 border-indigo-500 text-white' : 'bg-slate-900 border-white/10 text-slate-400' }}">
+                            <input type="radio" name="undangan_mode_penerima" value="kosong" {{ ($config['undangan_mode_penerima'] ?? 'sistem') === 'kosong' ? 'checked' : '' }} class="text-indigo-500">
+                            <div>
+                                <span class="text-xs font-bold block text-white">Kosongan (Format Titik-titik)</span>
+                                <span class="text-[10px] text-slate-400 block">Nama dan kelas berupa titik-titik untuk ditulis tangan / cadangan TPS</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Paragraf Pembuka Undangan</label>
                     <textarea name="undangan_pembuka" rows="3" required
