@@ -74,7 +74,26 @@
                             </div>
                             <p class="text-xs text-slate-400 font-mono">Kelas {{ $calon->kelas->name }}</p>
                         </div>
-                        <i class="fas fa-chevron-right text-slate-600 text-xs group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all"></i>
+
+                        {{-- Tombol Tukar Nomor Urut Cepat --}}
+                        <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
+                            <form method="POST" action="{{ route('calon.reorder', $calon) }}">
+                                @csrf
+                                <input type="hidden" name="direction" value="up">
+                                <button type="submit" title="Tukar Naik Nomor Urut"
+                                        class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-400 hover:text-white flex items-center justify-center text-[10px] transition-colors border border-white/5">
+                                    <i class="fas fa-chevron-up"></i>
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('calon.reorder', $calon) }}">
+                                @csrf
+                                <input type="hidden" name="direction" value="down">
+                                <button type="submit" title="Tukar Turun Nomor Urut"
+                                        class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-400 hover:text-white flex items-center justify-center text-[10px] transition-colors border border-white/5">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 @empty
                     <div class="p-12 text-center">
@@ -190,9 +209,9 @@
                     </div>
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Nomor Urut</label>
-                    <input type="number" id="input-nomor" name="nomor" required min="1" max="{{ $maxKandidat }}"
+                    <input type="number" id="input-nomor" name="nomor" required min="1" max="99"
                         class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-bold font-mono">
-                    <p class="text-[11px] text-slate-500 mt-1.5">Nomor urut 1&ndash;{{ $maxKandidat }} (sesuai pengaturan jumlah kandidat {{ $labelTipe }}).</p>
+                    <p class="text-[11px] text-slate-500 mt-1.5">Nomor urut kandidat (1&ndash;99). Jika nomor sudah ada, posisi paslon otomatis ditukar.</p>
                 </div>
                 </div>
 

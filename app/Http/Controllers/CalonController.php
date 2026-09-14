@@ -39,31 +39,21 @@ class CalonController extends Controller
         $request->validate([
             'nama' => 'required|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
-            'nomor' => [
-                'required', 'integer', 'min:1',
-                function (string $attribute, mixed $value, \Closure $fail) use ($tipe) {
-                    $config = json_decode(file_get_contents(base_path('config.json')), true);
-                    $max = (int) ($tipe === CalonKetua::TIPE_MPK
-                        ? ($config['jumlah_calon_mpk'] ?? 5)
-                        : ($config['jumlah_calon_osis'] ?? 3));
-
-                    if ((int) $value > $max) {
-                        $fail("Nomor urut maksimal {$max} sesuai pengaturan jumlah kandidat pemilihan {$tipe}.");
-                    }
-                },
-            ],
+            'nomor' => 'required|integer|min:1|max:99',
             'foto_calon' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'visi' => 'required|string|max:521',
             'misi' => 'required|string|max:1000',
         ], [
             'nomor.min'     => 'Nomor urut harus minimal 1.',
+            'nomor.max'     => 'Nomor urut maksimal 99.',
             'nomor.integer' => 'Nomor urut harus berupa angka bulat.',
         ]);
 
-        $exists = CalonKetua::where('tipe', $tipe)->where('nomor', $request->nomor)->exists();
+        // Jika nomor sudah terpakai, geser nomor calon lain ke nomor tertinggi + 1
+        $exists = CalonKetua::where('tipe', $tipe)->where('nomor', $request->nomor)->first();
         if ($exists) {
-            return back()->withErrors(['nomor' => 'Nomor urut sudah dipakai kandidat lain pada pemilihan ini.'])
-                ->withInput();
+            $maxNomor = CalonKetua::where('tipe', $tipe)->max('nomor') ?? 0;
+            $exists->update(['nomor' => $maxNomor + 1]);
         }
 
         $path = $request->file('foto_calon')->store('foto_calon', 'public');
@@ -89,40 +79,35 @@ class CalonController extends Controller
         $request->validate([
             'nama' => 'required|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
-            'nomor' => [
-                'required', 'integer', 'min:1',
-                function (string $attribute, mixed $value, \Closure $fail) use ($tipe) {
-                    $config = json_decode(file_get_contents(base_path('config.json')), true);
-                    $max = (int) ($tipe === CalonKetua::TIPE_MPK
-                        ? ($config['jumlah_calon_mpk'] ?? 5)
-                        : ($config['jumlah_calon_osis'] ?? 3));
-
-                    if ((int) $value > $max) {
-                        $fail("Nomor urut maksimal {$max} sesuai pengaturan jumlah kandidat pemilihan {$tipe}.");
-                    }
-                },
-            ],
+            'nomor' => 'required|integer|min:1|max:99',
             'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'visi' => 'required|string|max:521',
             'misi' => 'required|string|max:1000',
         ], [
             'nomor.min'     => 'Nomor urut harus minimal 1.',
+            'nomor.max'     => 'Nomor urut maksimal 99.',
             'nomor.integer' => 'Nomor urut harus berupa angka bulat.',
         ]);
 
-        $exists = CalonKetua::where('tipe', $tipe)
-            ->where('nomor', $request->nomor)
-            ->where('id', '!=', $calon->id)
-            ->exists();
+        $newNomor = (int) $request->nomor;
+        $oldNomor = (int) $calon->nomor;
 
-        if ($exists) {
-            return back()->withErrors(['nomor' => 'Nomor urut sudah dipakai kandidat lain pada pemilihan ini.'])
-                ->withInput();
+        // Auto-Swap: Jika nomor urut baru sudah dipakai paslon lain di tipe ini, tukar posisinya
+        if ($newNomor !== $oldNomor) {
+            $conflictCalon = CalonKetua::where('tipe', $tipe)
+                ->where('nomor', $newNomor)
+                ->where('id', '!=', $calon->id)
+                ->first();
+
+            if ($conflictCalon) {
+                // Tukar: Calon yang bertabrakan diberi nomor lama dari calon ini
+                $conflictCalon->update(['nomor' => $oldNomor]);
+            }
         }
 
         $data = [
             'nama' => $request->nama,
-            'nomor' => $request->nomor,
+            'nomor' => $newNomor,
             'visi' => $request->visi,
             'misi' => $request->misi,
             'id_kelas' => $request->id_kelas,
@@ -161,5 +146,45 @@ class CalonController extends Controller
 
         return redirect()->route('calon.index', ['tipe' => $tipe])
             ->with('success', 'Kandidat berhasil dihapus!');
+    }
+
+    /**
+     * Tukar nomor urut kandidat naik atau turun (1 klik)
+     */
+    public function reorder(Request $request, CalonKetua $calon)
+    {
+        $request->validate([
+            'direction' => 'required|in:up,down',
+        ]);
+
+        $tipe = $calon->tipe;
+        $currentNomor = (int) $calon->nomor;
+
+        if ($request->direction === 'up') {
+            // Cari kandidat dengan nomor urut tepat di atasnya
+            $neighbor = CalonKetua::where('tipe', $tipe)
+                ->where('nomor', '<', $currentNomor)
+                ->orderByDesc('nomor')
+                ->first();
+        } else {
+            // Cari kandidat dengan nomor urut tepat di bawahnya
+            $neighbor = CalonKetua::where('tipe', $tipe)
+                ->where('nomor', '>', $currentNomor)
+                ->orderBy('nomor')
+                ->first();
+        }
+
+        if (! $neighbor) {
+            return redirect()->route('calon.index', ['tipe' => $tipe])
+                ->with('info', 'Nomor urut sudah berada di batas paling ujung.');
+        }
+
+        // Swap nomor
+        $neighborNomor = (int) $neighbor->nomor;
+        $neighbor->update(['nomor' => $currentNomor]);
+        $calon->update(['nomor' => $neighborNomor]);
+
+        return redirect()->route('calon.index', ['tipe' => $tipe])
+            ->with('success', "Nomor urut {$calon->nama} berhasil ditukar menjadi 0{$neighborNomor}!");
     }
 }

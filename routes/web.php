@@ -47,9 +47,10 @@ Route::post('/audit-suara/remote/disconnect', [AuditSuaraController::class, 'rem
 Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // 1. Mengedit calon / kandidat (foto, biodata, visi, misi) — bisa diakses Admin & Operator
+    // 1. Mengedit calon / kandidat (foto, biodata, visi, misi, nomor urut) — bisa diakses Admin & Operator
     Route::get('/calon', [CalonController::class, 'index'])->name('calon.index');
     Route::post('/calon', [CalonController::class, 'store'])->name('calon.store');
+    Route::post('/calon/{calon}/reorder', [CalonController::class, 'reorder'])->name('calon.reorder');
     Route::put('/calon/{calon}', [CalonController::class, 'update'])->name('calon.update');
     Route::delete('/calon/{calon}', [CalonController::class, 'destroy'])->name('calon.destroy');
 
