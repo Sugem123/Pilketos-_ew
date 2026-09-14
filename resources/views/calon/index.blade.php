@@ -270,12 +270,13 @@
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 hidden transition-opacity"
         onclick="closeSidebar()"></div>
 
-    {{-- ====== MODAL CROPPER FOTO KANDIDAT ====== --}}
-    <div id="cropper-modal" class="fixed inset-0 z-[99999] hidden items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
-        <div class="w-full max-w-xl bg-slate-900 border border-indigo-500/40 rounded-3xl p-6 shadow-2xl flex flex-col max-h-[92vh] relative z-10">
+    {{-- ====== MODAL CROPPER FOTO KANDIDAT (FULL OVERLAY DI DEPAN SENDIRI) ====== --}}
+    <div id="cropper-modal" class="hidden"
+         style="position: fixed; inset: 0; z-index: 999999 !important; background-color: rgba(2, 6, 23, 0.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 16px; align-items: center; justify-content: center;">
+        <div style="width: 100%; max-width: 620px; background-color: #0f172a; border: 1.5px solid rgba(99, 102, 241, 0.5); border-radius: 24px; padding: 24px; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.95); display: flex; flex-direction: column; max-height: 94vh; position: relative; z-index: 1000000;">
             <div class="flex items-center justify-between pb-4 border-b border-white/10">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-sm">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center justify-center text-sm">
                         <i class="fas fa-crop-simple"></i>
                     </div>
                     <div>
@@ -283,34 +284,34 @@
                         <p class="text-[11px] text-slate-400">Atur bingkai rasio portrait 3:4 agar foto paslon rapi</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeCropperModal()" class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800">
+                <button type="button" onclick="closeCropperModal()" class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
             {{-- Container Viewport Gambar Cropper --}}
-            <div class="my-4 w-full bg-slate-950 rounded-2xl border border-white/10 overflow-hidden flex items-center justify-center relative" style="height: 380px;">
-                <img id="cropper-target-img" src="" alt="Target Crop" class="max-w-full block" style="display: block; max-width: 100%;">
+            <div class="my-4 w-full bg-slate-950 rounded-2xl border border-white/10 overflow-hidden flex items-center justify-center relative" style="height: 380px; width: 100%;">
+                <img id="cropper-target-img" src="" alt="Target Crop" style="display: block; max-width: 100%;">
             </div>
 
             {{-- Toolbar Tombol Kontrol --}}
             <div class="flex items-center justify-between gap-2 p-2 bg-slate-950/80 rounded-2xl border border-white/5 mb-4 flex-wrap">
                 <div class="flex items-center gap-1.5">
-                    <button type="button" onclick="cropperAction('zoom', 0.1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" title="Perbesar">
+                    <button type="button" onclick="cropperAction('zoom', 0.1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-colors" title="Perbesar">
                         <i class="fas fa-magnifying-glass-plus mr-1"></i> Zoom In
                     </button>
-                    <button type="button" onclick="cropperAction('zoom', -0.1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" title="Perkecil">
+                    <button type="button" onclick="cropperAction('zoom', -0.1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-colors" title="Perkecil">
                         <i class="fas fa-magnifying-glass-minus mr-1"></i> Zoom Out
                     </button>
                 </div>
                 <div class="flex items-center gap-1.5">
-                    <button type="button" onclick="cropperAction('rotate', -90)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" title="Putar Kiri 90°">
+                    <button type="button" onclick="cropperAction('rotate', -90)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-colors" title="Putar Kiri 90°">
                         <i class="fas fa-rotate-left mr-1"></i> Putar Kiri
                     </button>
-                    <button type="button" onclick="cropperAction('rotate', 90)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" title="Putar Kanan 90°">
+                    <button type="button" onclick="cropperAction('rotate', 90)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-colors" title="Putar Kanan 90°">
                         <i class="fas fa-rotate-right mr-1"></i> Putar Kanan
                     </button>
-                    <button type="button" onclick="cropperAction('reset')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl text-xs font-bold" title="Reset">
+                    <button type="button" onclick="cropperAction('reset')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl text-xs font-bold transition-colors" title="Reset">
                         <i class="fas fa-undo"></i>
                     </button>
                 </div>
@@ -318,10 +319,10 @@
 
             {{-- Tombol Batal & Terapkan --}}
             <div class="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
-                <button type="button" onclick="closeCropperModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold">
+                <button type="button" onclick="closeCropperModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors">
                     Batal
                 </button>
-                <button type="button" onclick="applyCrop()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-500/30 flex items-center gap-2 cursor-pointer">
+                <button type="button" onclick="applyCrop()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-500/30 flex items-center gap-2 cursor-pointer transition-all">
                     <i class="fas fa-check"></i>
                     <span>Terapkan Hasil Crop</span>
                 </button>
@@ -473,8 +474,13 @@
             const modal = document.getElementById('cropper-modal');
             const targetImg = document.getElementById('cropper-target-img');
 
+            // Pindahkan modal langsung ke document.body agar terbebas dari stacking context parent
+            if (modal.parentNode !== document.body) {
+                document.body.appendChild(modal);
+            }
+
+            modal.style.display = 'flex';
             modal.classList.remove('hidden');
-            modal.classList.add('flex');
 
             if (cropperInstance) {
                 cropperInstance.destroy();
@@ -550,8 +556,8 @@
 
         function closeCropperModal() {
             const modal = document.getElementById('cropper-modal');
+            modal.style.display = 'none';
             modal.classList.add('hidden');
-            modal.classList.remove('flex');
             if (cropperInstance) {
                 cropperInstance.destroy();
                 cropperInstance = null;
