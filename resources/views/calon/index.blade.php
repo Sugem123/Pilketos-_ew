@@ -21,6 +21,10 @@
     $labelTipe = $tipe === 'mpk' ? 'Ketua MPK' : 'Ketua OSIS';
 @endphp
 <x-app-layout :page_title="$page_title" :page_description="$page_description">
+    @push('head')
+        <link rel="stylesheet" href="{{ asset('css/cropper.min.css') }}">
+        <script src="{{ asset('js/cropper.min.js') }}"></script>
+    @endpush
     <x-slot name="actions">
         <a href="{{ route('calon-public.index') }}" target="_blank"
            class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-900 border border-white/10 text-slate-200 hover:text-white hover:bg-slate-800 rounded-2xl text-xs font-bold transition-all shadow-md">
@@ -217,18 +221,24 @@
 
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Foto Kandidat</label>
+                    <input type="hidden" id="foto-cropped-base64" name="foto_cropped_base64" value="">
+
                     <div class="flex gap-4 items-center">
-                        <div id="preview-container"
-                            class="hidden w-24 h-28 rounded-2xl border border-white/10 overflow-hidden flex-shrink-0 shadow-lg bg-slate-950 p-2 flex items-center justify-center">
-                            <img id="preview-image" src="" alt="Preview"
-                                class="w-full h-full object-contain">
+                        <div id="preview-container" class="hidden flex-col items-center gap-2 flex-shrink-0">
+                            <div class="w-24 h-32 rounded-2xl border border-white/10 overflow-hidden shadow-lg bg-slate-950 p-1 flex items-center justify-center">
+                                <img id="preview-image" src="" alt="Preview" class="w-full h-full object-contain">
+                            </div>
+                            <button type="button" onclick="startCroppingCurrent()"
+                                    class="px-2.5 py-1 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-md cursor-pointer transition-colors">
+                                <i class="fas fa-crop-simple"></i> Crop Foto
+                            </button>
                         </div>
                         <label for="foto-input"
                             class="flex-1 flex flex-col items-center justify-center py-6 border-2 border-dashed border-slate-700 hover:border-indigo-500 bg-slate-950/60 rounded-2xl text-xs font-bold text-slate-400 hover:text-indigo-400 cursor-pointer transition-all">
                             <i class="fas fa-cloud-arrow-up text-2xl mb-1.5 text-slate-500"></i>
-                            <span>Pilih file foto</span>
-                            <input type="file" id="foto-input" name="foto_calon" class="hidden"
-                                accept="image/*">
+                            <span id="foto-label-text">Pilih file foto</span>
+                            <span class="text-[10px] text-slate-500 font-normal mt-0.5">Format: JPG, PNG, WEBP</span>
+                            <input type="file" id="foto-input" name="foto_calon" class="hidden" accept="image/*">
                         </label>
                     </div>
                 </div>
@@ -260,9 +270,69 @@
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 hidden transition-opacity"
         onclick="closeSidebar()"></div>
 
+    {{-- ====== MODAL CROPPER FOTO KANDIDAT ====== --}}
+    <div id="cropper-modal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
+        <div class="w-full max-w-xl bg-slate-900 border border-indigo-500/30 rounded-3xl p-6 shadow-2xl flex flex-col max-h-[92vh]">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-sm">
+                        <i class="fas fa-crop-simple"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-heading font-black text-base text-white">Sesuaikan &amp; Crop Foto Kandidat</h3>
+                        <p class="text-[11px] text-slate-400">Atur bingkai rasio portrait 3:4 agar foto paslon rapi</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeCropperModal()" class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            {{-- Container Viewport Gambar Cropper --}}
+            <div class="my-4 flex-1 overflow-hidden bg-black/90 rounded-2xl border border-white/10 h-[340px] flex items-center justify-center relative">
+                <img id="cropper-target-img" src="" alt="Target Crop" class="max-w-full max-h-full block">
+            </div>
+
+            {{-- Toolbar Tombol Kontrol --}}
+            <div class="flex items-center justify-between gap-2 p-2 bg-slate-950/80 rounded-2xl border border-white/5 mb-4 flex-wrap">
+                <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="cropperAction('zoom', 0.1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" title="Perbesar">
+                        <i class="fas fa-magnifying-glass-plus mr-1"></i> Zoom In
+                    </button>
+                    <button type="button" onclick="cropperAction('zoom', -0.1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" title="Perkecil">
+                        <i class="fas fa-magnifying-glass-minus mr-1"></i> Zoom Out
+                    </button>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="cropperAction('rotate', -90)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" title="Putar Kiri 90°">
+                        <i class="fas fa-rotate-left mr-1"></i> Putar Kiri
+                    </button>
+                    <button type="button" onclick="cropperAction('rotate', 90)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" title="Putar Kanan 90°">
+                        <i class="fas fa-rotate-right mr-1"></i> Putar Kanan
+                    </button>
+                    <button type="button" onclick="cropperAction('reset')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl text-xs font-bold" title="Reset">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Tombol Batal & Terapkan --}}
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                <button type="button" onclick="closeCropperModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold">
+                    Batal
+                </button>
+                <button type="button" onclick="applyCrop()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-500/30 flex items-center gap-2 cursor-pointer">
+                    <i class="fas fa-check"></i>
+                    <span>Terapkan Hasil Crop</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const calonData = @json($calonData);
         let selectedId = null;
+        let cropperInstance = null;
 
         function selectCandidate(id) {
             document.querySelectorAll('.candidate-row').forEach(r => {
@@ -320,12 +390,15 @@
                 document.getElementById('input-nomor').value = data.nomor;
                 document.getElementById('input-visi').value = data.visi;
                 document.getElementById('input-misi').value = data.misi;
+                document.getElementById('foto-cropped-base64').value = '';
 
                 if (data.url_foto) {
                     document.getElementById('preview-image').src = data.url_foto;
                     document.getElementById('preview-container').classList.remove('hidden');
+                    document.getElementById('preview-container').classList.add('flex');
                 } else {
                     document.getElementById('preview-container').classList.add('hidden');
+                    document.getElementById('preview-container').classList.remove('flex');
                 }
                 document.getElementById('foto-input').value = '';
             } else {
@@ -334,7 +407,9 @@
                 methodInput.value = 'POST';
                 form.reset();
                 document.getElementById('input-tipe').value = '{{ $tipe }}';
+                document.getElementById('foto-cropped-base64').value = '';
                 document.getElementById('preview-container').classList.add('hidden');
+                document.getElementById('preview-container').classList.remove('flex');
             }
 
             sidebar.classList.remove('translate-x-full');
@@ -352,9 +427,16 @@
         }
 
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeSidebar();
+            if (e.key === 'Escape') {
+                if (!document.getElementById('cropper-modal').classList.contains('hidden')) {
+                    closeCropperModal();
+                } else {
+                    closeSidebar();
+                }
+            }
         });
 
+        // Event saat memilih file foto baru di komputer / HP
         document.getElementById('foto-input').addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
@@ -362,10 +444,94 @@
                 reader.onload = function(e) {
                     document.getElementById('preview-image').src = e.target.result;
                     document.getElementById('preview-container').classList.remove('hidden');
+                    document.getElementById('preview-container').classList.add('flex');
+                    // Langsung buka modal crop agar foto bisa disesuaikan
+                    startCropping(e.target.result);
                 };
                 reader.readAsDataURL(file);
             }
         });
+
+        // Buka modal cropper dengan gambar yang sedang aktif di preview
+        function startCroppingCurrent() {
+            const currentSrc = document.getElementById('preview-image').src;
+            if (currentSrc) {
+                startCropping(currentSrc);
+            }
+        }
+
+        // Inisialisasi dan buka modal cropper
+        function startCropping(imageSrc) {
+            const modal = document.getElementById('cropper-modal');
+            const targetImg = document.getElementById('cropper-target-img');
+
+            targetImg.src = imageSrc;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            if (cropperInstance) {
+                cropperInstance.destroy();
+            }
+
+            // Tunggu gambar ter-load di DOM baru pasang Cropper
+            targetImg.onload = function() {
+                cropperInstance = new Cropper(targetImg, {
+                    aspectRatio: 3 / 4,
+                    viewMode: 1,
+                    autoCropArea: 0.95,
+                    responsive: true,
+                    background: false,
+                    movable: true,
+                    zoomable: true,
+                    rotatable: true,
+                    scalable: true
+                });
+            };
+        }
+
+        // Tombol aksi toolbar cropper (zoom, rotate, reset)
+        function cropperAction(action, val = null) {
+            if (!cropperInstance) return;
+            if (action === 'zoom') {
+                cropperInstance.zoom(val);
+            } else if (action === 'rotate') {
+                cropperInstance.rotate(val);
+            } else if (action === 'reset') {
+                cropperInstance.reset();
+            }
+        }
+
+        // Terapkan hasil crop
+        function applyCrop() {
+            if (!cropperInstance) return;
+
+            // Dapatkan canvas crop resolusi tajam
+            const canvas = cropperInstance.getCroppedCanvas({
+                width: 600,
+                height: 800,
+                imageSmoothingQuality: 'high'
+            });
+
+            if (canvas) {
+                const croppedBase64 = canvas.toDataURL('image/png');
+                document.getElementById('foto-cropped-base64').value = croppedBase64;
+                document.getElementById('preview-image').src = croppedBase64;
+                document.getElementById('preview-container').classList.remove('hidden');
+                document.getElementById('preview-container').classList.add('flex');
+            }
+
+            closeCropperModal();
+        }
+
+        function closeCropperModal() {
+            const modal = document.getElementById('cropper-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            if (cropperInstance) {
+                cropperInstance.destroy();
+                cropperInstance = null;
+            }
+        }
 
         @if ($calons->isNotEmpty())
             selectCandidate({{ $calons->first()->id }});

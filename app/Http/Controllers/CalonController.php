@@ -40,7 +40,8 @@ class CalonController extends Controller
             'nama' => 'required|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
             'nomor' => 'required|integer|min:1|max:99',
-            'foto_calon' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'foto_cropped_base64' => 'nullable|string',
             'visi' => 'required|string|max:521',
             'misi' => 'required|string|max:1000',
         ], [
@@ -49,6 +50,10 @@ class CalonController extends Controller
             'nomor.integer' => 'Nomor urut harus berupa angka bulat.',
         ]);
 
+        if (! $request->hasFile('foto_calon') && ! $request->filled('foto_cropped_base64')) {
+            return back()->withErrors(['foto_calon' => 'Foto kandidat wajib diunggah.'])->withInput();
+        }
+
         // Jika nomor sudah terpakai, geser nomor calon lain ke nomor tertinggi + 1
         $exists = CalonKetua::where('tipe', $tipe)->where('nomor', $request->nomor)->first();
         if ($exists) {
@@ -56,7 +61,7 @@ class CalonController extends Controller
             $exists->update(['nomor' => $maxNomor + 1]);
         }
 
-        $path = $request->file('foto_calon')->store('foto_calon', 'public');
+        $urlFoto = $this->processPhoto($request);
 
         CalonKetua::create([
             'tipe' => $tipe,
@@ -65,7 +70,7 @@ class CalonController extends Controller
             'visi' => $request->visi,
             'misi' => $request->misi,
             'id_kelas' => $request->id_kelas,
-            'url_foto' => 'storage/'.$path,
+            'url_foto' => $urlFoto,
         ]);
 
         return redirect()->route('calon.index', ['tipe' => $tipe])
@@ -81,6 +86,7 @@ class CalonController extends Controller
             'id_kelas' => 'required|exists:kelas,id',
             'nomor' => 'required|integer|min:1|max:99',
             'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'foto_cropped_base64' => 'nullable|string',
             'visi' => 'required|string|max:521',
             'misi' => 'required|string|max:1000',
         ], [
@@ -113,21 +119,52 @@ class CalonController extends Controller
             'id_kelas' => $request->id_kelas,
         ];
 
-        if ($request->hasFile('foto_calon') && $request->file('foto_calon')->isValid()) {
-            if ($calon->url_foto) {
-                $oldPath = str_replace('storage/', '', $calon->url_foto);
-                if (Storage::disk('public')->exists($oldPath)) {
-                    Storage::disk('public')->delete($oldPath);
-                }
-            }
-            $path = $request->file('foto_calon')->store('foto_calon', 'public');
-            $data['url_foto'] = 'storage/'.$path;
+        $urlFoto = $this->processPhoto($request, $calon->url_foto);
+        if ($urlFoto) {
+            $data['url_foto'] = $urlFoto;
         }
 
         $calon->update($data);
 
         return redirect()->route('calon.index', ['tipe' => $tipe])
             ->with('success', 'Data kandidat '.strtoupper($tipe).' berhasil diupdate!');
+    }
+
+    private function processPhoto(Request $request, ?string $oldPhoto = null): ?string
+    {
+        // 1. Jika ada hasil crop gambar (base64)
+        if ($request->filled('foto_cropped_base64')) {
+            $base64 = $request->foto_cropped_base64;
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64)) {
+                $data = substr($base64, strpos($base64, ',') + 1);
+                $binary = base64_decode($data);
+                if ($binary !== false) {
+                    if ($oldPhoto) {
+                        $oldPath = str_replace('storage/', '', $oldPhoto);
+                        if (Storage::disk('public')->exists($oldPath)) {
+                            Storage::disk('public')->delete($oldPath);
+                        }
+                    }
+                    $filename = 'foto_calon/' . uniqid('calon_') . '.png';
+                    Storage::disk('public')->put($filename, $binary);
+                    return 'storage/' . $filename;
+                }
+            }
+        }
+
+        // 2. Jika ada upload file biasa
+        if ($request->hasFile('foto_calon') && $request->file('foto_calon')->isValid()) {
+            if ($oldPhoto) {
+                $oldPath = str_replace('storage/', '', $oldPhoto);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $path = $request->file('foto_calon')->store('foto_calon', 'public');
+            return 'storage/' . $path;
+        }
+
+        return null;
     }
 
     public function destroy(CalonKetua $calon)
