@@ -13,12 +13,13 @@ class HakSuara extends Model
 
     protected $table = 'hak_suara';
 
-    protected $fillable = ['nisn', 'tipe', 'id_kelas', 'token', 'token_used'];
+    protected $fillable = ['nisn', 'tipe', 'id_kelas', 'token', 'token_used', 'is_active'];
 
     protected function casts(): array
     {
         return [
             'token_used' => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 

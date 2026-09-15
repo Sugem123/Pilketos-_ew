@@ -63,6 +63,8 @@ Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
     // 2. Menginputkan calon pemilih/DPT — bisa diakses Admin & Operator
     Route::get('/hak-suara', [HakSuaraController::class, 'index'])->name('hak-suara.index');
     Route::post('/hak-suara', [HakSuaraController::class, 'store'])->name('hak-suara.store');
+    Route::patch('/hak-suara/{hakSuara}/toggle-token', [HakSuaraController::class, 'toggleToken'])->name('hak-suara.toggle-token');
+    Route::post('/hak-suara/toggle-batch', [HakSuaraController::class, 'toggleBatch'])->name('hak-suara.toggle-batch');
     Route::delete('/hak-suara/{hakSuara}', [HakSuaraController::class, 'destroy'])->name('hak-suara.destroy');
     Route::get('/hak-suara/import', fn () => redirect()->route('hak-suara.index'));
     Route::post('/hak-suara/import', [HakSuaraController::class, 'import'])->name('hak-suara.import');

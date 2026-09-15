@@ -48,6 +48,10 @@ class VotingController extends Controller
         $personalHakSuara = HakSuara::where('token', $displayToken)->first();
 
         if ($personalHakSuara) {
+            if (isset($personalHakSuara->is_active) && ! $personalHakSuara->is_active) {
+                return $this->gagal('Token pemilih ini sedang dinonaktifkan oleh panitia.');
+            }
+
             if ($personalHakSuara->token_used) {
                 return $this->gagal('Token pada Kartu Pemilih ini sudah hangus (kedua pemilihan sudah diikuti).');
             }

@@ -29,6 +29,25 @@
                 <span>Kartu Pemilih</span>
             </a>
 
+            {{-- Batch Toggle Token Simulasi --}}
+            <form method="POST" action="{{ route('hak-suara.toggle-batch') }}" class="inline" onsubmit="return confirm('Nonaktifkan seluruh token pemilih kategori Simulasi TPS?')">
+                @csrf
+                <input type="hidden" name="action" value="disable_simulasi">
+                <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-amber-500/15 border border-amber-500/30 hover:bg-amber-500/25 text-amber-300 rounded-2xl text-xs font-bold transition-all shadow-sm cursor-pointer" title="Nonaktifkan semua token simulasi">
+                    <i class="fas fa-ban text-[11px]"></i>
+                    <span>Disable Simulasi</span>
+                </button>
+            </form>
+
+            <form method="POST" action="{{ route('hak-suara.toggle-batch') }}" class="inline" onsubmit="return confirm('Aktifkan kembali seluruh token pemilih kategori Simulasi TPS?')">
+                @csrf
+                <input type="hidden" name="action" value="enable_simulasi">
+                <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 text-emerald-300 rounded-2xl text-xs font-bold transition-all shadow-sm cursor-pointer" title="Aktifkan semua token simulasi">
+                    <i class="fas fa-circle-check text-[11px]"></i>
+                    <span>Enable Simulasi</span>
+                </button>
+            </form>
+
             <x-admin-button variant="success" icon="fas fa-file-excel" onclick="openImportModal()">
                 Impor Excel
             </x-admin-button>
@@ -166,12 +185,21 @@
                                 <td class="px-6 py-4 text-xs font-bold text-white">{{ $hs->nisn }}</td>
                                 <td class="px-6 py-4">
                                     @if($hs->token)
-                                        <code class="px-3 py-1 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono font-black {{ $hs->token_used ? 'line-through text-slate-600' : 'text-amber-400' }}">
-                                            {{ $hs->token }}
-                                        </code>
-                                        @if($hs->token_used)
-                                            <span class="ml-1.5 text-[9px] text-rose-400 font-bold font-mono px-1.5 py-0.5 bg-rose-500/10 border border-rose-500/20 rounded">HANGUS</span>
-                                        @endif
+                                        @php
+                                            $isTokenActive = isset($hs->is_active) ? (bool)$hs->is_active : true;
+                                        @endphp
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <code class="px-3 py-1 rounded-xl text-xs font-mono font-black {{ !$isTokenActive ? 'bg-slate-900 border border-rose-500/20 text-slate-500 line-through' : ($hs->token_used ? 'bg-slate-950 border border-slate-800 line-through text-slate-600' : 'bg-slate-950 border border-slate-800 text-amber-400') }}">
+                                                {{ $hs->token }}
+                                            </code>
+                                            @if(!$isTokenActive)
+                                                <span class="text-[9px] text-rose-400 font-bold font-mono px-1.5 py-0.5 bg-rose-500/15 border border-rose-500/30 rounded">DISABLED</span>
+                                            @elseif($hs->token_used)
+                                                <span class="text-[9px] text-rose-400 font-bold font-mono px-1.5 py-0.5 bg-rose-500/10 border border-rose-500/20 rounded">HANGUS</span>
+                                            @else
+                                                <span class="text-[9px] text-emerald-400 font-bold font-mono px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded">AKTIF</span>
+                                            @endif
+                                        </div>
                                     @else
                                         <span class="px-2.5 py-1 bg-slate-900 border border-white/5 rounded-xl text-[10px] font-mono text-slate-500 italic">
                                             Belum Di-generate (Admin)
@@ -206,6 +234,25 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-1.5">
+                                        {{-- Toggle Disable/Enable Token Button --}}
+                                        @if($hs->token)
+                                            <form method="POST" action="{{ route('hak-suara.toggle-token', $hs) }}" class="inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                @if($isTokenActive)
+                                                    <button type="submit" class="p-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                                                            title="Nonaktifkan Token (Disable)">
+                                                        <i class="fas fa-ban text-xs"></i>
+                                                    </button>
+                                                @else
+                                                    <button type="submit" class="p-2 rounded-xl text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/15 transition-colors cursor-pointer"
+                                                            title="Aktifkan Token (Enable)">
+                                                        <i class="fas fa-circle-check text-xs"></i>
+                                                    </button>
+                                                @endif
+                                            </form>
+                                        @endif
+
                                         <a href="{{ route('cetak.kartu', ['id' => $hs->id]) }}" target="_blank"
                                            class="p-2 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors" title="Cetak Kartu">
                                             <i class="fas fa-print text-xs"></i>

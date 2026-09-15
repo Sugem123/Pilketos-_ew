@@ -172,5 +172,34 @@ class HakSuaraController extends Controller
 
         return redirect()->route('hak-suara.index')->with('error', 'File sample tidak ditemukan.');
     }
+
+    public function toggleToken(HakSuara $hakSuara)
+    {
+        $current = isset($hakSuara->is_active) ? (bool) $hakSuara->is_active : true;
+        $hakSuara->update(['is_active' => ! $current]);
+
+        $status = ! $current ? 'diaktifkan' : 'dinonaktifkan';
+
+        return back()->with('success', "Token pemilih \"{$hakSuara->nisn}\" berhasil {$status}!");
+    }
+
+    public function toggleBatch(Request $request)
+    {
+        $action = $request->input('action');
+
+        if ($action === 'disable_simulasi') {
+            $count = HakSuara::where('tipe', 'simulasi')->update(['is_active' => false]);
+
+            return back()->with('success', "Seluruh token simulasi ({$count} pemilih) berhasil dinonaktifkan!");
+        }
+
+        if ($action === 'enable_simulasi') {
+            $count = HakSuara::where('tipe', 'simulasi')->update(['is_active' => true]);
+
+            return back()->with('success', "Seluruh token simulasi ({$count} pemilih) berhasil diaktifkan kembali!");
+        }
+
+        return back()->with('error', 'Aksi batch tidak dikenali.');
+    }
 }
 

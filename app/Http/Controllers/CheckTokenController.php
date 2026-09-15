@@ -24,6 +24,13 @@ class CheckTokenController extends Controller
         $hakSuara = HakSuara::where('token', $tokenInput)->first();
 
         if ($hakSuara) {
+            if (isset($hakSuara->is_active) && ! $hakSuara->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token pemilih ini sedang dinonaktifkan oleh panitia.',
+                ]);
+            }
+
             if ($hakSuara->token_used) {
                 return response()->json([
                     'success' => false,
