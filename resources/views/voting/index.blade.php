@@ -9,31 +9,6 @@
         @endforeach
     @endpush
 
-    {{-- ====== KIOSK FULLSCREEN LOCK OVERLAY ====== --}}
-    <div id="kiosk-lock-overlay" class="fixed inset-0 z-[9999999] bg-slate-950/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none" style="display: none;">
-        <div class="max-w-md w-full p-8 rounded-3xl bg-slate-900/90 border-2 border-indigo-500/40 shadow-2xl shadow-indigo-500/20 flex flex-col items-center">
-            <div class="w-20 h-20 rounded-3xl bg-indigo-500/10 border-2 border-indigo-500/30 flex items-center justify-center text-indigo-400 text-3xl mb-5 animate-pulse">
-                <i class="fa-solid fa-lock"></i>
-            </div>
-            <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/20 mb-3 border border-indigo-500/30">
-                Bilik Suara Terkunci
-            </span>
-            <h2 class="font-heading font-black text-2xl text-white mb-2">Mode Layar Penuh Wajib Aktif</h2>
-            <p class="text-xs text-slate-400 leading-relaxed mb-6">
-                Untuk menjaga kerahasiaan dan ketertiban bilik suara, halaman e-voting wajib berada dalam mode Layar Penuh (Fullscreen).
-            </p>
-            <button type="button" onclick="requestKioskFullscreen()" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-heading font-extrabold text-sm shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02]">
-                <i class="fa-solid fa-expand"></i>
-                <span>Aktifkan Layar Penuh &amp; Buka Bilik</span>
-            </button>
-            <div class="mt-5 pt-4 border-t border-slate-800 w-full text-center">
-                <p class="text-[11px] text-slate-400 font-mono">
-                    Khusus Panitia: Tekan <kbd class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-bold">Ctrl + C + B</kbd> untuk keluar.
-                </p>
-            </div>
-        </div>
-    </div>
-
     <div class="flex flex-col min-h-screen relative overflow-hidden">
         {{-- Floating Top Bar --}}
         <header class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 z-20">
@@ -948,7 +923,6 @@
 
         // ── KIOSK FULLSCREEN LOCK ENGINE (Default Fullscreen, Lock, Exit: Ctrl+C+B) ──
         let kioskUnlockedByPanitia = false;
-        const kioskLockOverlay = document.getElementById('kiosk-lock-overlay');
         const btnKioskToggle = document.getElementById('btn-kiosk-toggle');
         const iconKioskToggle = document.getElementById('icon-kiosk-toggle');
         const textKioskToggle = document.getElementById('text-kiosk-toggle');
@@ -957,40 +931,19 @@
             return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
         }
 
-        function showKioskLock() {
-            if (kioskLockOverlay) {
-                kioskLockOverlay.style.display = 'flex';
-            }
-        }
-
-        function hideKioskLock() {
-            if (kioskLockOverlay) {
-                kioskLockOverlay.style.display = 'none';
-            }
-        }
-
-        function requestKioskFullscreen() {
+        function requestKioskFullscreen(callback) {
             const el = document.documentElement;
             const rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
             if (rfs) {
                 rfs.call(el).then(() => {
-                    hideKioskLock();
                     kioskUnlockedByPanitia = false;
                     updateKioskButtonState();
-                    if (!sessionStorage.getItem('display_token') && !Swal.isVisible()) {
-                        showTokenPopup();
-                    }
+                    if (callback) callback();
                 }).catch(() => {
-                    hideKioskLock();
-                    if (!sessionStorage.getItem('display_token') && !Swal.isVisible()) {
-                        showTokenPopup();
-                    }
+                    if (callback) callback();
                 });
             } else {
-                hideKioskLock();
-                if (!sessionStorage.getItem('display_token') && !Swal.isVisible()) {
-                    showTokenPopup();
-                }
+                if (callback) callback();
             }
         }
 
@@ -1035,11 +988,20 @@
         function handleFullscreenChange() {
             updateKioskButtonState();
             if (isKioskFullscreen()) {
-                hideKioskLock();
                 kioskUnlockedByPanitia = false;
             } else {
+                // Jika keluar bukan via Ctrl+C+B, kunci kembali bilik suara
                 if (!kioskUnlockedByPanitia) {
-                    showKioskLock();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Bilik Suara Terkunci',
+                        html: 'Layar bilik suara harus berada dalam mode <b>Layar Penuh (Fullscreen)</b> demi kerahasiaan TPS.<br><br><span class="text-xs text-slate-400">Khusus Panitia: Tekan <b>Ctrl + C + B</b> untuk keluar.</span>',
+                        confirmButtonText: 'Kembali ke Layar Penuh',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                    }).then(() => {
+                        requestKioskFullscreen();
+                    });
                 }
             }
         }
@@ -1060,8 +1022,9 @@
                 kioskUnlockedByPanitia = true;
                 if (isKioskFullscreen()) {
                     exitKioskFullscreen();
-                } else {
-                    hideKioskLock();
+                }
+                if (Swal.isVisible()) {
+                    Swal.close();
                 }
                 updateKioskButtonState();
                 Swal.fire({
@@ -1125,17 +1088,12 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             updateKioskButtonState();
-            if (!isKioskFullscreen() && !kioskUnlockedByPanitia) {
-                showKioskLock();
-            }
 
             waitForCandidateImages().then(() => {
                 let token = sessionStorage.getItem('display_token');
 
                 if (!token) {
-                    if (isKioskFullscreen() || kioskUnlockedByPanitia) {
-                        showTokenPopup();
-                    }
+                    showTokenPopup();
                 } else {
                     fetch('{{ route('check-token') }}', {
                             method: 'POST',
