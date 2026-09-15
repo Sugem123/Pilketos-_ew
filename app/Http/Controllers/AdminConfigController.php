@@ -67,9 +67,33 @@ class AdminConfigController extends Controller
             'undangan_lokasi' => 'required|string|max:255',
             'undangan_catatan_kaki' => 'nullable|string|max:500',
             'undangan_penandatangan' => 'required|string|max:100',
+            'undangan_nama_pejabat' => 'required|string|max:150',
+            'undangan_jabatan_pejabat' => 'nullable|string|max:150',
+            'undangan_ttd_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:3072',
+            'hapus_ttd' => 'nullable',
         ]);
 
         $config = $this->getConfig();
+
+        // Handle upload scan tanda tangan ketua pelaksana
+        if ($request->hasFile('undangan_ttd_file') && $request->file('undangan_ttd_file')->isValid()) {
+            if (!empty($config['url_ttd_undangan'])) {
+                $oldPath = str_replace('storage/', '', $config['url_ttd_undangan']);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $path = $request->file('undangan_ttd_file')->store('branding', 'public');
+            $config['url_ttd_undangan'] = 'storage/' . $path;
+        } elseif ($request->filled('hapus_ttd')) {
+            if (!empty($config['url_ttd_undangan'])) {
+                $oldPath = str_replace('storage/', '', $config['url_ttd_undangan']);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $config['url_ttd_undangan'] = null;
+        }
 
         $config['undangan_judul_kop'] = $request->undangan_judul_kop;
         $config['undangan_sub_kop'] = $request->undangan_sub_kop;
@@ -80,10 +104,12 @@ class AdminConfigController extends Controller
         $config['undangan_lokasi'] = $request->undangan_lokasi;
         $config['undangan_catatan_kaki'] = $request->undangan_catatan_kaki ?? '';
         $config['undangan_penandatangan'] = $request->undangan_penandatangan;
+        $config['undangan_nama_pejabat'] = $request->undangan_nama_pejabat;
+        $config['undangan_jabatan_pejabat'] = $request->undangan_jabatan_pejabat ?: $request->undangan_penandatangan;
 
         file_put_contents(base_path('config.json'), json_encode($config, JSON_PRETTY_PRINT));
 
-        return redirect()->route('admin-config.index')->with('success', 'Format surat undangan panggilan berhasil diperbarui!');
+        return redirect()->route('admin-config.index')->with('success', 'Format surat undangan dan tanda tangan berhasil diperbarui!');
     }
 
     public function updateVotingSettings(Request $request)

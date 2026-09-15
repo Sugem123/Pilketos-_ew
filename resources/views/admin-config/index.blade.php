@@ -117,7 +117,7 @@
                 </span>
             </div>
 
-            <form action="{{ route('admin-config.undangan-template') }}" method="POST" class="space-y-5">
+            <form action="{{ route('admin-config.undangan-template') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -201,10 +201,73 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Jabatan Penandatangan</label>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Keterangan Atas TTD</label>
                         <input type="text" name="undangan_penandatangan"
                                value="{{ old('undangan_penandatangan', $config['undangan_penandatangan'] ?? 'Ketua Panitia Pelaksana') }}" required
                                class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-xs font-semibold">
+                    </div>
+                </div>
+
+                {{-- Pengaturan Format Pengesahan TTD & Nama Pejabat --}}
+                <div class="p-5 rounded-2xl bg-slate-950/70 border border-white/10 space-y-4">
+                    <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+                            <i class="fas fa-signature text-amber-400"></i>
+                            <span>Pengesahan Tanda Tangan Undangan</span>
+                        </h4>
+                        <span class="text-[10px] text-slate-400 font-mono hidden sm:inline">Format: Atas Garis (Nama Pejabat) &mdash; Bawah Garis (Jabatan)</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
+                                Nama Pejabat Penandatangan (Atas Garis)
+                            </label>
+                            <input type="text" name="undangan_nama_pejabat"
+                                   value="{{ old('undangan_nama_pejabat', $config['undangan_nama_pejabat'] ?? 'Ahmad Rizky Pratama') }}" required
+                                   class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-bold"
+                                   placeholder="Contoh: Ahmad Rizky Pratama">
+                            <p class="text-[11px] text-slate-500 mt-1">Nama ketua panitia/pejabat yang tertera tebal tepat di atas garis tanda tangan.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
+                                Nama Jabatan / Keterangan (Bawah Garis)
+                            </label>
+                            <input type="text" name="undangan_jabatan_pejabat"
+                                   value="{{ old('undangan_jabatan_pejabat', $config['undangan_jabatan_pejabat'] ?? 'Ketua Panitia Pelaksana') }}"
+                                   class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm"
+                                   placeholder="Contoh: Ketua Panitia Pelaksana / NIP / NISN">
+                            <p class="text-[11px] text-slate-500 mt-1">Keterangan jabatan resmi di bawah garis lurus tanda tangan.</p>
+                        </div>
+                    </div>
+
+                    {{-- Upload Scan TTD --}}
+                    <div class="pt-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
+                            Upload Scan Tanda Tangan Digital (PNG Transparan / JPG)
+                        </label>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            @if(!empty($config['url_ttd_undangan']))
+                                <div class="p-2 rounded-xl bg-white border border-slate-700 flex flex-col items-center gap-1 flex-shrink-0">
+                                    <img src="{{ asset($config['url_ttd_undangan']) }}" class="h-12 w-auto object-contain" alt="TTD Aktif">
+                                    <span class="text-[9px] text-slate-600 font-mono font-bold">TTD Aktif</span>
+                                </div>
+                            @endif
+
+                            <div class="flex-1 w-full">
+                                <input type="file" name="undangan_ttd_file" accept="image/*"
+                                       class="w-full text-xs text-slate-400 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-indigo-400 hover:file:bg-slate-700 file:cursor-pointer border border-white/10 rounded-2xl p-2 bg-slate-900">
+                                <p class="text-[11px] text-slate-500 mt-1">Gunakan gambar tanda tangan berlatar belakang transparan (format PNG direkomendasikan).</p>
+                            </div>
+
+                            @if(!empty($config['url_ttd_undangan']))
+                                <label class="flex items-center gap-1.5 text-xs text-rose-400 cursor-pointer whitespace-nowrap">
+                                    <input type="checkbox" name="hapus_ttd" value="1" class="text-rose-600 rounded">
+                                    <span>Hapus TTD</span>
+                                </label>
+                            @endif
+                        </div>
                     </div>
                 </div>
 

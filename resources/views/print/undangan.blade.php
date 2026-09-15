@@ -121,12 +121,56 @@
         }
         .signature-box {
             text-align: center;
+            min-width: 175px;
+            max-width: 220px;
+        }
+        .signature-box .sig-header {
+            font-size: 10px;
+            color: #475569;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .signature-box .sig-area {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            min-height: 48px;
+        }
+        .signature-box .sig-image {
+            max-height: 48px;
+            max-width: 135px;
+            object-fit: contain;
+            margin-bottom: -10px;
+            position: relative;
+            z-index: 2;
+        }
+        .signature-box .sig-space {
+            height: 38px;
+        }
+        .signature-box .sig-name {
+            font-size: 11px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.2px;
+            text-align: center;
+            width: 100%;
+            position: relative;
+            z-index: 1;
         }
         .signature-box .line {
-            width: 140px;
-            border-bottom: 1px solid #0f172a;
-            margin-top: 30px;
-            margin-bottom: 2px;
+            width: 100%;
+            border-bottom: 1.5px solid #0f172a;
+            margin: 2px auto 2px auto;
+        }
+        .signature-box .sig-title {
+            font-size: 9px;
+            color: #475569;
+            text-transform: uppercase;
+            font-weight: 700;
+            font-family: monospace;
+            letter-spacing: 0.5px;
         }
 
         /* Garis Bantu Gunting Potong di Tengah */
@@ -378,9 +422,27 @@
                                 <span>Dicetak otomatis oleh Sistem PILKETOS Official</span>
                             </div>
                             <div class="signature-box">
-                                <span>{{ $config['undangan_penandatangan'] ?? 'Ketua Panitia Pemilihan' }}</span>
+                                <div class="sig-header">
+                                    <span>{{ $config['undangan_penandatangan'] ?? 'Ketua Panitia Pemilihan' }}</span>
+                                </div>
+
+                                {{-- Area Scan Tanda Tangan & Nama Pejabat (Atas Garis) --}}
+                                <div class="sig-area">
+                                    @if(!empty($config['url_ttd_undangan']))
+                                        <img src="{{ asset($config['url_ttd_undangan']) }}" class="sig-image" alt="TTD">
+                                    @else
+                                        <div class="sig-space"></div>
+                                    @endif
+                                    <div class="sig-name">{{ $config['undangan_nama_pejabat'] ?? 'Nama Ketua Panitia' }}</div>
+                                </div>
+
+                                {{-- Garis Pembatas --}}
                                 <div class="line"></div>
-                                <span style="font-size: 9px; text-transform: uppercase;">{{ $config['nama_sekolah'] ?? 'Panitia Pilketos' }}</span>
+
+                                {{-- Nama Jabatan / Keterangan (Bawah Garis) --}}
+                                <div class="sig-title">
+                                    {{ $config['undangan_jabatan_pejabat'] ?? ($config['undangan_penandatangan'] ?? 'Ketua Panitia Pelaksana') }}
+                                </div>
                             </div>
                         </div>
                     </div>

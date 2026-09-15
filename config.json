@@ -19,5 +19,8 @@
     "undangan_waktu": "07.00 - 13.00 WIB",
     "undangan_lokasi": "Aula SMAN 1 Prambon",
     "undangan_catatan_kaki": "Harap membawa surat undangan ini atau mengingat Token Otorisasi saat dipanggil oleh panitia TPS menuju bilik suara e-voting. Satu token hanya berlaku untuk 1 (satu) kali penggunaan.",
-    "undangan_penandatangan": "Ketua Panitia Pelaksana"
+    "undangan_penandatangan": "Ketua Panitia Pelaksana",
+    "undangan_nama_pejabat": "Ahmad Rizky Pratama",
+    "undangan_jabatan_pejabat": "Ketua Panitia Pelaksana",
+    "url_ttd_undangan": null
 }
