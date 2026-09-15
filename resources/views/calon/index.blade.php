@@ -6,6 +6,8 @@
         fn($c) => [
             $c->id => [
                 'nama' => $c->nama,
+                'nama_wakil_1' => $c->nama_wakil_1 ?? '',
+                'nama_wakil_2' => $c->nama_wakil_2 ?? '',
                 'id_kelas' => $c->id_kelas,
                 'kelas' => $c->kelas->name ?? '-',
                 'nomor' => $c->nomor,
@@ -77,6 +79,11 @@
                                 <h3 class="font-bold text-white text-sm truncate">{{ $calon->nama }}</h3>
                             </div>
                             <p class="text-xs text-slate-400 font-mono">Kelas {{ $calon->kelas->name }}</p>
+                            @if(!empty($calon->nama_wakil_1) || !empty($calon->nama_wakil_2))
+                                <p class="text-[11px] text-indigo-300/80 truncate mt-0.5">
+                                    <i class="fas fa-users text-[9px] mr-1"></i>Wakil: {{ implode(' & ', array_filter([$calon->nama_wakil_1, $calon->nama_wakil_2])) }}
+                                </p>
+                            @endif
                         </div>
 
                         {{-- Tombol Tukar Nomor Urut Cepat --}}
@@ -149,6 +156,13 @@
                                     class="inline-block px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-mono font-bold rounded-xl mb-2"></span>
                                 <h3 id="detail-nama" class="font-heading font-black text-2xl sm:text-3xl text-white leading-tight"></h3>
                                 <p id="detail-kelas" class="text-xs font-bold text-slate-400 mt-1 font-mono"></p>
+
+                                {{-- Informasi Pasangan Wakil --}}
+                                <div id="detail-wakil-container" class="mt-3.5 hidden p-3.5 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1 text-xs">
+                                    <span class="text-[10px] uppercase tracking-wider text-slate-500 font-mono font-bold block mb-1">Pasangan Calon Wakil Ketua</span>
+                                    <p id="detail-wakil-1" class="text-slate-300 font-medium"></p>
+                                    <p id="detail-wakil-2" class="text-slate-300 font-medium"></p>
+                                </div>
                             </div>
 
                             {{-- Visi --}}
@@ -195,9 +209,29 @@
                 <input type="hidden" id="input-tipe" name="tipe" value="{{ $tipe }}">
 
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Nama Lengkap</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Nama Calon Ketua</label>
                     <input type="text" id="input-nama" name="nama" required
-                        class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold">
+                        class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold"
+                        placeholder="Contoh: Shabira Syahla Alvaliza">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
+                            Nama Calon Wakil Ketua 1
+                        </label>
+                        <input type="text" id="input-nama-wakil-1" name="nama_wakil_1"
+                            class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold"
+                            placeholder="Nama Wakil Ketua 1...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
+                            Nama Calon Wakil Ketua 2
+                        </label>
+                        <input type="text" id="input-nama-wakil-2" name="nama_wakil_2"
+                            class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold"
+                            placeholder="Nama Wakil Ketua 2...">
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -356,6 +390,20 @@
             document.getElementById('detail-visi').textContent = d.visi;
             document.getElementById('detail-misi').textContent = d.misi;
 
+            const wakilBox = document.getElementById('detail-wakil-container');
+            const w1 = document.getElementById('detail-wakil-1');
+            const w2 = document.getElementById('detail-wakil-2');
+
+            if (d.nama_wakil_1 || d.nama_wakil_2) {
+                wakilBox.classList.remove('hidden');
+                w1.textContent = d.nama_wakil_1 ? '• Wakil Ketua 1: ' + d.nama_wakil_1 : '';
+                w2.textContent = d.nama_wakil_2 ? '• Wakil Ketua 2: ' + d.nama_wakil_2 : '';
+                w1.style.display = d.nama_wakil_1 ? 'block' : 'none';
+                w2.style.display = d.nama_wakil_2 ? 'block' : 'none';
+            } else {
+                wakilBox.classList.add('hidden');
+            }
+
             const fotoEl = document.getElementById('detail-foto');
             if (d.url_foto) {
                 fotoEl.src = d.url_foto;
@@ -387,6 +435,8 @@
                 form.action = '{{ url('/admin/calon') }}/' + id;
                 methodInput.value = 'PUT';
                 document.getElementById('input-nama').value = data.nama;
+                document.getElementById('input-nama-wakil-1').value = data.nama_wakil_1 || '';
+                document.getElementById('input-nama-wakil-2').value = data.nama_wakil_2 || '';
                 document.getElementById('input-kelas').value = data.id_kelas;
                 document.getElementById('input-nomor').value = data.nomor;
                 document.getElementById('input-visi').value = data.visi;

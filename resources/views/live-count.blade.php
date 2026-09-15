@@ -298,13 +298,19 @@
                             </div>
                         ` : ''}
 
-                        <div class="p-6 pb-4 border-b border-slate-800/80 bg-slate-950/40 flex items-center justify-between">
-                            <div>
+                        <div class="p-6 pb-4 border-b border-slate-800/80 bg-slate-950/40 flex items-start justify-between gap-3">
+                            <div class="min-w-0 flex-1">
                                 <span class="text-[11px] font-bold uppercase tracking-widest ${colorAccent} font-mono">${labelTipe} 0${c.nomor}</span>
-                                <h2 class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-tight mt-0.5">${c.nama}</h2>
+                                <h2 class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-tight mt-0.5 truncate">${c.nama}</h2>
                                 <p class="text-xs text-slate-400 font-mono mt-0.5">Kelas ${c.kelas}</p>
+                                ${c.nama_wakil_1 || c.nama_wakil_2 ? `
+                                    <div class="mt-2 pt-1.5 border-t border-white/5 space-y-0.5 text-left">
+                                        ${c.nama_wakil_1 ? `<p class="text-[11px] text-slate-300 truncate"><span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-white/5 text-slate-300 rounded mr-1">W1</span>${c.nama_wakil_1}</p>` : ''}
+                                        ${c.nama_wakil_2 ? `<p class="text-[11px] text-slate-300 truncate"><span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-white/5 text-slate-300 rounded mr-1">W2</span>${c.nama_wakil_2}</p>` : ''}
+                                    </div>
+                                ` : ''}
                             </div>
-                            <div class="w-12 h-12 rounded-2xl ${colorBoxBg} ${colorBoxBorder} border flex items-center justify-center font-heading font-black ${colorAccentSoft} text-xl">
+                            <div class="w-12 h-12 rounded-2xl ${colorBoxBg} ${colorBoxBorder} border flex items-center justify-center font-heading font-black ${colorAccentSoft} text-xl flex-shrink-0">
                                 ${c.nomor}
                             </div>
                         </div>

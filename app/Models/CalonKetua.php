@@ -15,11 +15,33 @@ class CalonKetua extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['tipe', 'nama', 'nomor', 'visi', 'misi', 'id_kelas', 'url_foto'];
+    protected $fillable = [
+        'tipe',
+        'nama',
+        'nama_wakil_1',
+        'nama_wakil_2',
+        'nomor',
+        'visi',
+        'misi',
+        'id_kelas',
+        'id_kelas_wakil_1',
+        'id_kelas_wakil_2',
+        'url_foto',
+    ];
 
     public function kelas(): BelongsTo
     {
         return $this->belongsTo(Kelas::class, 'id_kelas');
+    }
+
+    public function kelasWakil1(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class, 'id_kelas_wakil_1');
+    }
+
+    public function kelasWakil2(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class, 'id_kelas_wakil_2');
     }
 
     public function votes(): HasMany
@@ -45,5 +67,23 @@ class CalonKetua extends Model
     public function labelTipe(): string
     {
         return $this->tipe === self::TIPE_MPK ? 'Calon Ketua MPK' : 'Calon Ketua OSIS';
+    }
+
+    public function labelPaslon(): string
+    {
+        return $this->tipe === self::TIPE_MPK ? 'Pasangan Calon MPK' : 'Pasangan Calon OSIS';
+    }
+
+    public function namaLengkapPaslon(): string
+    {
+        $parts = [$this->nama];
+        if (!empty($this->nama_wakil_1)) {
+            $parts[] = $this->nama_wakil_1;
+        }
+        if (!empty($this->nama_wakil_2)) {
+            $parts[] = $this->nama_wakil_2;
+        }
+
+        return implode(' & ', $parts);
     }
 }

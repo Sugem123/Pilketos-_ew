@@ -103,6 +103,8 @@
                                             <div class="bg-slate-900/90 backdrop-blur-xl z-10 card w-full border-2 border-slate-800 hover:border-indigo-500/60 rounded-3xl shadow-2xl transition-all duration-300 overflow-hidden group relative hover:shadow-indigo-500/10 hover:-translate-y-1.5"
                                                 data-calon-id="{{ $calon->id }}" data-visi="{{ $calon->visi }}"
                                                 data-misi="{{ $calon->misi }}" data-nama="{{ $calon->nama }}"
+                                                data-wakil-1="{{ $calon->nama_wakil_1 ?? '' }}"
+                                                data-wakil-2="{{ $calon->nama_wakil_2 ?? '' }}"
                                                 data-kelas="{{ $calon->kelas->name }}" data-tipe="osis">
 
                                                 {{-- Selection Indicator Badge --}}
@@ -152,14 +154,33 @@
                                                     </div>
 
                                                     {{-- Card Info Bottom --}}
-                                                    <div class="p-5 lg:p-6 bg-slate-900/90 border-t border-slate-800/80 flex items-center justify-between">
-                                                        <div class="flex items-center gap-2">
-                                                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kelas</span>
+                                                    <div class="p-4 lg:p-5 bg-slate-900/90 border-t border-slate-800/80 space-y-2">
+                                                        <div class="flex items-center justify-between">
+                                                            <div class="flex items-center gap-2">
+                                                                <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kelas</span>
+                                                            </div>
+                                                            <span class="text-xs font-bold text-white px-2.5 py-0.5 bg-slate-800 border border-slate-700 rounded-lg font-mono">
+                                                                {{ $calon->kelas->name }}
+                                                            </span>
                                                         </div>
-                                                        <span class="text-sm font-bold text-white px-3 py-1 bg-slate-800 border border-slate-700 rounded-xl font-mono">
-                                                            {{ $calon->kelas->name }}
-                                                        </span>
+
+                                                        @if(!empty($calon->nama_wakil_1) || !empty($calon->nama_wakil_2))
+                                                            <div class="pt-2 border-t border-slate-800/60 text-left space-y-1">
+                                                                @if(!empty($calon->nama_wakil_1))
+                                                                    <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
+                                                                        <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-indigo-500/15 text-indigo-300 rounded">W1</span>
+                                                                        <span class="truncate">{{ $calon->nama_wakil_1 }}</span>
+                                                                    </p>
+                                                                @endif
+                                                                @if(!empty($calon->nama_wakil_2))
+                                                                    <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
+                                                                        <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-indigo-500/15 text-indigo-300 rounded">W2</span>
+                                                                        <span class="truncate">{{ $calon->nama_wakil_2 }}</span>
+                                                                    </p>
+                                                                @endif
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                 </label>
                                             </div>
@@ -172,6 +193,10 @@
                                                         <span class="text-[10px] font-bold uppercase tracking-widest text-indigo-400 font-mono">Profil Kandidat</span>
                                                         <h3 class="font-heading font-extrabold text-lg lg:text-xl text-white detail-nama mt-0.5"></h3>
                                                         <p class="text-xs font-medium text-slate-400 detail-kelas font-mono"></p>
+                                                        <div class="detail-wakil-wrap mt-2 space-y-1 text-xs hidden pt-2 border-t border-slate-800/80">
+                                                            <p class="detail-wakil-1 text-slate-300 font-medium"></p>
+                                                            <p class="detail-wakil-2 text-slate-300 font-medium"></p>
+                                                        </div>
                                                     </div>
 
                                                     <div>
@@ -229,6 +254,8 @@
                                             <div class="bg-slate-900/90 backdrop-blur-xl z-10 card w-full border-2 border-slate-800 hover:border-emerald-500/60 rounded-3xl shadow-2xl transition-all duration-300 overflow-hidden group relative hover:shadow-emerald-500/10 hover:-translate-y-1.5"
                                                 data-calon-id="{{ $calon->id }}" data-visi="{{ $calon->visi }}"
                                                 data-misi="{{ $calon->misi }}" data-nama="{{ $calon->nama }}"
+                                                data-wakil-1="{{ $calon->nama_wakil_1 ?? '' }}"
+                                                data-wakil-2="{{ $calon->nama_wakil_2 ?? '' }}"
                                                 data-kelas="{{ $calon->kelas->name }}" data-tipe="mpk">
 
                                                 {{-- Selection Indicator Badge --}}
@@ -278,14 +305,33 @@
                                                     </div>
 
                                                     {{-- Card Info Bottom --}}
-                                                    <div class="p-5 lg:p-6 bg-slate-900/90 border-t border-slate-800/80 flex items-center justify-between">
-                                                        <div class="flex items-center gap-2">
-                                                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kelas</span>
+                                                    <div class="p-4 lg:p-5 bg-slate-900/90 border-t border-slate-800/80 space-y-2">
+                                                        <div class="flex items-center justify-between">
+                                                            <div class="flex items-center gap-2">
+                                                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kelas</span>
+                                                            </div>
+                                                            <span class="text-xs font-bold text-white px-2.5 py-0.5 bg-slate-800 border border-slate-700 rounded-lg font-mono">
+                                                                {{ $calon->kelas->name }}
+                                                            </span>
                                                         </div>
-                                                        <span class="text-sm font-bold text-white px-3 py-1 bg-slate-800 border border-slate-700 rounded-xl font-mono">
-                                                            {{ $calon->kelas->name }}
-                                                        </span>
+
+                                                        @if(!empty($calon->nama_wakil_1) || !empty($calon->nama_wakil_2))
+                                                            <div class="pt-2 border-t border-slate-800/60 text-left space-y-1">
+                                                                @if(!empty($calon->nama_wakil_1))
+                                                                    <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
+                                                                        <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-emerald-500/15 text-emerald-300 rounded">W1</span>
+                                                                        <span class="truncate">{{ $calon->nama_wakil_1 }}</span>
+                                                                    </p>
+                                                                @endif
+                                                                @if(!empty($calon->nama_wakil_2))
+                                                                    <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
+                                                                        <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-emerald-500/15 text-emerald-300 rounded">W2</span>
+                                                                        <span class="truncate">{{ $calon->nama_wakil_2 }}</span>
+                                                                    </p>
+                                                                @endif
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                 </label>
                                             </div>
@@ -298,6 +344,10 @@
                                                         <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-400 font-mono">Profil Kandidat</span>
                                                         <h3 class="font-heading font-extrabold text-lg lg:text-xl text-white detail-nama mt-0.5"></h3>
                                                         <p class="text-xs font-medium text-slate-400 detail-kelas font-mono"></p>
+                                                        <div class="detail-wakil-wrap mt-2 space-y-1 text-xs hidden pt-2 border-t border-slate-800/80">
+                                                            <p class="detail-wakil-1 text-slate-300 font-medium"></p>
+                                                            <p class="detail-wakil-2 text-slate-300 font-medium"></p>
+                                                        </div>
                                                     </div>
 
                                                     <div>
@@ -413,6 +463,28 @@
             detailPanel.querySelector('.detail-kelas').textContent = 'Kelas ' + card.dataset.kelas;
             detailPanel.querySelector('.detail-visi').textContent = card.dataset.visi;
             detailPanel.querySelector('.detail-misi').textContent = card.dataset.misi;
+
+            const wakilWrap = detailPanel.querySelector('.detail-wakil-wrap');
+            const w1 = detailPanel.querySelector('.detail-wakil-1');
+            const w2 = detailPanel.querySelector('.detail-wakil-2');
+            const valW1 = card.dataset.wakil1;
+            const valW2 = card.dataset.wakil2;
+
+            if (wakilWrap) {
+                if (valW1 || valW2) {
+                    wakilWrap.classList.remove('hidden');
+                    if (w1) {
+                        w1.textContent = valW1 ? '• Wakil 1: ' + valW1 : '';
+                        w1.style.display = valW1 ? 'block' : 'none';
+                    }
+                    if (w2) {
+                        w2.textContent = valW2 ? '• Wakil 2: ' + valW2 : '';
+                        w2.style.display = valW2 ? 'block' : 'none';
+                    }
+                } else {
+                    wakilWrap.classList.add('hidden');
+                }
+            }
 
             const siblingsAfter = getItemsAfter(container);
 

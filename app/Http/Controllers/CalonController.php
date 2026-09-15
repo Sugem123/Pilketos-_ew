@@ -17,7 +17,7 @@ class CalonController extends Controller
             $tipe = CalonKetua::TIPE_OSIS;
         }
 
-        $calons = CalonKetua::with('kelas')
+        $calons = CalonKetua::with(['kelas'])
             ->where('tipe', $tipe)
             ->orderBy('nomor')
             ->get();
@@ -38,6 +38,8 @@ class CalonController extends Controller
 
         $request->validate([
             'nama' => 'required|string|max:256',
+            'nama_wakil_1' => 'nullable|string|max:256',
+            'nama_wakil_2' => 'nullable|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
             'nomor' => 'required|integer|min:1|max:99',
             'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
@@ -66,6 +68,8 @@ class CalonController extends Controller
         CalonKetua::create([
             'tipe' => $tipe,
             'nama' => $request->nama,
+            'nama_wakil_1' => $request->nama_wakil_1,
+            'nama_wakil_2' => $request->nama_wakil_2,
             'nomor' => $request->nomor,
             'visi' => $request->visi,
             'misi' => $request->misi,
@@ -83,6 +87,8 @@ class CalonController extends Controller
 
         $request->validate([
             'nama' => 'required|string|max:256',
+            'nama_wakil_1' => 'nullable|string|max:256',
+            'nama_wakil_2' => 'nullable|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
             'nomor' => 'required|integer|min:1|max:99',
             'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
@@ -113,6 +119,8 @@ class CalonController extends Controller
 
         $data = [
             'nama' => $request->nama,
+            'nama_wakil_1' => $request->nama_wakil_1,
+            'nama_wakil_2' => $request->nama_wakil_2,
             'nomor' => $newNomor,
             'visi' => $request->visi,
             'misi' => $request->misi,
