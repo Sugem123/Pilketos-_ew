@@ -121,8 +121,8 @@
         }
         .signature-box {
             text-align: center;
-            min-width: 175px;
-            max-width: 220px;
+            min-width: 190px;
+            max-width: 240px;
         }
         .signature-box .sig-header {
             font-size: 10px;
@@ -136,18 +136,18 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-end;
-            min-height: 48px;
+            min-height: 68px;
         }
         .signature-box .sig-image {
-            max-height: 48px;
-            max-width: 135px;
+            max-height: 68px;
+            max-width: 190px;
             object-fit: contain;
-            margin-bottom: -10px;
+            margin-bottom: -14px;
             position: relative;
             z-index: 2;
         }
         .signature-box .sig-space {
-            height: 38px;
+            height: 54px;
         }
         .signature-box .sig-name {
             font-size: 11px;
