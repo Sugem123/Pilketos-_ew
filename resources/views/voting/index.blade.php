@@ -9,6 +9,31 @@
         @endforeach
     @endpush
 
+    {{-- ====== KIOSK FULLSCREEN LOCK OVERLAY ====== --}}
+    <div id="kiosk-lock-overlay" class="fixed inset-0 z-[9999999] bg-slate-950/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none" style="display: none;">
+        <div class="max-w-md w-full p-8 rounded-3xl bg-slate-900/90 border-2 border-indigo-500/40 shadow-2xl shadow-indigo-500/20 flex flex-col items-center">
+            <div class="w-20 h-20 rounded-3xl bg-indigo-500/10 border-2 border-indigo-500/30 flex items-center justify-center text-indigo-400 text-3xl mb-5 animate-pulse">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/20 mb-3 border border-indigo-500/30">
+                Bilik Suara Terkunci
+            </span>
+            <h2 class="font-heading font-black text-2xl text-white mb-2">Mode Layar Penuh Wajib Aktif</h2>
+            <p class="text-xs text-slate-400 leading-relaxed mb-6">
+                Untuk menjaga kerahasiaan dan ketertiban bilik suara, halaman e-voting wajib berada dalam mode Layar Penuh (Fullscreen).
+            </p>
+            <button type="button" onclick="requestKioskFullscreen()" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-heading font-extrabold text-sm shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02]">
+                <i class="fa-solid fa-expand"></i>
+                <span>Aktifkan Layar Penuh &amp; Buka Bilik</span>
+            </button>
+            <div class="mt-5 pt-4 border-t border-slate-800 w-full text-center">
+                <p class="text-[11px] text-slate-400 font-mono">
+                    Khusus Panitia: Tekan <kbd class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-bold">Ctrl + C + B</kbd> untuk keluar.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <div class="flex flex-col min-h-screen relative overflow-hidden">
         {{-- Floating Top Bar --}}
         <header class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 z-20">
@@ -50,6 +75,13 @@
                             </button>
                         </form>
                     @endif
+
+                    <button type="button" onclick="toggleKioskFullscreen()" id="btn-kiosk-toggle"
+                            class="px-3 py-1.5 bg-slate-900 border border-white/10 hover:border-indigo-500/50 text-slate-300 hover:text-white rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                            title="Layar Penuh (Tekan Ctrl+C+B untuk keluar)">
+                        <i class="fa-solid fa-expand text-[10px] text-indigo-400" id="icon-kiosk-toggle"></i>
+                        <span id="text-kiosk-toggle">Fullscreen</span>
+                    </button>
 
                     <div class="hidden sm:flex flex-col text-right">
                         <span class="text-xs text-slate-400">Hak Suara Terpakai</span>
@@ -882,6 +914,9 @@
                         Swal.showValidationMessage('Token wajib diisi');
                         return false;
                     }
+                    if (!isKioskFullscreen() && !kioskUnlockedByPanitia) {
+                        requestKioskFullscreen();
+                    }
                     return fetch('{{ route('check-token') }}', {
                             method: 'POST',
                             headers: {
@@ -911,6 +946,170 @@
             });
         }
 
+        // ── KIOSK FULLSCREEN LOCK ENGINE (Default Fullscreen, Lock, Exit: Ctrl+C+B) ──
+        let kioskUnlockedByPanitia = false;
+        const kioskLockOverlay = document.getElementById('kiosk-lock-overlay');
+        const btnKioskToggle = document.getElementById('btn-kiosk-toggle');
+        const iconKioskToggle = document.getElementById('icon-kiosk-toggle');
+        const textKioskToggle = document.getElementById('text-kiosk-toggle');
+
+        function isKioskFullscreen() {
+            return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+        }
+
+        function showKioskLock() {
+            if (kioskLockOverlay) {
+                kioskLockOverlay.style.display = 'flex';
+            }
+        }
+
+        function hideKioskLock() {
+            if (kioskLockOverlay) {
+                kioskLockOverlay.style.display = 'none';
+            }
+        }
+
+        function requestKioskFullscreen() {
+            const el = document.documentElement;
+            const rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+            if (rfs) {
+                rfs.call(el).then(() => {
+                    hideKioskLock();
+                    kioskUnlockedByPanitia = false;
+                    updateKioskButtonState();
+                    if (!sessionStorage.getItem('display_token') && !Swal.isVisible()) {
+                        showTokenPopup();
+                    }
+                }).catch(() => {
+                    hideKioskLock();
+                    if (!sessionStorage.getItem('display_token') && !Swal.isVisible()) {
+                        showTokenPopup();
+                    }
+                });
+            } else {
+                hideKioskLock();
+                if (!sessionStorage.getItem('display_token') && !Swal.isVisible()) {
+                    showTokenPopup();
+                }
+            }
+        }
+
+        function exitKioskFullscreen() {
+            const efs = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+            if (efs && isKioskFullscreen()) {
+                efs.call(document).catch(() => {});
+            }
+        }
+
+        function toggleKioskFullscreen() {
+            if (isKioskFullscreen()) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Bilik Suara Terkunci',
+                    html: 'Halaman voting berada dalam mode terkunci (fullscreen).<br><br>Khusus Pengawas/Panitia TPS: Tekan kombinasi tombol <kbd class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-bold text-sm">Ctrl + C + B</kbd> untuk keluar.',
+                    confirmButtonText: 'Kembali Memilih'
+                });
+            } else {
+                requestKioskFullscreen();
+            }
+        }
+
+        function updateKioskButtonState() {
+            if (isKioskFullscreen()) {
+                if (iconKioskToggle) iconKioskToggle.className = 'fa-solid fa-lock text-[10px] text-emerald-400';
+                if (textKioskToggle) textKioskToggle.textContent = 'Terkunci';
+                if (btnKioskToggle) {
+                    btnKioskToggle.classList.add('border-emerald-500/40', 'text-emerald-300');
+                    btnKioskToggle.classList.remove('border-white/10', 'text-slate-300');
+                }
+            } else {
+                if (iconKioskToggle) iconKioskToggle.className = 'fa-solid fa-expand text-[10px] text-indigo-400';
+                if (textKioskToggle) textKioskToggle.textContent = 'Fullscreen';
+                if (btnKioskToggle) {
+                    btnKioskToggle.classList.remove('border-emerald-500/40', 'text-emerald-300');
+                    btnKioskToggle.classList.add('border-white/10', 'text-slate-300');
+                }
+            }
+        }
+
+        function handleFullscreenChange() {
+            updateKioskButtonState();
+            if (isKioskFullscreen()) {
+                hideKioskLock();
+                kioskUnlockedByPanitia = false;
+            } else {
+                if (!kioskUnlockedByPanitia) {
+                    showKioskLock();
+                }
+            }
+        }
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        // Pelacak kombinasi tombol panitia: Ctrl + C + B
+        const pressedKeys = new Set();
+        window.addEventListener('keydown', (e) => {
+            pressedKeys.add(e.key.toLowerCase());
+
+            // Kombinasi Ctrl + C + B (Bypass & Unlock Fullscreen oleh Panitia)
+            if (e.ctrlKey && pressedKeys.has('c') && pressedKeys.has('b')) {
+                e.preventDefault();
+                kioskUnlockedByPanitia = true;
+                if (isKioskFullscreen()) {
+                    exitKioskFullscreen();
+                } else {
+                    hideKioskLock();
+                }
+                updateKioskButtonState();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Mode Terkunci Dibuka',
+                    text: 'Layar bilik suara berhasil dibuka oleh panitia (Ctrl+C+B).',
+                    timer: 2500,
+                    timerProgressBar: true
+                });
+                return false;
+            }
+
+            // Cegah shortcut Developer Tools & Source Code
+            if (
+                e.key === 'F12' ||
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) ||
+                (e.ctrlKey && (e.key === 'u' || e.key === 'U'))
+            ) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Cegah refresh sengaja/tak sengaja
+            if (e.key === 'F5' || (e.ctrlKey && (e.key === 'r' || e.key === 'R'))) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Alihkan F11 ke Kiosk Fullscreen
+            if (e.key === 'F11') {
+                e.preventDefault();
+                if (!isKioskFullscreen()) {
+                    requestKioskFullscreen();
+                }
+                return false;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            pressedKeys.delete(e.key.toLowerCase());
+        });
+
+        // Nonaktifkan klik kanan di bilik suara
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
+
         // Wait for all candidate images to finish loading before showing token popup
         function waitForCandidateImages() {
             const imgs = document.querySelectorAll('.caketos-item img');
@@ -925,11 +1124,18 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            updateKioskButtonState();
+            if (!isKioskFullscreen() && !kioskUnlockedByPanitia) {
+                showKioskLock();
+            }
+
             waitForCandidateImages().then(() => {
                 let token = sessionStorage.getItem('display_token');
 
                 if (!token) {
-                    showTokenPopup();
+                    if (isKioskFullscreen() || kioskUnlockedByPanitia) {
+                        showTokenPopup();
+                    }
                 } else {
                     fetch('{{ route('check-token') }}', {
                             method: 'POST',
