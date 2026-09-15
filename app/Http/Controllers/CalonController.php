@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CalonKetua;
 use App\Models\Kelas;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class CalonController extends Controller
@@ -36,6 +37,13 @@ class CalonController extends Controller
             $tipe = CalonKetua::TIPE_OSIS;
         }
 
+        $request->merge([
+            'nama_wakil_1' => filled($request->nama_wakil_1) ? trim($request->nama_wakil_1) : null,
+            'nama_wakil_2' => filled($request->nama_wakil_2) ? trim($request->nama_wakil_2) : null,
+            'id_kelas_wakil_1' => filled($request->id_kelas_wakil_1) ? (int) $request->id_kelas_wakil_1 : null,
+            'id_kelas_wakil_2' => filled($request->id_kelas_wakil_2) ? (int) $request->id_kelas_wakil_2 : null,
+        ]);
+
         $request->validate([
             'nama' => 'required|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
@@ -44,10 +52,10 @@ class CalonController extends Controller
             'nama_wakil_2' => 'nullable|string|max:256',
             'id_kelas_wakil_2' => 'nullable|exists:kelas,id',
             'nomor' => 'required|integer|min:1|max:99',
-            'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'foto_cropped_base64' => 'nullable|string',
-            'visi' => 'required|string|max:521',
-            'misi' => 'required|string|max:1000',
+            'visi' => 'required|string|max:5000',
+            'misi' => 'required|string|max:10000',
         ], [
             'nomor.min'     => 'Nomor urut harus minimal 1.',
             'nomor.max'     => 'Nomor urut maksimal 99.',
@@ -89,6 +97,13 @@ class CalonController extends Controller
     {
         $tipe = $calon->tipe;
 
+        $request->merge([
+            'nama_wakil_1' => filled($request->nama_wakil_1) ? trim($request->nama_wakil_1) : null,
+            'nama_wakil_2' => filled($request->nama_wakil_2) ? trim($request->nama_wakil_2) : null,
+            'id_kelas_wakil_1' => filled($request->id_kelas_wakil_1) ? (int) $request->id_kelas_wakil_1 : null,
+            'id_kelas_wakil_2' => filled($request->id_kelas_wakil_2) ? (int) $request->id_kelas_wakil_2 : null,
+        ]);
+
         $request->validate([
             'nama' => 'required|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
@@ -97,10 +112,10 @@ class CalonController extends Controller
             'nama_wakil_2' => 'nullable|string|max:256',
             'id_kelas_wakil_2' => 'nullable|exists:kelas,id',
             'nomor' => 'required|integer|min:1|max:99',
-            'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'foto_cropped_base64' => 'nullable|string',
-            'visi' => 'required|string|max:521',
-            'misi' => 'required|string|max:1000',
+            'visi' => 'required|string|max:5000',
+            'misi' => 'required|string|max:10000',
         ], [
             'nomor.min'     => 'Nomor urut harus minimal 1.',
             'nomor.max'     => 'Nomor urut maksimal 99.',

@@ -211,6 +211,20 @@
             </button>
         </div>
         <div class="flex-1 overflow-y-auto p-6 sm:p-8">
+            @if($errors->any())
+                <div class="mb-5 p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs space-y-1.5 shadow-lg">
+                    <div class="font-bold flex items-center gap-2 text-rose-200">
+                        <i class="fas fa-triangle-exclamation text-rose-400"></i>
+                        <span>Gagal Menyimpan Data Kandidat:</span>
+                    </div>
+                    <ul class="list-disc list-inside space-y-0.5 text-rose-300 pl-1 font-sans">
+                        @foreach($errors->all() as $err)
+                            <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form id="calon-form" action="{{ route('calon.store') }}" method="POST" enctype="multipart/form-data"
                 class="space-y-5">
                 @csrf
@@ -664,7 +678,9 @@
             }
         }
 
-        @if ($calons->isNotEmpty())
+        @if ($errors->any())
+            openSidebar('add');
+        @elseif ($calons->isNotEmpty())
             selectCandidate({{ $calons->first()->id }});
         @endif
     </script>

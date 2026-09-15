@@ -99,6 +99,11 @@
             @if(session('error'))
                 notyf.error('{{ session('error') }}');
             @endif
+            @if($errors->any())
+                @foreach($errors->all() as $error)
+                    notyf.error('{{ addslashes($error) }}');
+                @endforeach
+            @endif
         });
     </script>
     @stack('scripts')
