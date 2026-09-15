@@ -38,6 +38,19 @@
                             <div id="vote-timer-bar" class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-400" style="width:100%"></div>
                         </div>
                     </div>
+                    @if(isset($currentBilik))
+                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm">
+                            <i class="fas fa-desktop text-[10px]"></i>
+                            <span>{{ $currentBilik->nama_bilik }}</span>
+                        </span>
+                        <form method="POST" action="{{ route('bilik.unpair') }}" onsubmit="return confirm('Putus sesi {{ $currentBilik->nama_bilik }} di komputer ini?')">
+                            @csrf
+                            <button type="submit" class="text-[10px] text-slate-500 hover:text-rose-400 font-mono transition-colors cursor-pointer px-2 py-1 rounded hover:bg-slate-900 border border-transparent hover:border-slate-800" title="Putus Pairing Bilik Ini">
+                                <i class="fas fa-power-off"></i> Putus PC
+                            </button>
+                        </form>
+                    @endif
+
                     <div class="hidden sm:flex flex-col text-right">
                         <span class="text-xs text-slate-400">Hak Suara Terpakai</span>
                         <span class="text-sm font-semibold text-indigo-300 font-mono">{{ $totalVote }} / {{ $config['haksuara'] }}</span>

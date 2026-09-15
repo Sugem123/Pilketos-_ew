@@ -42,6 +42,12 @@
             Hak Suara (DPT)
         </a>
 
+        <a href="{{ route('admin.bilik.index') }}"
+            class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'admin.bilik') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+            <i class="fas fa-person-booth w-5 text-center text-sm {{ str_starts_with($currentRoute, 'admin.bilik') ? 'text-white' : 'text-indigo-400' }}"></i>
+            Manajemen Bilik
+        </a>
+
         @if(auth()->user()?->isAdmin())
             <a href="{{ route('tokens.index') }}"
                 class="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all {{ str_starts_with($currentRoute, 'tokens') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">

@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'desktop' => EnsureDesktopAccess::class,
             'role.admin' => \App\Http\Middleware\EnsureAdminRole::class,
+            'bilik.auth' => \App\Http\Middleware\EnsureBilikAuthorized::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

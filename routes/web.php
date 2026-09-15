@@ -20,8 +20,13 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Bilik Suara — hanya panitia/admin yang login (mencegah voting liar)
-Route::middleware(['auth'])->group(function () {
+// Aktivasi Pairing PC Bilik Suara (Bisa diakses tanpa login admin)
+Route::get('/bilik', [BilikController::class, 'showPairingForm'])->name('bilik.pairing-form');
+Route::post('/bilik/pairing', [BilikController::class, 'submitPairing'])->name('bilik.pairing-submit');
+Route::post('/bilik/unpair', [BilikController::class, 'unpair'])->name('bilik.unpair');
+
+// Bilik Suara E-Voting — hanya PC yang sudah dipairing kode bilik ATAU admin yang login
+Route::middleware(['bilik.auth'])->group(function () {
     Route::post('/check-token', [CheckTokenController::class, 'check'])->name('check-token');
 
     Route::get('/voting', [VotingController::class, 'index'])->name('voting.index');
@@ -67,6 +72,13 @@ Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
     Route::get('/cetak/kartu', [PrintController::class, 'kartu'])->name('cetak.kartu');
     Route::get('/cetak/dpt', [PrintController::class, 'daftarDpt'])->name('cetak.dpt');
     Route::get('/cetak/daftar-hadir', [PrintController::class, 'daftarHadir'])->name('cetak.daftar-hadir');
+
+    // 4. Manajemen Bilik Suara TPS (Generate Kode Pairing 1 PC 1 Kode) — bisa diakses Admin & Operator
+    Route::get('/bilik', [BilikController::class, 'index'])->name('admin.bilik.index');
+    Route::post('/bilik', [BilikController::class, 'store'])->name('admin.bilik.store');
+    Route::post('/bilik/{bilik}/reset', [BilikController::class, 'reset'])->name('admin.bilik.reset');
+    Route::patch('/bilik/{bilik}/toggle', [BilikController::class, 'toggleActive'])->name('admin.bilik.toggle');
+    Route::delete('/bilik/{bilik}', [BilikController::class, 'destroy'])->name('admin.bilik.destroy');
 
     // ─── KHUSUS ADMINISTRATOR (Operator DILARANG) ───
     Route::middleware(['role.admin'])->group(function () {
