@@ -17,7 +17,7 @@ class CalonController extends Controller
             $tipe = CalonKetua::TIPE_OSIS;
         }
 
-        $calons = CalonKetua::with(['kelas'])
+        $calons = CalonKetua::with(['kelas', 'kelasWakil1', 'kelasWakil2'])
             ->where('tipe', $tipe)
             ->orderBy('nomor')
             ->get();
@@ -38,9 +38,11 @@ class CalonController extends Controller
 
         $request->validate([
             'nama' => 'required|string|max:256',
-            'nama_wakil_1' => 'nullable|string|max:256',
-            'nama_wakil_2' => 'nullable|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
+            'nama_wakil_1' => 'nullable|string|max:256',
+            'id_kelas_wakil_1' => 'nullable|exists:kelas,id',
+            'nama_wakil_2' => 'nullable|string|max:256',
+            'id_kelas_wakil_2' => 'nullable|exists:kelas,id',
             'nomor' => 'required|integer|min:1|max:99',
             'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'foto_cropped_base64' => 'nullable|string',
@@ -68,12 +70,14 @@ class CalonController extends Controller
         CalonKetua::create([
             'tipe' => $tipe,
             'nama' => $request->nama,
+            'id_kelas' => $request->id_kelas,
             'nama_wakil_1' => $request->nama_wakil_1,
+            'id_kelas_wakil_1' => $request->id_kelas_wakil_1 ?: null,
             'nama_wakil_2' => $request->nama_wakil_2,
+            'id_kelas_wakil_2' => $request->id_kelas_wakil_2 ?: null,
             'nomor' => $request->nomor,
             'visi' => $request->visi,
             'misi' => $request->misi,
-            'id_kelas' => $request->id_kelas,
             'url_foto' => $urlFoto,
         ]);
 
@@ -87,9 +91,11 @@ class CalonController extends Controller
 
         $request->validate([
             'nama' => 'required|string|max:256',
-            'nama_wakil_1' => 'nullable|string|max:256',
-            'nama_wakil_2' => 'nullable|string|max:256',
             'id_kelas' => 'required|exists:kelas,id',
+            'nama_wakil_1' => 'nullable|string|max:256',
+            'id_kelas_wakil_1' => 'nullable|exists:kelas,id',
+            'nama_wakil_2' => 'nullable|string|max:256',
+            'id_kelas_wakil_2' => 'nullable|exists:kelas,id',
             'nomor' => 'required|integer|min:1|max:99',
             'foto_calon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'foto_cropped_base64' => 'nullable|string',
@@ -119,12 +125,14 @@ class CalonController extends Controller
 
         $data = [
             'nama' => $request->nama,
+            'id_kelas' => $request->id_kelas,
             'nama_wakil_1' => $request->nama_wakil_1,
+            'id_kelas_wakil_1' => $request->id_kelas_wakil_1 ?: null,
             'nama_wakil_2' => $request->nama_wakil_2,
+            'id_kelas_wakil_2' => $request->id_kelas_wakil_2 ?: null,
             'nomor' => $newNomor,
             'visi' => $request->visi,
             'misi' => $request->misi,
-            'id_kelas' => $request->id_kelas,
         ];
 
         $urlFoto = $this->processPhoto($request, $calon->url_foto);

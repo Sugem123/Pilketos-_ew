@@ -47,7 +47,7 @@ class LiveCountController extends Controller
 
         $mode = $request->query('mode', 'quick'); // 'quick' (suara digital) or 'pleno' (hanya suara sah)
 
-        $calons = CalonKetua::with('kelas')
+        $calons = CalonKetua::with(['kelas', 'kelasWakil1', 'kelasWakil2'])
             ->withCount([
                 'votes as digital_votes' => function ($q) {
                     $q->where('tipe_pemilihan', 'osis');
@@ -134,7 +134,9 @@ class LiveCountController extends Controller
             'nomor' => $c->nomor,
             'nama' => $c->nama,
             'nama_wakil_1' => $c->nama_wakil_1 ?? null,
+            'kelas_wakil_1' => $c->kelasWakil1->name ?? null,
             'nama_wakil_2' => $c->nama_wakil_2 ?? null,
+            'kelas_wakil_2' => $c->kelasWakil2->name ?? null,
             'kelas' => $c->kelas->name ?? '-',
             'url_foto' => $c->url_foto ? asset($c->url_foto) : null,
             'votes' => $mode === 'pleno' ? $c->valid_votes : $c->digital_votes,
@@ -148,7 +150,9 @@ class LiveCountController extends Controller
             'nomor' => $c->nomor,
             'nama' => $c->nama,
             'nama_wakil_1' => $c->nama_wakil_1 ?? null,
+            'kelas_wakil_1' => $c->kelasWakil1->name ?? null,
             'nama_wakil_2' => $c->nama_wakil_2 ?? null,
+            'kelas_wakil_2' => $c->kelasWakil2->name ?? null,
             'kelas' => $c->kelas->name ?? '-',
             'url_foto' => $c->url_foto ? asset($c->url_foto) : null,
             'votes' => $mode === 'pleno' ? $c->mpk_valid_votes : $c->mpk_digital_votes,

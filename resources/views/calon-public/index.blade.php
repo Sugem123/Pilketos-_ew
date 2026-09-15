@@ -168,28 +168,40 @@
                            class="candidate-pub-card group relative bg-slate-900/90 backdrop-blur-2xl rounded-3xl border-2 border-slate-800 hover:border-indigo-500/60 shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col">
                             <div class="p-6 pb-4 border-b border-slate-800/80 bg-slate-950/40 flex items-start justify-between gap-4">
                                 <div class="min-w-0 flex-1">
-                                    <span class="text-[11px] font-bold uppercase tracking-widest text-indigo-400 font-mono">KETUA OSIS 0{{ $calon->nomor }}</span>
-                                    <h2 class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-tight mt-0.5 truncate">{{ $calon->nama }}</h2>
-                                    <p class="text-xs text-slate-400 font-mono mt-0.5">Kelas {{ $calon->kelas->name ?? '-' }}</p>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-[11px] font-bold uppercase tracking-widest text-indigo-400 font-mono">KETUA OSIS 0{{ $calon->nomor }}</span>
+                                        <span class="text-[10px] font-mono font-semibold text-slate-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md">Kelas {{ $calon->kelas->name ?? '-' }}</span>
+                                    </div>
+                                    <h2 class="font-heading font-extrabold text-lg sm:text-xl text-white leading-tight truncate">{{ $calon->nama }}</h2>
 
                                     @if(!empty($calon->nama_wakil_1) || !empty($calon->nama_wakil_2))
-                                        <div class="mt-2.5 pt-2 border-t border-white/5 space-y-1">
+                                        <div class="mt-3 p-2.5 rounded-2xl bg-slate-950/70 border border-indigo-500/15 space-y-1.5">
                                             @if(!empty($calon->nama_wakil_1))
-                                                <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
-                                                    <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-300/80 bg-indigo-500/10 px-1.5 py-0.5 rounded">WAKIL 1</span>
-                                                    <span>{{ $calon->nama_wakil_1 }}</span>
-                                                </p>
+                                                <div class="flex items-center justify-between gap-2 text-xs">
+                                                    <div class="flex items-center gap-1.5 min-w-0">
+                                                        <span class="text-[9px] font-mono font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/20 px-1.5 py-0.5 rounded flex-shrink-0">Wakil 1</span>
+                                                        <span class="text-slate-200 font-medium truncate">{{ $calon->nama_wakil_1 }}</span>
+                                                    </div>
+                                                    @if($calon->kelasWakil1)
+                                                        <span class="text-[10px] font-mono font-bold text-indigo-300 bg-slate-900 px-1.5 py-0.5 rounded border border-indigo-500/20 flex-shrink-0">{{ $calon->kelasWakil1->name }}</span>
+                                                    @endif
+                                                </div>
                                             @endif
                                             @if(!empty($calon->nama_wakil_2))
-                                                <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
-                                                    <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-300/80 bg-indigo-500/10 px-1.5 py-0.5 rounded">WAKIL 2</span>
-                                                    <span>{{ $calon->nama_wakil_2 }}</span>
-                                                </p>
+                                                <div class="flex items-center justify-between gap-2 text-xs">
+                                                    <div class="flex items-center gap-1.5 min-w-0">
+                                                        <span class="text-[9px] font-mono font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/20 px-1.5 py-0.5 rounded flex-shrink-0">Wakil 2</span>
+                                                        <span class="text-slate-200 font-medium truncate">{{ $calon->nama_wakil_2 }}</span>
+                                                    </div>
+                                                    @if($calon->kelasWakil2)
+                                                        <span class="text-[10px] font-mono font-bold text-indigo-300 bg-slate-900 px-1.5 py-0.5 rounded border border-indigo-500/20 flex-shrink-0">{{ $calon->kelasWakil2->name }}</span>
+                                                    @endif
+                                                </div>
                                             @endif
                                         </div>
                                     @endif
                                 </div>
-                                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center font-heading font-black text-indigo-300 text-xl flex-shrink-0">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center font-heading font-black text-indigo-300 text-xl flex-shrink-0 shadow-lg">
                                     {{ $calon->nomor }}
                                 </div>
                             </div>
@@ -235,28 +247,40 @@
                            class="candidate-pub-card group relative bg-slate-900/90 backdrop-blur-2xl rounded-3xl border-2 border-slate-800 hover:border-emerald-500/60 shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col">
                             <div class="p-6 pb-4 border-b border-slate-800/80 bg-slate-950/40 flex items-start justify-between gap-4">
                                 <div class="min-w-0 flex-1">
-                                    <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-400 font-mono">KETUA MPK 0{{ $calon->nomor }}</span>
-                                    <h2 class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-tight mt-0.5 truncate">{{ $calon->nama }}</h2>
-                                    <p class="text-xs text-slate-400 font-mono mt-0.5">Kelas {{ $calon->kelas->name ?? '-' }}</p>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-400 font-mono">KETUA MPK 0{{ $calon->nomor }}</span>
+                                        <span class="text-[10px] font-mono font-semibold text-slate-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md">Kelas {{ $calon->kelas->name ?? '-' }}</span>
+                                    </div>
+                                    <h2 class="font-heading font-extrabold text-lg sm:text-xl text-white leading-tight mt-0.5 truncate">{{ $calon->nama }}</h2>
 
                                     @if(!empty($calon->nama_wakil_1) || !empty($calon->nama_wakil_2))
-                                        <div class="mt-2.5 pt-2 border-t border-white/5 space-y-1">
+                                        <div class="mt-3 p-2.5 rounded-2xl bg-slate-950/70 border border-emerald-500/15 space-y-1.5">
                                             @if(!empty($calon->nama_wakil_1))
-                                                <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
-                                                    <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-300/80 bg-emerald-500/10 px-1.5 py-0.5 rounded">WAKIL 1</span>
-                                                    <span>{{ $calon->nama_wakil_1 }}</span>
-                                                </p>
+                                                <div class="flex items-center justify-between gap-2 text-xs">
+                                                    <div class="flex items-center gap-1.5 min-w-0">
+                                                        <span class="text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded flex-shrink-0">Wakil 1</span>
+                                                        <span class="text-slate-200 font-medium truncate">{{ $calon->nama_wakil_1 }}</span>
+                                                    </div>
+                                                    @if($calon->kelasWakil1)
+                                                        <span class="text-[10px] font-mono font-bold text-emerald-300 bg-slate-900 px-1.5 py-0.5 rounded border border-emerald-500/20 flex-shrink-0">{{ $calon->kelasWakil1->name }}</span>
+                                                    @endif
+                                                </div>
                                             @endif
                                             @if(!empty($calon->nama_wakil_2))
-                                                <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
-                                                    <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-300/80 bg-emerald-500/10 px-1.5 py-0.5 rounded">WAKIL 2</span>
-                                                    <span>{{ $calon->nama_wakil_2 }}</span>
-                                                </p>
+                                                <div class="flex items-center justify-between gap-2 text-xs">
+                                                    <div class="flex items-center gap-1.5 min-w-0">
+                                                        <span class="text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded flex-shrink-0">Wakil 2</span>
+                                                        <span class="text-slate-200 font-medium truncate">{{ $calon->nama_wakil_2 }}</span>
+                                                    </div>
+                                                    @if($calon->kelasWakil2)
+                                                        <span class="text-[10px] font-mono font-bold text-emerald-300 bg-slate-900 px-1.5 py-0.5 rounded border border-emerald-500/20 flex-shrink-0">{{ $calon->kelasWakil2->name }}</span>
+                                                    @endif
+                                                </div>
                                             @endif
                                         </div>
                                     @endif
                                 </div>
-                                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center font-heading font-black text-emerald-300 text-xl flex-shrink-0">
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center font-heading font-black text-emerald-300 text-xl flex-shrink-0 shadow-lg">
                                     {{ $calon->nomor }}
                                 </div>
                             </div>

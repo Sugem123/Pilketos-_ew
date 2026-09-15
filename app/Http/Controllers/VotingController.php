@@ -13,13 +13,13 @@ class VotingController extends Controller
 {
     public function index()
     {
-        $calonOsis = CalonKetua::with('kelas')
+        $calonOsis = CalonKetua::with(['kelas', 'kelasWakil1', 'kelasWakil2'])
             ->osis()
             ->withCount('votes')
             ->orderBy('nomor')
             ->get();
 
-        $calonMpk = CalonKetua::with('kelas')
+        $calonMpk = CalonKetua::with(['kelas', 'kelasWakil1', 'kelasWakil2'])
             ->mpk()
             ->withCount('votes')
             ->orderBy('nomor')

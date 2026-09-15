@@ -6,10 +6,14 @@
         fn($c) => [
             $c->id => [
                 'nama' => $c->nama,
-                'nama_wakil_1' => $c->nama_wakil_1 ?? '',
-                'nama_wakil_2' => $c->nama_wakil_2 ?? '',
                 'id_kelas' => $c->id_kelas,
                 'kelas' => $c->kelas->name ?? '-',
+                'nama_wakil_1' => $c->nama_wakil_1 ?? '',
+                'id_kelas_wakil_1' => $c->id_kelas_wakil_1 ?? '',
+                'kelas_wakil_1' => $c->kelasWakil1->name ?? '',
+                'nama_wakil_2' => $c->nama_wakil_2 ?? '',
+                'id_kelas_wakil_2' => $c->id_kelas_wakil_2 ?? '',
+                'kelas_wakil_2' => $c->kelasWakil2->name ?? '',
                 'nomor' => $c->nomor,
                 'tipe' => $c->tipe,
                 'visi' => $c->visi,
@@ -80,9 +84,14 @@
                             </div>
                             <p class="text-xs text-slate-400 font-mono">Kelas {{ $calon->kelas->name }}</p>
                             @if(!empty($calon->nama_wakil_1) || !empty($calon->nama_wakil_2))
-                                <p class="text-[11px] text-indigo-300/80 truncate mt-0.5">
-                                    <i class="fas fa-users text-[9px] mr-1"></i>Wakil: {{ implode(' & ', array_filter([$calon->nama_wakil_1, $calon->nama_wakil_2])) }}
-                                </p>
+                                <div class="mt-1 text-[11px] text-indigo-300/80 space-y-0.5">
+                                    @if(!empty($calon->nama_wakil_1))
+                                        <p class="truncate"><i class="fas fa-user-group text-[9px] mr-1"></i>W1: {{ $calon->nama_wakil_1 }} ({{ $calon->kelasWakil1->name ?? '-' }})</p>
+                                    @endif
+                                    @if(!empty($calon->nama_wakil_2))
+                                        <p class="truncate"><i class="fas fa-user-group text-[9px] mr-1"></i>W2: {{ $calon->nama_wakil_2 }} ({{ $calon->kelasWakil2->name ?? '-' }})</p>
+                                    @endif
+                                </div>
                             @endif
                         </div>
 
@@ -208,49 +217,86 @@
                 <input type="hidden" id="form-method" name="_method" value="POST">
                 <input type="hidden" id="input-tipe" name="tipe" value="{{ $tipe }}">
 
-                <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Nama Calon Ketua</label>
-                    <input type="text" id="input-nama" name="nama" required
-                        class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold"
-                        placeholder="Contoh: Shabira Syahla Alvaliza">
+                {{-- Seksi Calon Ketua --}}
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-white/5 space-y-3">
+                    <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-400 block">
+                        <i class="fas fa-crown mr-1"></i> Data Calon Ketua
+                    </span>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2">
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1 font-mono">Nama Calon Ketua *</label>
+                            <input type="text" id="input-nama" name="nama" required
+                                class="w-full px-3.5 py-2.5 luxury-input rounded-xl outline-none text-sm font-semibold"
+                                placeholder="Contoh: Shabira Syahla Alvaliza">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1 font-mono">Kelas *</label>
+                            <select id="input-kelas" name="id_kelas" required
+                                class="w-full px-3.5 py-2.5 luxury-input rounded-xl outline-none text-sm font-semibold">
+                                <option value="">Pilih Kelas</option>
+                                @foreach ($kelas as $k)
+                                    <option value="{{ $k->id }}">{{ $k->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
-                            Nama Calon Wakil Ketua 1
-                        </label>
-                        <input type="text" id="input-nama-wakil-1" name="nama_wakil_1"
-                            class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold"
-                            placeholder="Nama Wakil Ketua 1...">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">
-                            Nama Calon Wakil Ketua 2
-                        </label>
-                        <input type="text" id="input-nama-wakil-2" name="nama_wakil_2"
-                            class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold"
-                            placeholder="Nama Wakil Ketua 2...">
+                {{-- Seksi Calon Wakil Ketua 1 --}}
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-white/5 space-y-3">
+                    <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-sky-400 block">
+                        <i class="fas fa-user-shield mr-1"></i> Data Calon Wakil Ketua 1 (Opsional)
+                    </span>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2">
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1 font-mono">Nama Wakil Ketua 1</label>
+                            <input type="text" id="input-nama-wakil-1" name="nama_wakil_1"
+                                class="w-full px-3.5 py-2.5 luxury-input rounded-xl outline-none text-sm font-semibold"
+                                placeholder="Nama Wakil 1...">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1 font-mono">Kelas Wakil 1</label>
+                            <select id="input-kelas-wakil-1" name="id_kelas_wakil_1"
+                                class="w-full px-3.5 py-2.5 luxury-input rounded-xl outline-none text-sm font-semibold">
+                                <option value="">Pilih Kelas</option>
+                                @foreach ($kelas as $k)
+                                    <option value="{{ $k->id }}">{{ $k->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Kelas</label>
-                        <select id="input-kelas" name="id_kelas" required
-                            class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-semibold">
-                            <option value="">Pilih Kelas</option>
-                            @foreach ($kelas as $k)
-                                <option value="{{ $k->id }}">{{ $k->name }}</option>
-                            @endforeach
-                        </select>
+                {{-- Seksi Calon Wakil Ketua 2 --}}
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-white/5 space-y-3">
+                    <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-400 block">
+                        <i class="fas fa-user-shield mr-1"></i> Data Calon Wakil Ketua 2 (Opsional)
+                    </span>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2">
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1 font-mono">Nama Wakil Ketua 2</label>
+                            <input type="text" id="input-nama-wakil-2" name="nama_wakil_2"
+                                class="w-full px-3.5 py-2.5 luxury-input rounded-xl outline-none text-sm font-semibold"
+                                placeholder="Nama Wakil 2...">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1 font-mono">Kelas Wakil 2</label>
+                            <select id="input-kelas-wakil-2" name="id_kelas_wakil_2"
+                                class="w-full px-3.5 py-2.5 luxury-input rounded-xl outline-none text-sm font-semibold">
+                                <option value="">Pilih Kelas</option>
+                                @foreach ($kelas as $k)
+                                    <option value="{{ $k->id }}">{{ $k->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
+                </div>
+
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Nomor Urut</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Nomor Urut Paslon</label>
                     <input type="number" id="input-nomor" name="nomor" required min="1" max="99"
                         class="w-full px-4 py-3 luxury-input rounded-2xl outline-none text-sm font-bold font-mono">
                     <p class="text-[11px] text-slate-500 mt-1.5">Nomor urut kandidat (1&ndash;99). Jika nomor sudah ada, posisi paslon otomatis ditukar.</p>
-                </div>
                 </div>
 
                 <div>
@@ -396,8 +442,8 @@
 
             if (d.nama_wakil_1 || d.nama_wakil_2) {
                 wakilBox.classList.remove('hidden');
-                w1.textContent = d.nama_wakil_1 ? '• Wakil Ketua 1: ' + d.nama_wakil_1 : '';
-                w2.textContent = d.nama_wakil_2 ? '• Wakil Ketua 2: ' + d.nama_wakil_2 : '';
+                w1.textContent = d.nama_wakil_1 ? '• Wakil Ketua 1: ' + d.nama_wakil_1 + (d.kelas_wakil_1 ? ' (Kelas ' + d.kelas_wakil_1 + ')' : '') : '';
+                w2.textContent = d.nama_wakil_2 ? '• Wakil Ketua 2: ' + d.nama_wakil_2 + (d.kelas_wakil_2 ? ' (Kelas ' + d.kelas_wakil_2 + ')' : '') : '';
                 w1.style.display = d.nama_wakil_1 ? 'block' : 'none';
                 w2.style.display = d.nama_wakil_2 ? 'block' : 'none';
             } else {
@@ -436,7 +482,9 @@
                 methodInput.value = 'PUT';
                 document.getElementById('input-nama').value = data.nama;
                 document.getElementById('input-nama-wakil-1').value = data.nama_wakil_1 || '';
+                document.getElementById('input-kelas-wakil-1').value = data.id_kelas_wakil_1 || '';
                 document.getElementById('input-nama-wakil-2').value = data.nama_wakil_2 || '';
+                document.getElementById('input-kelas-wakil-2').value = data.id_kelas_wakil_2 || '';
                 document.getElementById('input-kelas').value = data.id_kelas;
                 document.getElementById('input-nomor').value = data.nomor;
                 document.getElementById('input-visi').value = data.visi;
@@ -458,6 +506,8 @@
                 methodInput.value = 'POST';
                 form.reset();
                 document.getElementById('input-tipe').value = '{{ $tipe }}';
+                document.getElementById('input-kelas-wakil-1').value = '';
+                document.getElementById('input-kelas-wakil-2').value = '';
                 document.getElementById('foto-cropped-base64').value = '';
                 document.getElementById('preview-container').classList.add('hidden');
                 document.getElementById('preview-container').classList.remove('flex');

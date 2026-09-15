@@ -97,20 +97,30 @@
                         </h2>
 
                         @if(!empty($calon->nama_wakil_1) || !empty($calon->nama_wakil_2))
-                            <div class="mt-4 pt-4 border-t border-slate-800/80 space-y-2">
+                            <div class="mt-4 pt-4 border-t border-slate-800/80 space-y-2.5">
                                 <span class="text-[10px] uppercase font-mono font-bold tracking-wider text-slate-400 block">
                                     Pasangan Calon Wakil:
                                 </span>
                                 @if(!empty($calon->nama_wakil_1))
-                                    <div class="flex items-center gap-2 text-sm text-slate-200">
-                                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded {{ $calon->tipe === 'mpk' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-indigo-500/20 text-indigo-300' }}">Wakil 1</span>
-                                        <span class="font-semibold">{{ $calon->nama_wakil_1 }}</span>
+                                    <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900/90 border border-white/5 text-sm text-slate-200">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded {{ $calon->tipe === 'mpk' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-indigo-500/20 text-indigo-300' }}">Wakil 1</span>
+                                            <span class="font-semibold truncate">{{ $calon->nama_wakil_1 }}</span>
+                                        </div>
+                                        @if($calon->kelasWakil1)
+                                            <span class="text-xs font-mono font-bold text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-white/10 flex-shrink-0">Kelas {{ $calon->kelasWakil1->name }}</span>
+                                        @endif
                                     </div>
                                 @endif
                                 @if(!empty($calon->nama_wakil_2))
-                                    <div class="flex items-center gap-2 text-sm text-slate-200">
-                                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded {{ $calon->tipe === 'mpk' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-indigo-500/20 text-indigo-300' }}">Wakil 2</span>
-                                        <span class="font-semibold">{{ $calon->nama_wakil_2 }}</span>
+                                    <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900/90 border border-white/5 text-sm text-slate-200">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded {{ $calon->tipe === 'mpk' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-indigo-500/20 text-indigo-300' }}">Wakil 2</span>
+                                            <span class="font-semibold truncate">{{ $calon->nama_wakil_2 }}</span>
+                                        </div>
+                                        @if($calon->kelasWakil2)
+                                            <span class="text-xs font-mono font-bold text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-white/10 flex-shrink-0">Kelas {{ $calon->kelasWakil2->name }}</span>
+                                        @endif
                                     </div>
                                 @endif
                             </div>

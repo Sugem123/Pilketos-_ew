@@ -11,8 +11,8 @@ class CalonPublicController extends Controller
 {
     public function index()
     {
-        $calonOsis = CalonKetua::with('kelas')->osis()->orderBy('nomor')->get();
-        $calonMpk = CalonKetua::with('kelas')->mpk()->orderBy('nomor')->get();
+        $calonOsis = CalonKetua::with(['kelas', 'kelasWakil1', 'kelasWakil2'])->osis()->orderBy('nomor')->get();
+        $calonMpk = CalonKetua::with(['kelas', 'kelasWakil1', 'kelasWakil2'])->mpk()->orderBy('nomor')->get();
 
         $config = json_decode(file_get_contents(base_path('config.json')), true);
 
@@ -21,7 +21,7 @@ class CalonPublicController extends Controller
 
     public function show(CalonKetua $calon)
     {
-        $calon->load('kelas');
+        $calon->load(['kelas', 'kelasWakil1', 'kelasWakil2']);
         $config = json_decode(file_get_contents(base_path('config.json')), true);
         $totalCalon = CalonKetua::where('tipe', $calon->tipe)->count();
 

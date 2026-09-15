@@ -104,7 +104,9 @@
                                                 data-calon-id="{{ $calon->id }}" data-visi="{{ $calon->visi }}"
                                                 data-misi="{{ $calon->misi }}" data-nama="{{ $calon->nama }}"
                                                 data-wakil-1="{{ $calon->nama_wakil_1 ?? '' }}"
+                                                data-wakil-1-kelas="{{ $calon->kelasWakil1->name ?? '' }}"
                                                 data-wakil-2="{{ $calon->nama_wakil_2 ?? '' }}"
+                                                data-wakil-2-kelas="{{ $calon->kelasWakil2->name ?? '' }}"
                                                 data-kelas="{{ $calon->kelas->name }}" data-tipe="osis">
 
                                                 {{-- Selection Indicator Badge --}}
@@ -168,16 +170,26 @@
                                                         @if(!empty($calon->nama_wakil_1) || !empty($calon->nama_wakil_2))
                                                             <div class="pt-2 border-t border-slate-800/60 text-left space-y-1">
                                                                 @if(!empty($calon->nama_wakil_1))
-                                                                    <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
-                                                                        <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-indigo-500/15 text-indigo-300 rounded">W1</span>
-                                                                        <span class="truncate">{{ $calon->nama_wakil_1 }}</span>
-                                                                    </p>
+                                                                    <div class="text-xs text-slate-300 font-medium flex items-center justify-between gap-1">
+                                                                        <div class="flex items-center gap-1.5 min-w-0">
+                                                                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-indigo-500/15 text-indigo-300 rounded flex-shrink-0">W1</span>
+                                                                            <span class="truncate">{{ $calon->nama_wakil_1 }}</span>
+                                                                        </div>
+                                                                        @if($calon->kelasWakil1)
+                                                                            <span class="text-[10px] font-mono text-indigo-300/80 bg-slate-950 px-1.5 py-0.5 rounded border border-white/5 flex-shrink-0">{{ $calon->kelasWakil1->name }}</span>
+                                                                        @endif
+                                                                    </div>
                                                                 @endif
                                                                 @if(!empty($calon->nama_wakil_2))
-                                                                    <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
-                                                                        <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-indigo-500/15 text-indigo-300 rounded">W2</span>
-                                                                        <span class="truncate">{{ $calon->nama_wakil_2 }}</span>
-                                                                    </p>
+                                                                    <div class="text-xs text-slate-300 font-medium flex items-center justify-between gap-1">
+                                                                        <div class="flex items-center gap-1.5 min-w-0">
+                                                                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-indigo-500/15 text-indigo-300 rounded flex-shrink-0">W2</span>
+                                                                            <span class="truncate">{{ $calon->nama_wakil_2 }}</span>
+                                                                        </div>
+                                                                        @if($calon->kelasWakil2)
+                                                                            <span class="text-[10px] font-mono text-indigo-300/80 bg-slate-950 px-1.5 py-0.5 rounded border border-white/5 flex-shrink-0">{{ $calon->kelasWakil2->name }}</span>
+                                                                        @endif
+                                                                    </div>
                                                                 @endif
                                                             </div>
                                                         @endif
@@ -255,7 +267,9 @@
                                                 data-calon-id="{{ $calon->id }}" data-visi="{{ $calon->visi }}"
                                                 data-misi="{{ $calon->misi }}" data-nama="{{ $calon->nama }}"
                                                 data-wakil-1="{{ $calon->nama_wakil_1 ?? '' }}"
+                                                data-wakil-1-kelas="{{ $calon->kelasWakil1->name ?? '' }}"
                                                 data-wakil-2="{{ $calon->nama_wakil_2 ?? '' }}"
+                                                data-wakil-2-kelas="{{ $calon->kelasWakil2->name ?? '' }}"
                                                 data-kelas="{{ $calon->kelas->name }}" data-tipe="mpk">
 
                                                 {{-- Selection Indicator Badge --}}
@@ -319,16 +333,26 @@
                                                         @if(!empty($calon->nama_wakil_1) || !empty($calon->nama_wakil_2))
                                                             <div class="pt-2 border-t border-slate-800/60 text-left space-y-1">
                                                                 @if(!empty($calon->nama_wakil_1))
-                                                                    <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
-                                                                        <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-emerald-500/15 text-emerald-300 rounded">W1</span>
-                                                                        <span class="truncate">{{ $calon->nama_wakil_1 }}</span>
-                                                                    </p>
+                                                                    <div class="text-xs text-slate-300 font-medium flex items-center justify-between gap-1">
+                                                                        <div class="flex items-center gap-1.5 min-w-0">
+                                                                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-emerald-500/15 text-emerald-300 rounded flex-shrink-0">W1</span>
+                                                                            <span class="truncate">{{ $calon->nama_wakil_1 }}</span>
+                                                                        </div>
+                                                                        @if($calon->kelasWakil1)
+                                                                            <span class="text-[10px] font-mono text-emerald-300/80 bg-slate-950 px-1.5 py-0.5 rounded border border-white/5 flex-shrink-0">{{ $calon->kelasWakil1->name }}</span>
+                                                                        @endif
+                                                                    </div>
                                                                 @endif
                                                                 @if(!empty($calon->nama_wakil_2))
-                                                                    <p class="text-xs text-slate-300 font-medium truncate flex items-center gap-1.5">
-                                                                        <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-emerald-500/15 text-emerald-300 rounded">W2</span>
-                                                                        <span class="truncate">{{ $calon->nama_wakil_2 }}</span>
-                                                                    </p>
+                                                                    <div class="text-xs text-slate-300 font-medium flex items-center justify-between gap-1">
+                                                                        <div class="flex items-center gap-1.5 min-w-0">
+                                                                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-emerald-500/15 text-emerald-300 rounded flex-shrink-0">W2</span>
+                                                                            <span class="truncate">{{ $calon->nama_wakil_2 }}</span>
+                                                                        </div>
+                                                                        @if($calon->kelasWakil2)
+                                                                            <span class="text-[10px] font-mono text-emerald-300/80 bg-slate-950 px-1.5 py-0.5 rounded border border-white/5 flex-shrink-0">{{ $calon->kelasWakil2->name }}</span>
+                                                                        @endif
+                                                                    </div>
                                                                 @endif
                                                             </div>
                                                         @endif
@@ -468,17 +492,19 @@
             const w1 = detailPanel.querySelector('.detail-wakil-1');
             const w2 = detailPanel.querySelector('.detail-wakil-2');
             const valW1 = card.dataset.wakil1;
+            const valW1Kelas = card.dataset.wakil1Kelas;
             const valW2 = card.dataset.wakil2;
+            const valW2Kelas = card.dataset.wakil2Kelas;
 
             if (wakilWrap) {
                 if (valW1 || valW2) {
                     wakilWrap.classList.remove('hidden');
                     if (w1) {
-                        w1.textContent = valW1 ? '• Wakil 1: ' + valW1 : '';
+                        w1.textContent = valW1 ? '• Wakil 1: ' + valW1 + (valW1Kelas ? ' (' + valW1Kelas + ')' : '') : '';
                         w1.style.display = valW1 ? 'block' : 'none';
                     }
                     if (w2) {
-                        w2.textContent = valW2 ? '• Wakil 2: ' + valW2 : '';
+                        w2.textContent = valW2 ? '• Wakil 2: ' + valW2 + (valW2Kelas ? ' (' + valW2Kelas + ')' : '') : '';
                         w2.style.display = valW2 ? 'block' : 'none';
                     }
                 } else {

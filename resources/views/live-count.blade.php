@@ -304,9 +304,9 @@
                                 <h2 class="font-heading font-extrabold text-xl sm:text-2xl text-white leading-tight mt-0.5 truncate">${c.nama}</h2>
                                 <p class="text-xs text-slate-400 font-mono mt-0.5">Kelas ${c.kelas}</p>
                                 ${c.nama_wakil_1 || c.nama_wakil_2 ? `
-                                    <div class="mt-2 pt-1.5 border-t border-white/5 space-y-0.5 text-left">
-                                        ${c.nama_wakil_1 ? `<p class="text-[11px] text-slate-300 truncate"><span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-white/5 text-slate-300 rounded mr-1">W1</span>${c.nama_wakil_1}</p>` : ''}
-                                        ${c.nama_wakil_2 ? `<p class="text-[11px] text-slate-300 truncate"><span class="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-white/5 text-slate-300 rounded mr-1">W2</span>${c.nama_wakil_2}</p>` : ''}
+                                    <div class="mt-2 pt-1.5 border-t border-white/5 space-y-1 text-left">
+                                        ${c.nama_wakil_1 ? `<div class="flex items-center justify-between gap-1 text-[11px] text-slate-300"><span class="truncate"><span class="text-[9px] font-mono font-bold px-1 py-0.2 bg-white/5 text-slate-300 rounded mr-1">W1</span>${c.nama_wakil_1}</span>${c.kelas_wakil_1 ? `<span class="text-[9px] font-mono font-bold text-slate-400 bg-slate-900 px-1.5 py-0.2 rounded border border-white/5">${c.kelas_wakil_1}</span>` : ''}</div>` : ''}
+                                        ${c.nama_wakil_2 ? `<div class="flex items-center justify-between gap-1 text-[11px] text-slate-300"><span class="truncate"><span class="text-[9px] font-mono font-bold px-1 py-0.2 bg-white/5 text-slate-300 rounded mr-1">W2</span>${c.nama_wakil_2}</span>${c.kelas_wakil_2 ? `<span class="text-[9px] font-mono font-bold text-slate-400 bg-slate-900 px-1.5 py-0.2 rounded border border-white/5">${c.kelas_wakil_2}</span>` : ''}</div>` : ''}
                                     </div>
                                 ` : ''}
                             </div>
