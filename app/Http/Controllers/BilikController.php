@@ -98,7 +98,7 @@ class BilikController extends Controller
         $pairedCount = $biliks->filter->isPaired()->count();
         $config = json_decode(file_get_contents(base_path('config.json')), true) ?: [];
 
-        return view('admin.bilik.index', compact('biliks', 'totalBilik', 'pairedCount', 'config'));
+        return view('bilik.index', compact('biliks', 'totalBilik', 'pairedCount', 'config'));
     }
 
     public function store(Request $request)
