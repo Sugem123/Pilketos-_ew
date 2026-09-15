@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminConfigController;
 use App\Http\Controllers\AuditSuaraController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\BilikController;
 use App\Http\Controllers\CalonController;
 use App\Http\Controllers\CalonPublicController;
 use App\Http\Controllers\CheckTokenController;
