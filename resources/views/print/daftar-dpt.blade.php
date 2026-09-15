@@ -208,7 +208,7 @@
                         <td style="text-align: center;">{{ $index + 1 }}</td>
                         <td style="font-weight: 600;">{{ $p->nisn }}</td>
                         <td style="text-align: center; font-family: monospace;">
-                            {{ $p->tipe === 'guru' ? 'Guru / Tendik' : ($p->kelas->name ?? 'Siswa') }}
+                            {{ $p->tipe === 'guru' ? 'Guru / Tendik' : ($p->tipe === 'simulasi' ? 'Simulasi' : ($p->kelas->name ?? 'Siswa')) }}
                         </td>
                         <td style="text-align: center;">
                             {{ $p->hasVoted() ? 'Sudah Memilih' : 'Belum Memilih' }}

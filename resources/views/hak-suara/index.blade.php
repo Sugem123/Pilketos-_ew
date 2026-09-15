@@ -41,50 +41,62 @@
     <div class="space-y-8">
 
         {{-- Statistics Row --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="luxury-card luxury-card-hover rounded-3xl p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Total Pemilih</span>
-                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-white font-mono leading-none">{{ $totalHakSuara }}</h3>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Total Pemilih</span>
+                        <h3 class="font-heading font-black text-2xl sm:text-3xl text-white font-mono leading-none">{{ $totalHakSuara }}</h3>
                     </div>
-                    <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl shadow-lg">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg shadow-lg">
                         <i class="fas fa-users"></i>
                     </div>
                 </div>
             </div>
 
-            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
+            <div class="luxury-card luxury-card-hover rounded-3xl p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Siswa Terdaftar</span>
-                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-blue-400 font-mono leading-none">{{ $totalSiswa }}</h3>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Siswa DPT</span>
+                        <h3 class="font-heading font-black text-2xl sm:text-3xl text-blue-400 font-mono leading-none">{{ $totalSiswa }}</h3>
                     </div>
-                    <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xl shadow-lg">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-lg shadow-lg">
                         <i class="fas fa-graduation-cap"></i>
                     </div>
                 </div>
             </div>
 
-            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
+            <div class="luxury-card luxury-card-hover rounded-3xl p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Guru / Tendik</span>
-                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-purple-400 font-mono leading-none">{{ $totalGuru }}</h3>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Guru / Tendik</span>
+                        <h3 class="font-heading font-black text-2xl sm:text-3xl text-purple-400 font-mono leading-none">{{ $totalGuru }}</h3>
                     </div>
-                    <div class="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl shadow-lg">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-lg shadow-lg">
                         <i class="fas fa-chalkboard-user"></i>
                     </div>
                 </div>
             </div>
 
-            <div class="luxury-card luxury-card-hover rounded-3xl p-6">
+            <div class="luxury-card luxury-card-hover rounded-3xl p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Sudah Memilih</span>
-                        <h3 class="font-heading font-black text-3xl sm:text-4xl text-emerald-400 font-mono leading-none">{{ $hakSuaras->where('votes_count', '>', 0)->count() }}</h3>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Simulasi TPS</span>
+                        <h3 class="font-heading font-black text-2xl sm:text-3xl text-amber-400 font-mono leading-none">{{ $totalSimulasi }}</h3>
                     </div>
-                    <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl shadow-lg">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg shadow-lg">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="luxury-card luxury-card-hover rounded-3xl p-5 sm:col-span-2 lg:col-span-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">Sudah Memilih</span>
+                        <h3 class="font-heading font-black text-2xl sm:text-3xl text-emerald-400 font-mono leading-none">{{ $hakSuaras->where('votes_count', '>', 0)->count() }}</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg shadow-lg">
                         <i class="fa-solid fa-circle-check"></i>
                     </div>
                 </div>
@@ -107,6 +119,7 @@
                         <option value="">Semua Kategori</option>
                         <option value="siswa" {{ request('tipe') === 'siswa' ? 'selected' : '' }}>Siswa</option>
                         <option value="guru" {{ request('tipe') === 'guru' ? 'selected' : '' }}>Guru / Tendik</option>
+                        <option value="simulasi" {{ request('tipe') === 'simulasi' ? 'selected' : '' }}>Simulasi TPS</option>
                     </select>
 
                     <select name="id_kelas" class="px-4 py-3 luxury-input rounded-2xl text-xs font-semibold outline-none">
@@ -169,6 +182,10 @@
                                     @if($hs->tipe === 'guru')
                                         <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/10 text-purple-300 border border-purple-500/20 text-[10px] font-bold rounded-xl font-mono">
                                             <i class="fas fa-chalkboard-user"></i> GURU / TENDIK
+                                        </span>
+                                    @elseif($hs->tipe === 'simulasi')
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[10px] font-bold rounded-xl font-mono">
+                                            <i class="fas fa-flask"></i> SIMULASI TPS
                                         </span>
                                     @else
                                         <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 text-blue-300 border border-blue-500/20 text-[10px] font-bold rounded-xl font-mono">
@@ -239,19 +256,24 @@
                     </div>
                 @endif
 
-                {{-- Tipe Pemilih: Siswa vs Guru --}}
+                {{-- Tipe Pemilih: Siswa vs Guru vs Simulasi --}}
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2 font-mono">Kategori Pemilih</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="flex items-center gap-2.5 p-3.5 border rounded-2xl cursor-pointer transition-all"
+                    <div class="grid grid-cols-3 gap-2.5">
+                        <label class="flex items-center gap-2 p-3 border rounded-2xl cursor-pointer transition-all"
                             :class="tipe === 'siswa' ? 'border-indigo-500 bg-indigo-500/10 ring-2 ring-indigo-500/30' : 'border-slate-800 bg-slate-950/40'">
                             <input type="radio" name="tipe" value="siswa" x-model="tipe" class="text-indigo-600 focus:ring-indigo-500">
                             <span class="text-xs font-bold text-white"><i class="fas fa-graduation-cap mr-1 text-indigo-400"></i> Siswa</span>
                         </label>
-                        <label class="flex items-center gap-2.5 p-3.5 border rounded-2xl cursor-pointer transition-all"
+                        <label class="flex items-center gap-2 p-3 border rounded-2xl cursor-pointer transition-all"
                             :class="tipe === 'guru' ? 'border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/30' : 'border-slate-800 bg-slate-950/40'">
                             <input type="radio" name="tipe" value="guru" x-model="tipe" class="text-purple-600 focus:ring-purple-500">
-                            <span class="text-xs font-bold text-white"><i class="fas fa-chalkboard-user mr-1 text-purple-400"></i> Guru / Tendik</span>
+                            <span class="text-xs font-bold text-white"><i class="fas fa-chalkboard-user mr-1 text-purple-400"></i> Guru</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 border rounded-2xl cursor-pointer transition-all"
+                            :class="tipe === 'simulasi' ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/30' : 'border-slate-800 bg-slate-950/40'">
+                            <input type="radio" name="tipe" value="simulasi" x-model="tipe" class="text-amber-500 focus:ring-amber-500">
+                            <span class="text-xs font-bold text-white"><i class="fas fa-flask mr-1 text-amber-400"></i> Simulasi</span>
                         </label>
                     </div>
                 </div>

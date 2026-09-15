@@ -37,9 +37,10 @@ class HakSuaraController extends Controller
         $totalHakSuara = HakSuara::count();
         $totalSiswa = HakSuara::where('tipe', 'siswa')->count();
         $totalGuru = HakSuara::where('tipe', 'guru')->count();
+        $totalSimulasi = HakSuara::where('tipe', 'simulasi')->count();
         $kelas = Kelas::orderBy('name')->get();
 
-        return view('hak-suara.index', compact('hakSuaras', 'totalHakSuara', 'totalSiswa', 'totalGuru', 'kelas'));
+        return view('hak-suara.index', compact('hakSuaras', 'totalHakSuara', 'totalSiswa', 'totalGuru', 'totalSimulasi', 'kelas'));
     }
 
     public function store(Request $request)
@@ -50,9 +51,9 @@ class HakSuaraController extends Controller
                 'string',
                 'max:255',
                 'unique:hak_suara,nisn',
-                'regex:/^[\p{L}\s\.\-\']+$/u',
+                'regex:/^[\p{L}\p{N}\s\.\-\']+$/u',
             ],
-            'tipe' => 'required|in:siswa,guru',
+            'tipe' => 'required|in:siswa,guru,simulasi',
             'id_kelas' => 'nullable|exists:kelas,id',
         ];
 
@@ -61,7 +62,7 @@ class HakSuaraController extends Controller
         }
 
         $request->validate($rules, [
-            'nisn.regex'  => 'Nama pemilih hanya boleh mengandung huruf, spasi, titik, dan tanda hubung.',
+            'nisn.regex'  => 'Nama pemilih hanya boleh mengandung huruf, angka, spasi, titik, dan tanda hubung.',
             'nisn.unique' => 'Nama pemilih ini sudah terdaftar dalam daftar hak suara.',
             'id_kelas.required' => 'Kelas wajib dipilih untuk pemilih tipe Siswa.',
         ]);

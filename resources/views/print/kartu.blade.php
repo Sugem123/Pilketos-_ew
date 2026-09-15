@@ -256,6 +256,8 @@
                     </div>
                     @if($p->tipe === 'guru')
                         <span class="card-type-badge type-guru">GURU</span>
+                    @elseif($p->tipe === 'simulasi')
+                        <span class="card-type-badge" style="background: #fef3c7; color: #b45309;">SIMULASI</span>
                     @else
                         <span class="card-type-badge type-siswa">SISWA</span>
                     @endif
@@ -267,8 +269,10 @@
                         <div class="voter-name" title="{{ $p->nisn }}">{{ $p->nisn }}</div>
                         @if($p->tipe === 'siswa')
                             <div class="class-tag">KELAS {{ $p->kelas->name ?? '-' }}</div>
-                        @else
+                        @elseif($p->tipe === 'guru')
                             <div class="class-tag" style="color: #6b21a8;">TENAGA PENDIDIK</div>
+                        @else
+                            <div class="class-tag" style="color: #b45309;">SIMULASI TPS</div>
                         @endif
                     </div>
 

@@ -317,6 +317,8 @@
                                     <span class="badge-kategori" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">UNDANGAN TPS</span>
                                 @elseif($p->tipe === 'guru')
                                     <span class="badge-kategori badge-guru">Guru / Tendik</span>
+                                @elseif($p->tipe === 'simulasi')
+                                    <span class="badge-kategori" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">Simulasi &bull; TPS</span>
                                 @else
                                     <span class="badge-kategori badge-siswa">Siswa &bull; {{ $p->kelas->name ?? 'X' }}</span>
                                 @endif
@@ -342,8 +344,10 @@
                                         <div class="name">{{ $p->nisn }}</div>
                                         @if($p->tipe === 'siswa')
                                             <div class="class-info">Kelas: {{ $p->kelas->name ?? '-' }}</div>
-                                        @else
+                                        @elseif($p->tipe === 'guru')
                                             <div class="class-info">Kategori: Tenaga Pendidik / Guru</div>
+                                        @else
+                                            <div class="class-info">Kategori: Pemilih Simulasi TPS</div>
                                         @endif
                                     @endif
                                 </div>

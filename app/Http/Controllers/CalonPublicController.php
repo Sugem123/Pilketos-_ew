@@ -53,11 +53,16 @@ class CalonPublicController extends Controller
 
         $results = $pemilihs->map(function ($p) {
             $hasVoted = $p->hasVoted();
+            $tipeLabel = match ($p->tipe) {
+                'guru' => 'Guru / Tendik',
+                'simulasi' => 'Simulasi TPS',
+                default => 'Siswa',
+            };
             return [
                 'id' => $p->id,
                 'nama' => $p->nisn,
                 'tipe' => $p->tipe,
-                'tipe_label' => $p->tipe === 'guru' ? 'Guru / Tendik' : 'Siswa',
+                'tipe_label' => $tipeLabel,
                 'kelas' => $p->kelas->name ?? '-',
                 'has_voted' => $hasVoted,
                 'status_label' => $hasVoted ? 'Sudah Menggunakan Hak Pilih' : 'Belum Memilih (Siap di TPS)',

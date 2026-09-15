@@ -224,7 +224,7 @@
                         <td style="text-align: center;">{{ $no }}</td>
                         <td style="font-weight: 600;">{{ $p->nisn }}</td>
                         <td style="text-align: center; font-family: monospace;">
-                            {{ $p->tipe === 'guru' ? 'Guru / Tendik' : ($p->kelas->name ?? 'Siswa') }}
+                            {{ $p->tipe === 'guru' ? 'Guru / Tendik' : ($p->tipe === 'simulasi' ? 'Simulasi' : ($p->kelas->name ?? 'Siswa')) }}
                         </td>
                         @if($no % 2 !== 0)
                             {{-- Baris Ganjil: Tanda tangan di kolom kiri --}}
