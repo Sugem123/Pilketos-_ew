@@ -46,8 +46,9 @@ class PrintController extends Controller
                 }
             }
 
-            if ($request->filled('id')) {
-                $query->where('id', $request->id);
+            $targetIds = $this->parseIds($request);
+            if (!empty($targetIds)) {
+                $query->whereIn('id', $targetIds);
             }
 
             $pemilihs = $query->orderBy('tipe')->orderBy('id_kelas')->orderBy('nisn')->get();
@@ -84,19 +85,20 @@ class PrintController extends Controller
             $query->where('id_kelas', $request->id_kelas);
         }
 
-        if ($request->filled('status')) {
-            if ($request->status === 'sudah') {
-                $query->has('votes');
-            } elseif ($request->status === 'belum') {
-                $query->doesntHave('votes');
+            if ($request->filled('status')) {
+                if ($request->status === 'sudah') {
+                    $query->has('votes');
+                } elseif ($request->status === 'belum') {
+                    $query->doesntHave('votes');
+                }
             }
-        }
 
-        if ($request->filled('id')) {
-            $query->where('id', $request->id);
-        }
+            $targetIds = $this->parseIds($request);
+            if (!empty($targetIds)) {
+                $query->whereIn('id', $targetIds);
+            }
 
-        $pemilihs = $query->orderBy('tipe')->orderBy('id_kelas')->orderBy('nisn')->get();
+            $pemilihs = $query->orderBy('tipe')->orderBy('id_kelas')->orderBy('nisn')->get();
 
         // Pastikan token ter-generate
         foreach ($pemilihs as $p) {
@@ -133,6 +135,11 @@ class PrintController extends Controller
             }
         }
 
+        $targetIds = $this->parseIds($request);
+        if (!empty($targetIds)) {
+            $query->whereIn('id', $targetIds);
+        }
+
         $pemilihs = $query->orderBy('tipe')->orderBy('id_kelas')->orderBy('nisn')->get();
         $config = $this->getConfig();
 
@@ -163,6 +170,11 @@ class PrintController extends Controller
             } elseif ($request->status === 'belum') {
                 $query->doesntHave('votes');
             }
+        }
+
+        $targetIds = $this->parseIds($request);
+        if (!empty($targetIds)) {
+            $query->whereIn('id', $targetIds);
         }
 
         $pemilihs = $query->orderBy('tipe')->orderBy('id_kelas')->orderBy('nisn')->get();
@@ -214,6 +226,30 @@ class PrintController extends Controller
             'tanggal',
             'config'
         ));
+    }
+
+    private function parseIds(Request $request): array
+    {
+        if ($request->has('ids')) {
+            $raw = $request->input('ids');
+            if (is_array($raw)) {
+                return array_filter(array_map('intval', $raw));
+            }
+            if (is_string($raw)) {
+                $decoded = json_decode($raw, true);
+                if (is_array($decoded)) {
+                    return array_filter(array_map('intval', $decoded));
+                }
+                $exploded = explode(',', $raw);
+                return array_filter(array_map('intval', $exploded));
+            }
+        }
+
+        if ($request->filled('id')) {
+            return [(int) $request->id];
+        }
+
+        return [];
     }
 
     private function getConfig(): array

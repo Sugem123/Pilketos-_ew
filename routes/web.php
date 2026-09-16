@@ -71,10 +71,10 @@ Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
     Route::get('/hak-suara/download-sample', [HakSuaraController::class, 'downloadSample'])->name('hak-suara.download-sample');
 
     // 3. Mencetak kartu undangan, kartu pemilih, buku DPT & daftar hadir — bisa diakses Admin & Operator
-    Route::get('/cetak/undangan', [PrintController::class, 'undangan'])->name('cetak.undangan');
-    Route::get('/cetak/kartu', [PrintController::class, 'kartu'])->name('cetak.kartu');
-    Route::get('/cetak/dpt', [PrintController::class, 'daftarDpt'])->name('cetak.dpt');
-    Route::get('/cetak/daftar-hadir', [PrintController::class, 'daftarHadir'])->name('cetak.daftar-hadir');
+    Route::match(['get', 'post'], '/cetak/undangan', [PrintController::class, 'undangan'])->name('cetak.undangan');
+    Route::match(['get', 'post'], '/cetak/kartu', [PrintController::class, 'kartu'])->name('cetak.kartu');
+    Route::match(['get', 'post'], '/cetak/dpt', [PrintController::class, 'daftarDpt'])->name('cetak.dpt');
+    Route::match(['get', 'post'], '/cetak/daftar-hadir', [PrintController::class, 'daftarHadir'])->name('cetak.daftar-hadir');
 
     // 4. Manajemen Bilik Suara TPS (Generate Kode Pairing 1 PC 1 Kode) — bisa diakses Admin & Operator
     Route::get('/bilik', [BilikController::class, 'index'])->name('admin.bilik.index');

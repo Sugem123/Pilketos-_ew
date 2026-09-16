@@ -29,6 +29,14 @@
                 <span>Kartu Pemilih</span>
             </a>
 
+            {{-- Indikator Keranjang Cetak Custom --}}
+            <button type="button" onclick="openBasketModal()" id="btn-top-basket"
+                    class="hidden inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/30 cursor-pointer animate-pulse"
+                    title="Buka Keranjang Cetak Custom">
+                <i class="fas fa-basket-shopping text-indigo-200"></i>
+                <span>Keranjang (<strong id="top-basket-count">0</strong>)</span>
+            </button>
+
             {{-- Batch Toggle Token Simulasi --}}
             <form method="POST" action="{{ route('hak-suara.toggle-batch') }}" class="inline" onsubmit="return confirm('Nonaktifkan seluruh token pemilih kategori Simulasi TPS?')">
                 @csrf
@@ -170,6 +178,11 @@
                 <table class="w-full text-left">
                     <thead class="bg-slate-950/60 border-b border-white/5">
                         <tr>
+                            <th class="px-4 py-4 text-center w-12">
+                                <input type="checkbox" id="check-all-voters" onchange="toggleSelectAll(this)"
+                                       class="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0 cursor-pointer"
+                                       title="Pilih Semua di Halaman Ini">
+                            </th>
                             <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">No</th>
                             <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Nama Pemilih</th>
                             <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Token Bilik</th>
@@ -180,14 +193,26 @@
                     </thead>
                     <tbody class="divide-y divide-white/5">
                         @forelse($hakSuaras as $index => $hs)
-                            <tr class="hover:bg-slate-900/50 transition-colors">
+                            @php
+                                $isTokenActive = isset($hs->is_active) ? (bool)$hs->is_active : true;
+                                $kelasLabel = $hs->kelas->name ?? ($hs->tipe === 'guru' ? 'GURU / TENDIK' : ($hs->tipe === 'simulasi' ? 'SIMULASI' : '-'));
+                            @endphp
+                            <tr id="voter-row-{{ $hs->id }}" class="hover:bg-slate-900/50 transition-colors">
+                                <td class="px-4 py-4 text-center">
+                                    <input type="checkbox" value="{{ $hs->id }}"
+                                           id="check-voter-{{ $hs->id }}"
+                                           data-id="{{ $hs->id }}"
+                                           data-nama="{{ $hs->nisn }}"
+                                           data-kelas="{{ $kelasLabel }}"
+                                           data-token="{{ $hs->token ?? '-' }}"
+                                           data-tipe="{{ $hs->tipe }}"
+                                           class="voter-checkbox w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0 cursor-pointer"
+                                           onchange="handleCheckboxChange(this)">
+                                </td>
                                 <td class="px-6 py-4 text-xs font-mono text-slate-500">{{ $index + 1 }}</td>
                                 <td class="px-6 py-4 text-xs font-bold text-white">{{ $hs->nisn }}</td>
                                 <td class="px-6 py-4">
                                     @if($hs->token)
-                                        @php
-                                            $isTokenActive = isset($hs->is_active) ? (bool)$hs->is_active : true;
-                                        @endphp
                                         <div class="flex items-center gap-1.5 flex-wrap">
                                             <code class="px-3 py-1 rounded-xl text-xs font-mono font-black {{ !$isTokenActive ? 'bg-slate-900 border border-rose-500/20 text-slate-500 line-through' : ($hs->token_used ? 'bg-slate-950 border border-slate-800 line-through text-slate-600' : 'bg-slate-950 border border-slate-800 text-amber-400') }}">
                                                 {{ $hs->token }}
@@ -234,6 +259,14 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-1.5">
+                                        {{-- Tombol Cepat Masuk/Hapus Keranjang --}}
+                                        <button type="button" id="btn-basket-row-{{ $hs->id }}"
+                                                onclick="handleRowBasketBtn({{ $hs->id }})"
+                                                class="p-2 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors cursor-pointer"
+                                                title="Tambah / Hapus dari Keranjang Cetak">
+                                            <i class="fas fa-cart-plus text-xs" id="icon-basket-row-{{ $hs->id }}"></i>
+                                        </button>
+
                                         {{-- Toggle Disable/Enable Token Button --}}
                                         @if($hs->token)
                                             <form method="POST" action="{{ route('hak-suara.toggle-token', $hs) }}" class="inline">
@@ -254,7 +287,7 @@
                                         @endif
 
                                         <a href="{{ route('cetak.kartu', ['id' => $hs->id]) }}" target="_blank"
-                                           class="p-2 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors" title="Cetak Kartu">
+                                           class="p-2 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors" title="Cetak Kartu Individual">
                                             <i class="fas fa-print text-xs"></i>
                                         </a>
                                         <x-admin-button variant="ghost" icon="fas fa-trash-can"
@@ -267,7 +300,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-14 text-center">
+                                <td colspan="7" class="px-6 py-14 text-center">
                                     <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-white/5 text-slate-600 flex items-center justify-center mx-auto mb-3 text-lg">
                                         <i class="fas fa-users"></i>
                                     </div>
@@ -464,6 +497,299 @@
                 }
             });
         }
+
+        // ── KERANJANG CETAK CUSTOM (PRINT BASKET ENGINE) ──
+        const BASKET_STORAGE_KEY = 'pilketos_print_basket';
+
+        function getPrintBasket() {
+            try {
+                return JSON.parse(sessionStorage.getItem(BASKET_STORAGE_KEY)) || {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function savePrintBasket(basket) {
+            sessionStorage.setItem(BASKET_STORAGE_KEY, JSON.stringify(basket));
+            syncBasketUI();
+        }
+
+        function toggleVoterItem(id, nama, kelas, token, tipe, isChecked) {
+            const basket = getPrintBasket();
+            if (isChecked) {
+                basket[id] = { id, nama, kelas, token, tipe };
+            } else {
+                delete basket[id];
+            }
+            savePrintBasket(basket);
+        }
+
+        function handleCheckboxChange(el) {
+            const id = el.dataset.id;
+            const nama = el.dataset.nama;
+            const kelas = el.dataset.kelas;
+            const token = el.dataset.token;
+            const tipe = el.dataset.tipe;
+            toggleVoterItem(id, nama, kelas, token, tipe, el.checked);
+        }
+
+        function handleRowBasketBtn(id) {
+            const cb = document.getElementById('check-voter-' + id);
+            if (cb) {
+                cb.checked = !cb.checked;
+                handleCheckboxChange(cb);
+            }
+        }
+
+        function toggleSelectAll(masterCb) {
+            const isChecked = masterCb.checked;
+            const checkboxes = document.querySelectorAll('.voter-checkbox');
+            const basket = getPrintBasket();
+
+            checkboxes.forEach(cb => {
+                cb.checked = isChecked;
+                const id = cb.dataset.id;
+                const nama = cb.dataset.nama;
+                const kelas = cb.dataset.kelas;
+                const token = cb.dataset.token;
+                const tipe = cb.dataset.tipe;
+
+                if (isChecked) {
+                    basket[id] = { id, nama, kelas, token, tipe };
+                } else {
+                    delete basket[id];
+                }
+            });
+
+            savePrintBasket(basket);
+        }
+
+        function clearBasket() {
+            sessionStorage.removeItem(BASKET_STORAGE_KEY);
+            syncBasketUI();
+        }
+
+        function syncBasketUI() {
+            const basket = getPrintBasket();
+            const count = Object.keys(basket).length;
+
+            // Top button
+            const topBtn = document.getElementById('btn-top-basket');
+            const topCount = document.getElementById('top-basket-count');
+            if (topBtn && topCount) {
+                topCount.textContent = count;
+                if (count > 0) {
+                    topBtn.classList.remove('hidden');
+                } else {
+                    topBtn.classList.add('hidden');
+                }
+            }
+
+            // Floating bottom bar
+            const bottomBar = document.getElementById('print-basket-bar');
+            const badgeCount = document.getElementById('basket-badge-count');
+            if (bottomBar && badgeCount) {
+                badgeCount.textContent = count;
+                if (count > 0) {
+                    bottomBar.style.display = 'block';
+                    bottomBar.classList.remove('hidden');
+                } else {
+                    bottomBar.style.display = 'none';
+                    bottomBar.classList.add('hidden');
+                }
+            }
+
+            // Sync individual checkboxes and row highlights on current page
+            let allChecked = true;
+            let hasCheckboxes = false;
+
+            document.querySelectorAll('.voter-checkbox').forEach(cb => {
+                hasCheckboxes = true;
+                const id = cb.dataset.id;
+                const isIn = !!basket[id];
+                cb.checked = isIn;
+
+                const row = document.getElementById('voter-row-' + id);
+                if (row) {
+                    if (isIn) {
+                        row.classList.add('bg-indigo-950/40', 'border-l-4', 'border-indigo-500');
+                    } else {
+                        row.classList.remove('bg-indigo-950/40', 'border-l-4', 'border-indigo-500');
+                    }
+                }
+
+                const iconBtn = document.getElementById('icon-basket-row-' + id);
+                if (iconBtn) {
+                    if (isIn) {
+                        iconBtn.className = 'fas fa-check text-xs text-indigo-400 font-bold';
+                        iconBtn.parentElement.title = 'Hapus dari Keranjang Cetak';
+                    } else {
+                        iconBtn.className = 'fas fa-cart-plus text-xs text-slate-400';
+                        iconBtn.parentElement.title = 'Masukkan ke Keranjang Cetak';
+                    }
+                }
+
+                if (!isIn) {
+                    allChecked = false;
+                }
+            });
+
+            const masterCb = document.getElementById('check-all-voters');
+            if (masterCb) {
+                masterCb.checked = hasCheckboxes && allChecked;
+            }
+        }
+
+        function printBasket(type) {
+            const basket = getPrintBasket();
+            const ids = Object.keys(basket);
+
+            if (ids.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Keranjang Kosong',
+                    text: 'Silakan pilih satu atau beberapa pemilih terlebih dahulu.',
+                    confirmButtonText: 'Mengerti'
+                });
+                return;
+            }
+
+            const form = document.getElementById('form-print-basket');
+            const inputIds = document.getElementById('form-print-basket-ids');
+
+            if (type === 'kartu') {
+                form.action = '{{ route('cetak.kartu') }}';
+            } else if (type === 'undangan') {
+                form.action = '{{ route('cetak.undangan') }}';
+            }
+
+            inputIds.value = ids.join(',');
+            form.submit();
+        }
+
+        function openBasketModal() {
+            const basket = getPrintBasket();
+            const items = Object.values(basket);
+
+            if (items.length === 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Keranjang Cetak Kosong',
+                    text: 'Centang kotak pada baris pemilih untuk memasukkannya ke keranjang cetak custom.',
+                    confirmButtonText: 'Tutup'
+                });
+                return;
+            }
+
+            let listHtml = `
+                <div class="text-left max-h-72 overflow-y-auto pr-1 divide-y divide-white/5 border border-white/10 rounded-2xl p-2 bg-slate-950/80 mb-4">
+            `;
+
+            items.forEach(item => {
+                listHtml += `
+                    <div class="py-2.5 px-3 flex items-center justify-between gap-3 text-xs">
+                        <div class="min-w-0 flex-1">
+                            <div class="font-bold text-white truncate">${item.nama}</div>
+                            <div class="text-[10px] text-slate-400 font-mono flex items-center gap-2 mt-0.5">
+                                <span class="text-indigo-400 font-semibold">${item.kelas}</span>
+                                <span>&bull;</span>
+                                <span class="text-amber-400">Token: ${item.token}</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="removeItemFromModal(${item.id})" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer" title="Hapus dari keranjang">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
+            listHtml += `</div>`;
+
+            Swal.fire({
+                title: `Keranjang Cetak (${items.length} Pemilih)`,
+                html: `
+                    <div class="text-left">
+                        <p class="text-xs text-slate-400 mb-3">Daftar pemilih yang siap dicetak khusus:</p>
+                        ${listHtml}
+                        <div class="grid grid-cols-2 gap-2 pt-2">
+                            <button type="button" onclick="printBasket('kartu'); Swal.close();" class="w-full py-3 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                                <i class="fas fa-address-card"></i> Cetak Kartu (${items.length})
+                            </button>
+                            <button type="button" onclick="printBasket('undangan'); Swal.close();" class="w-full py-3 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                                <i class="fas fa-envelope-open-text"></i> Cetak Undangan (${items.length})
+                            </button>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                showDenyButton: true,
+                denyButtonText: 'Kosongkan Keranjang',
+                cancelButtonText: 'Tutup',
+                showConfirmButton: false,
+                denyButtonColor: '#ef4444'
+            }).then((res) => {
+                if (res.isDenied) {
+                    clearBasket();
+                }
+            });
+        }
+
+        function removeItemFromModal(id) {
+            const basket = getPrintBasket();
+            delete basket[id];
+            savePrintBasket(basket);
+            if (Object.keys(basket).length === 0) {
+                Swal.close();
+            } else {
+                openBasketModal();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            syncBasketUI();
+        });
     </script>
+
+    {{-- ====== FLOATING BASKET BAR (BOTTOM STICKY) ====== --}}
+    <div id="print-basket-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden transition-all duration-300 max-w-2xl w-[94%] sm:w-auto" style="display: none;">
+        <div class="glass-panel-dark rounded-3xl px-4 py-3 sm:px-6 sm:py-3.5 border-2 border-indigo-500/50 shadow-2xl shadow-indigo-500/40 flex items-center justify-between sm:justify-start gap-3.5 bg-slate-950/95 backdrop-blur-2xl">
+            <div class="flex items-center gap-2.5 pr-3 border-r border-white/10">
+                <div class="w-9 h-9 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center justify-center text-xs shadow-inner">
+                    <i class="fas fa-basket-shopping"></i>
+                </div>
+                <div class="text-left">
+                    <span class="text-[9px] uppercase font-mono tracking-wider text-slate-400 block leading-none">Keranjang Cetak</span>
+                    <span class="text-sm font-heading font-black text-white"><span id="basket-badge-count">0</span> Dipilih</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap">
+                <button type="button" onclick="printBasket('kartu')" class="inline-flex items-center gap-1.5 px-4 py-2 luxury-btn-primary text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer hover:scale-105">
+                    <i class="fas fa-address-card"></i>
+                    <span>Cetak Kartu</span>
+                </button>
+
+                <button type="button" onclick="printBasket('undangan')" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 hover:bg-indigo-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer hover:scale-105">
+                    <i class="fas fa-envelope-open-text"></i>
+                    <span>Cetak Undangan</span>
+                </button>
+
+                <button type="button" onclick="openBasketModal()" class="inline-flex items-center gap-1 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-colors cursor-pointer" title="Lihat rincian pemilih di keranjang">
+                    <i class="fas fa-list-check text-xs"></i>
+                    <span class="hidden sm:inline">Rincian</span>
+                </button>
+
+                <button type="button" onclick="clearBasket()" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer" title="Kosongkan Keranjang">
+                    <i class="fas fa-trash-can text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Form Rahasia Pengiriman ID Terpilih ke Halaman Cetak (Target _blank) --}}
+    <form id="form-print-basket" method="POST" target="_blank" class="hidden">
+        @csrf
+        <input type="hidden" name="ids" id="form-print-basket-ids">
+    </form>
 </x-app-layout>
 
