@@ -51,7 +51,7 @@ class HakSuaraController extends Controller
                 'string',
                 'max:255',
                 'unique:hak_suara,nisn',
-                'regex:/^[\p{L}\p{N}\s\.\-\']+$/u',
+                'regex:/^[\p{L}\p{N}\s\.\,\-\'\/\(\)]+$/u',
             ],
             'tipe' => 'required|in:siswa,guru,simulasi',
             'id_kelas' => 'nullable|exists:kelas,id',
@@ -62,7 +62,7 @@ class HakSuaraController extends Controller
         }
 
         $request->validate($rules, [
-            'nisn.regex'  => 'Nama pemilih hanya boleh mengandung huruf, angka, spasi, titik, dan tanda hubung.',
+            'nisn.regex'  => 'Nama pemilih hanya boleh mengandung huruf, angka, spasi, titik, koma, tanda petik, dan tanda hubung.',
             'nisn.unique' => 'Nama pemilih ini sudah terdaftar dalam daftar hak suara.',
             'id_kelas.required' => 'Kelas wajib dipilih untuk pemilih tipe Siswa.',
         ]);
@@ -75,6 +75,7 @@ class HakSuaraController extends Controller
             'id_kelas' => $request->tipe === 'siswa' ? $request->id_kelas : null,
             'token' => $canGenerateToken ? HakSuara::generateUniqueToken() : null,
             'token_used' => false,
+            'is_active' => true,
         ]);
 
         $pesan = $canGenerateToken
@@ -152,6 +153,7 @@ class HakSuaraController extends Controller
                     'id_kelas' => $idKelas,
                     'token' => $canGenerateToken ? HakSuara::generateUniqueToken() : null,
                     'token_used' => false,
+                    'is_active' => true,
                 ]);
 
                 $imported++;
