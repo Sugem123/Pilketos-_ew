@@ -21,8 +21,7 @@ class AuditSuaraController extends Controller
         if ($request->filled('search')) {
             $search = trim($request->search);
             $query->whereHas('hakSuara', function ($q) use ($search) {
-                $q->where('token', 'like', "%{$search}%")
-                    ->orWhere('nisn', 'like', "%{$search}%");
+                $q->where('token', 'like', "%{$search}%");
             });
         }
 
@@ -104,8 +103,8 @@ class AuditSuaraController extends Controller
             return response()->json([
                 'success' => false,
                 'verdict' => 'tidak_sah',
-                'message' => "Token \"{$tokenInput}\" terdaftar, tapi pemilih tidak melakukan voting. Kartu TIDAK SAH.",
-                'voter_name' => $hakSuara->nisn,
+                'message' => "Token \"{$tokenInput}\" terdaftar, tapi tidak ada catatan suara bilik. Kartu TIDAK SAH.",
+                'kategori' => $hakSuara->tipe === 'guru' ? 'Guru / Tendik' : ($hakSuara->kelas->name ?? 'Siswa'),
             ]);
         }
 
@@ -115,8 +114,8 @@ class AuditSuaraController extends Controller
                 'success' => true,
                 'verdict' => 'sudah',
                 'message' => "Token \"{$tokenInput}\" sudah diverifikasi sebelumnya sebagai: ".strtoupper($vote->status_verifikasi),
-                'voter_name' => $hakSuara->nisn,
                 'status' => $vote->status_verifikasi,
+                'kategori' => $hakSuara->tipe === 'guru' ? 'Guru / Tendik' : ($hakSuara->kelas->name ?? 'Siswa'),
                 'counts' => $this->getAuditCounts(),
             ]);
         }
@@ -134,8 +133,7 @@ class AuditSuaraController extends Controller
             'message' => "Token \"{$tokenInput}\" — Suara SAH!",
             'token' => $tokenInput,
             'status' => 'sah',
-            'voter_name' => $hakSuara->nisn,
-            'calon' => $vote->calon->nama ?? '-',
+            'kategori' => $hakSuara->tipe === 'guru' ? 'Guru / Tendik' : ($hakSuara->kelas->name ?? 'Siswa'),
             'counts' => $this->getAuditCounts(),
         ]);
     }

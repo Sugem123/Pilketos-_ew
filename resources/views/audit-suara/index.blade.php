@@ -289,7 +289,7 @@
                                     <div class="flex items-center gap-2">
                                         <i :class="item.verdict === 'sah' ? 'fa-solid fa-circle-check text-emerald-400' : item.verdict === 'sudah' ? 'fa-solid fa-circle-info text-blue-400' : 'fa-solid fa-circle-xmark text-rose-400'"></i>
                                         <code class="font-black tracking-widest text-white" x-text="item.token"></code>
-                                        <span class="text-slate-400" x-text="item.name || ''"></span>
+                                        <span class="text-slate-500 font-mono text-[11px]" x-show="item.kategori" x-text="'(' + item.kategori + ')'"></span>
                                     </div>
                                     <span class="font-bold uppercase"
                                           :class="item.verdict === 'sah' ? 'text-emerald-400' : item.verdict === 'sudah' ? 'text-blue-400' : 'text-rose-400'"
@@ -458,10 +458,15 @@
                           x-text="overlayToken"></code>
 
                     {{-- Message --}}
-                    <p class="text-sm text-slate-300 mb-1" x-text="overlayMessage"></p>
-                    <p class="text-xs text-slate-500" x-show="overlayVoterName" x-text="'Pemilih: ' + overlayVoterName"></p>
-                    <p class="text-xs text-slate-500 mt-0.5" x-show="overlayCalon" x-text="'Memilih: ' + overlayCalon"></p>
-                    <p class="text-[11px] text-teal-400 font-mono mt-1 font-bold" x-show="overlayDeviceName" x-text="'Discan via: ' + overlayDeviceName"></p>
+                    <p class="text-sm text-slate-300 mb-2" x-text="overlayMessage"></p>
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-slate-300">
+                        <i class="fas fa-shield-halved text-emerald-400"></i>
+                        <span>Asas Rahasia Terjaga</span>
+                        <template x-if="overlayKategori">
+                            <span class="text-indigo-300" x-text="'&bull; ' + overlayKategori"></span>
+                        </template>
+                    </div>
+                    <p class="text-[11px] text-teal-400 font-mono mt-2.5 font-bold" x-show="overlayDeviceName" x-text="'Discan via: ' + overlayDeviceName"></p>
 
                     {{-- Auto-close hint --}}
                     <p class="text-[10px] text-slate-600 mt-6 font-mono">Klik di mana saja atau tekan Enter untuk lanjut</p>
@@ -477,7 +482,7 @@
                     <div class="relative flex-1">
                         <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
                         <input type="text" name="search" value="{{ request('search') }}"
-                            placeholder="Cari token atau nama pemilih..."
+                            placeholder="Cari kode token kartu pemilih..."
                             class="w-full pl-10 pr-4 py-3 luxury-input rounded-2xl text-xs font-semibold outline-none">
                     </div>
 
@@ -541,7 +546,10 @@
                                             {{ $v->hakSuara->token }}
                                         </code>
                                     </div>
-                                    <p class="text-[10px] text-slate-400 mt-1 truncate max-w-xs">{{ $v->hakSuara->nisn }}</p>
+                                    <p class="text-[10px] text-slate-500 font-mono mt-1 flex items-center gap-1">
+                                        <i class="fas fa-shield-halved text-[9px] text-emerald-400/80"></i>
+                                        <span>Identitas Dirahasiakan</span>
+                                    </p>
                                 </td>
                                 <td class="px-6 py-4">
                                     @if($v->hakSuara->tipe === 'guru')
@@ -671,8 +679,7 @@
                 overlayVerdict: '',
                 overlayToken: '',
                 overlayMessage: '',
-                overlayVoterName: '',
-                overlayCalon: '',
+                overlayKategori: '',
                 overlayDeviceName: '',
                 _overlayTimer: null,
 
@@ -939,7 +946,7 @@
                         this.history.unshift({
                             token: token,
                             verdict: data.verdict || 'tidak_sah',
-                            name: data.voter_name || '',
+                            kategori: data.kategori || '',
                             device: fromDevice
                         });
 
@@ -948,8 +955,7 @@
                             data.verdict || 'tidak_sah',
                             token,
                             data.message,
-                            data.voter_name || '',
-                            data.calon || '',
+                            data.kategori || '',
                             fromDevice
                         );
 
@@ -965,18 +971,17 @@
                         this.tokenValue = '';
 
                     } catch (err) {
-                        this.showVerdict('tidak_sah', token, 'Kesalahan komunikasi dengan server.', '', '', fromDevice);
+                        this.showVerdict('tidak_sah', token, 'Kesalahan komunikasi dengan server.', '', fromDevice);
                     } finally {
                         this.processing = false;
                     }
                 },
 
-                showVerdict(verdict, token, message, voterName, calon, deviceName = '') {
+                showVerdict(verdict, token, message, kategori = '', deviceName = '') {
                     this.overlayVerdict = verdict;
                     this.overlayToken = token;
                     this.overlayMessage = message;
-                    this.overlayVoterName = voterName;
-                    this.overlayCalon = calon;
+                    this.overlayKategori = kategori;
                     this.overlayDeviceName = deviceName;
                     this.showOverlay = true;
 

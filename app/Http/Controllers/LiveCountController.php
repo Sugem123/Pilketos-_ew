@@ -94,9 +94,12 @@ class LiveCountController extends Controller
             ->limit(8)
             ->get()
             ->map(function ($vote) {
+                $rawName = (string) $vote->hakSuara->nisn;
+                $maskedVoter = \Illuminate\Support\Str::mask($rawName, '*', 3, max(1, strlen($rawName) - 5));
+
                 return [
                     'id' => $vote->id,
-                    'voter' => $vote->hakSuara->nisn,
+                    'voter' => $maskedVoter,
                     'tipe' => $vote->hakSuara->tipe,
                     'kelas' => $vote->hakSuara->kelas->name ?? null,
                     'candidate' => $vote->calon->nama,
