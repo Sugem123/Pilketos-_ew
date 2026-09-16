@@ -676,28 +676,29 @@
                     icon: 'info',
                     title: 'Keranjang Cetak Kosong',
                     text: 'Centang kotak pada baris pemilih untuk memasukkannya ke keranjang cetak custom.',
-                    confirmButtonText: 'Tutup'
+                    confirmButtonText: 'Tutup',
+                    background: '#0f172a',
+                    color: '#ffffff'
                 });
                 return;
             }
 
             let listHtml = `
-                <div class="text-left max-h-72 overflow-y-auto pr-1 divide-y divide-white/5 border border-white/10 rounded-2xl p-2 bg-slate-950/80 mb-4">
+                <div style="text-align: left; max-height: 240px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 8px; background-color: #020617; margin-bottom: 16px;">
             `;
 
             items.forEach(item => {
                 listHtml += `
-                    <div class="py-2.5 px-3 flex items-center justify-between gap-3 text-xs">
-                        <div class="min-w-0 flex-1">
-                            <div class="font-bold text-white truncate">${item.nama}</div>
-                            <div class="text-[10px] text-slate-400 font-mono flex items-center gap-2 mt-0.5">
-                                <span class="text-indigo-400 font-semibold">${item.kelas}</span>
-                                <span>&bull;</span>
-                                <span class="text-amber-400">Token: ${item.token}</span>
+                    <div style="padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px;">
+                        <div style="min-width: 0; flex: 1;">
+                            <div style="font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.nama}</div>
+                            <div style="font-size: 10px; color: #94a3b8; font-family: monospace; margin-top: 2px;">
+                                <span style="color: #818cf8; font-weight: 600;">${item.kelas}</span> &bull; 
+                                <span style="color: #fbbf24;">Token: ${item.token}</span>
                             </div>
                         </div>
-                        <button type="button" onclick="removeItemFromModal(${item.id})" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer" title="Hapus dari keranjang">
-                            <i class="fas fa-times text-xs"></i>
+                        <button type="button" onclick="removeItemFromModal(${item.id})" style="padding: 6px 8px; border-radius: 8px; color: #f87171; background: rgba(239,68,68,0.15); border: none; cursor: pointer;" title="Hapus dari keranjang">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
                 `;
@@ -707,18 +708,22 @@
 
             Swal.fire({
                 title: `Keranjang Cetak (${items.length} Pemilih)`,
+                background: '#0f172a',
+                color: '#ffffff',
                 html: `
-                    <div class="text-left">
-                        <p class="text-xs text-slate-400 mb-3">Daftar pemilih yang siap dicetak khusus:</p>
+                    <div style="text-align: left;">
+                        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">Daftar pemilih yang siap dicetak khusus:</p>
                         ${listHtml}
-                        <div class="grid grid-cols-2 gap-2.5 pt-2">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 8px;">
                             <button type="button" onclick="printBasket('kartu'); Swal.close();"
-                                    style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #ffffff !important; font-weight: 700; border-radius: 14px; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; font-size: 13px;">
-                                <i class="fas fa-address-card"></i> Cetak Kartu (${items.length})
+                                    style="background-color: #4f46e5 !important; color: #ffffff !important; font-weight: 800; border-radius: 14px; padding: 13px 14px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; font-size: 13px;">
+                                <i class="fas fa-address-card" style="font-size: 14px; color: #ffffff;"></i>
+                                <span style="color: #ffffff; font-weight: 700;">Cetak Kartu (${items.length})</span>
                             </button>
                             <button type="button" onclick="printBasket('undangan'); Swal.close();"
-                                    style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff !important; font-weight: 700; border-radius: 14px; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; font-size: 13px;">
-                                <i class="fas fa-envelope-open-text"></i> Cetak Undangan (${items.length})
+                                    style="background-color: #059669 !important; color: #ffffff !important; font-weight: 800; border-radius: 14px; padding: 13px 14px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; font-size: 13px;">
+                                <i class="fas fa-envelope-open-text" style="font-size: 14px; color: #ffffff;"></i>
+                                <span style="color: #ffffff; font-weight: 700;">Cetak Undangan (${items.length})</span>
                             </button>
                         </div>
                     </div>

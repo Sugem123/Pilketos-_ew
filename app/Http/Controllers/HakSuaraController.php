@@ -40,7 +40,10 @@ class HakSuaraController extends Controller
         $totalSimulasi = HakSuara::where('tipe', 'simulasi')->count();
         $kelas = Kelas::orderBy('name')->get();
 
-        return view('hak-suara.index', compact('hakSuaras', 'totalHakSuara', 'totalSiswa', 'totalGuru', 'totalSimulasi', 'kelas'));
+        return response()
+            ->view('hak-suara.index', compact('hakSuaras', 'totalHakSuara', 'totalSiswa', 'totalGuru', 'totalSimulasi', 'kelas'))
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache');
     }
 
     public function store(Request $request)
