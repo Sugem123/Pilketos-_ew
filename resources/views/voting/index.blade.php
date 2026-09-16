@@ -9,57 +9,68 @@
         @endforeach
     @endpush
 
-    {{-- ====== KIOSK FULLSCREEN LOCK OVERLAY (DI DEPAN SENDIRI, Z-INDEX 99999999) ====== --}}
+    {{-- ====== KIOSK WELCOME & TOKEN ACTIVATION MODAL ====== --}}
     <div id="kiosk-lock-overlay"
-         style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999999 !important; background: rgba(11, 15, 25, 0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
-        <div style="max-width: 480px; width: 100%; background: #0f172a; border: 2px solid rgba(99, 102, 241, 0.5); border-radius: 28px; padding: 32px 28px; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.95); text-align: center; color: white;">
+         style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999999 !important; background: radial-gradient(circle at center, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.99) 100%); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); display: flex; align-items: center; justify-content: center; padding: 1.25rem;">
+        <div style="max-width: 460px; width: 100%; background: linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%); border: 1.5px solid rgba(99, 102, 241, 0.4); border-radius: 32px; padding: 36px 30px 28px; box-shadow: 0 30px 70px -15px rgba(0,0,0,0.9), 0 0 50px -10px rgba(99, 102, 241, 0.2); text-align: center; color: white; position: relative;">
             
-            <div class="w-18 h-18 mx-auto rounded-3xl bg-indigo-500/15 border-2 border-indigo-500/30 flex items-center justify-center text-indigo-400 text-3xl mb-4 shadow-inner" style="width: 72px; height: 72px;">
-                <i id="kiosk-lock-icon" class="fa-solid fa-lock"></i>
+            {{-- Glowing Icon Badge --}}
+            <div class="relative w-20 h-20 mx-auto mb-5 flex items-center justify-center">
+                <div class="absolute inset-0 rounded-3xl bg-indigo-500/20 blur-xl"></div>
+                <div class="relative w-18 h-18 rounded-3xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white text-3xl shadow-xl shadow-indigo-500/40 border border-white/20" style="width: 72px; height: 72px;">
+                    <i id="kiosk-lock-icon" class="fa-solid fa-check-to-slot"></i>
+                </div>
             </div>
 
-            <span id="kiosk-lock-badge" class="inline-block px-3.5 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/20 mb-3 border border-indigo-500/30">
-                Bilik Suara Terkunci
+            <span id="kiosk-lock-badge" class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/20 mb-3 border border-indigo-500/30 shadow-sm">
+                <i class="fa-solid fa-circle-dot text-[8px] text-emerald-400 animate-ping"></i>
+                Bilik Suara Siap
             </span>
 
-            <h2 id="kiosk-lock-title" class="font-heading font-black text-2xl text-white mb-2 leading-tight">
-                Mode Layar Penuh Wajib Aktif
+            <h2 id="kiosk-lock-title" class="font-heading font-black text-2xl sm:text-3xl text-white mb-2 leading-tight tracking-tight">
+                Selamat Datang
             </h2>
 
-            <p id="kiosk-lock-desc" class="text-xs text-slate-400 leading-relaxed mb-6 max-w-sm mx-auto">
-                Pemilihan hanya dapat dilakukan dalam mode Layar Penuh (Fullscreen). Masukkan Token untuk membuka bilik suara.
+            <p id="kiosk-lock-desc" class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6 max-w-sm mx-auto font-normal">
+                Silakan masukkan <strong>Token Otorisasi</strong> dari kartu pemilih Anda untuk membuka surat suara.
             </p>
 
             {{-- Form Input Token Pemilih (Aktivasi Awal / Pemilih Baru) --}}
             <div id="kiosk-token-box" class="space-y-4">
-                <div>
+                <div class="relative">
                     <input type="text" id="kiosk-token-input"
-                           class="w-full text-center px-4 py-3.5 bg-slate-950 border-2 border-indigo-500/50 focus:border-indigo-400 rounded-2xl text-white font-mono font-black text-xl tracking-widest outline-none uppercase placeholder:text-slate-600 placeholder:normal-case placeholder:text-xs placeholder:font-sans transition-all"
-                           placeholder="Masukkan Token Pemilih..."
+                           class="w-full text-center px-4 py-4 bg-slate-950/90 border-2 border-indigo-500/40 focus:border-indigo-400 rounded-2xl text-white font-mono font-black text-2xl tracking-[0.25em] outline-none uppercase placeholder:text-slate-600 placeholder:tracking-normal placeholder:font-medium placeholder:text-xs placeholder:font-sans transition-all shadow-inner"
+                           placeholder="Ketik 6 digit token..."
                            maxlength="10"
                            autocomplete="off">
-                    <p id="kiosk-token-error" class="text-xs text-rose-400 font-semibold mt-2 hidden"></p>
+                    <p id="kiosk-token-error" class="text-xs text-rose-400 font-semibold mt-2.5 hidden bg-rose-500/10 border border-rose-500/20 py-1.5 px-3 rounded-xl"></p>
                 </div>
 
                 <button type="button" onclick="submitKioskToken()" id="btn-submit-kiosk-token"
-                        class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-heading font-extrabold text-sm shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02]">
-                    <i class="fa-solid fa-expand"></i>
-                    <span>Masuk Layar Penuh &amp; Buka Bilik</span>
+                        class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-heading font-extrabold text-sm sm:text-base tracking-wide shadow-xl shadow-indigo-500/35 flex items-center justify-center gap-2.5 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <span>Buka Surat Suara</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
                 </button>
+
+                <div class="flex items-center justify-center gap-2 text-[11px] text-slate-400 pt-1 font-medium">
+                    <i class="fa-solid fa-shield-heart text-indigo-400 text-xs"></i>
+                    <span>Pilihan Anda dijamin Langsung, Umum, Bebas &amp; Rahasia</span>
+                </div>
             </div>
 
-            {{-- Tombol Lanjutkan Layar Penuh (saat sedang memilih tapi layar keluar fullscreen) --}}
-            <div id="kiosk-resume-box" class="hidden space-y-3">
+            {{-- Tombol Lanjutkan Pemilihan (saat sesi memilih dijeda) --}}
+            <div id="kiosk-resume-box" class="hidden space-y-4">
                 <button type="button" onclick="resumeKioskFullscreen()"
-                        class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-600 text-white font-heading font-extrabold text-sm shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02]">
-                    <i class="fa-solid fa-expand"></i>
-                    <span>Kembali ke Layar Penuh</span>
+                        class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-heading font-extrabold text-sm sm:text-base tracking-wide shadow-xl shadow-emerald-500/35 flex items-center justify-center gap-2.5 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <i class="fa-solid fa-play text-xs"></i>
+                    <span>Lanjutkan Memilih</span>
                 </button>
             </div>
 
-            <div class="mt-6 pt-4 border-t border-slate-800/80 text-center">
-                <p class="text-[11px] text-slate-500 font-mono">
-                    Khusus Panitia: Tekan <kbd class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-bold">Ctrl + C + B</kbd> untuk keluar.
+            {{-- Footer Panitia Minimalis --}}
+            <div class="mt-6 pt-4 border-t border-white/5 text-center">
+                <p class="text-[10px] text-slate-500 font-mono">
+                    TPS Resmi &bull; Bantuan Pengawas: <kbd class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono text-[9px]">Ctrl+C+B</kbd>
                 </p>
             </div>
         </div>
@@ -977,20 +988,20 @@
                     // Sesi token sudah ada tapi layar keluar fullscreen (misal tekan Esc)
                     tokenBox.classList.add('hidden');
                     resumeBox.classList.remove('hidden');
-                    badge.textContent = 'Bilik Suara Terkunci';
-                    badge.className = 'inline-block px-3.5 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300 bg-amber-500/20 mb-3 border border-amber-500/30';
-                    icon.className = 'fa-solid fa-lock text-amber-400';
-                    title.textContent = 'Layar Penuh Tertutup';
-                    desc.textContent = 'Sesi memilih dijeda. Klik tombol di bawah untuk kembali ke mode Layar Penuh dan melanjutkan.';
+                    badge.innerHTML = '<i class="fa-solid fa-pause text-[9px] text-amber-400 mr-1"></i> Sesi Memilih Dijeda';
+                    badge.className = 'inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300 bg-amber-500/20 mb-3 border border-amber-500/30 shadow-sm';
+                    icon.className = 'fa-solid fa-play text-amber-400';
+                    title.textContent = 'Lanjutkan Pemilihan';
+                    desc.textContent = 'Sesi pemilihan suara Anda sedang dijeda. Klik tombol di bawah untuk melanjutkan.';
                 } else {
                     // Sesi pemilih baru (belum ada token)
                     tokenBox.classList.remove('hidden');
                     resumeBox.classList.add('hidden');
-                    badge.textContent = 'Aktivasi Bilik Suara';
-                    badge.className = 'inline-block px-3.5 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/20 mb-3 border border-indigo-500/30';
-                    icon.className = 'fa-solid fa-shield-halved text-indigo-400';
-                    title.textContent = 'Mode Layar Penuh Wajib Aktif';
-                    desc.textContent = 'Pemilihan hanya dapat dilakukan dalam mode Layar Penuh (Fullscreen). Masukkan Token untuk membuka bilik suara.';
+                    badge.innerHTML = '<i class="fa-solid fa-circle-dot text-[8px] text-emerald-400 animate-ping mr-1"></i> Bilik Suara Siap';
+                    badge.className = 'inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/20 mb-3 border border-indigo-500/30 shadow-sm';
+                    icon.className = 'fa-solid fa-check-to-slot';
+                    title.textContent = 'Selamat Datang';
+                    desc.innerHTML = 'Silakan masukkan <strong>Token Otorisasi</strong> dari kartu pemilih Anda untuk membuka surat suara.';
                     setTimeout(() => {
                         if (kioskTokenInput) kioskTokenInput.focus();
                     }, 200);
@@ -1053,7 +1064,7 @@
             .then(data => {
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-expand"></i><span>Masuk Layar Penuh &amp; Buka Bilik</span>';
+                    btn.innerHTML = '<span>Buka Surat Suara</span><i class="fa-solid fa-arrow-right text-xs"></i>';
                 }
 
                 if (!data.success) {
@@ -1084,7 +1095,7 @@
             .catch(() => {
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-expand"></i><span>Masuk Layar Penuh &amp; Buka Bilik</span>';
+                    btn.innerHTML = '<span>Buka Surat Suara</span><i class="fa-solid fa-arrow-right text-xs"></i>';
                 }
                 if (err) {
                     err.textContent = 'Gagal menghubungi server. Periksa koneksi jaringan.';
