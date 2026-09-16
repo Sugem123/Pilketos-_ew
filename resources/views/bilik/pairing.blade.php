@@ -87,7 +87,7 @@
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2 font-mono text-left">
                         Kode Pairing Bilik
                     </label>
-                    <input type="text" name="pairing_code" value="{{ old('pairing_code') }}" required autofocus
+                    <input type="text" name="pairing_code" value="{{ old('pairing_code', request('code') ?? request('pairing_code')) }}" required autofocus
                            placeholder="Contoh: BLK-AB12C"
                            class="w-full px-4 py-3.5 bg-slate-950/80 border border-white/15 rounded-2xl text-center font-mono font-black text-lg sm:text-xl tracking-[0.2em] uppercase text-white outline-none focus:border-indigo-500 transition-colors placeholder:tracking-normal placeholder:font-medium placeholder:text-slate-600">
                     <p class="text-[11px] text-slate-500 text-left mt-1.5">

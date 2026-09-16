@@ -4,9 +4,23 @@
 @endphp
 <x-app-layout :page_title="$page_title" :page_description="$page_description">
     <x-slot name="actions">
-        <x-admin-button icon="fas fa-plus" onclick="openAddModal()">
-            Tambah Bilik Suara
-        </x-admin-button>
+        <div class="flex items-center gap-2.5 flex-wrap">
+            <a href="{{ route('cetak.rekap-bilik') }}" target="_blank"
+               class="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-900 border border-white/10 text-slate-200 hover:text-white hover:bg-slate-800 rounded-2xl text-xs font-bold transition-all shadow-md">
+                <i class="fas fa-file-lines text-indigo-400"></i>
+                <span>Rekap Terminal</span>
+            </a>
+
+            <a href="{{ route('cetak.bilik') }}" target="_blank"
+               class="inline-flex items-center gap-1.5 px-3.5 py-2.5 luxury-btn-primary text-white rounded-2xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/30">
+                <i class="fas fa-print"></i>
+                <span>Cetak Tanda Bilik</span>
+            </a>
+
+            <x-admin-button icon="fas fa-plus" onclick="openAddModal()">
+                Tambah Bilik
+            </x-admin-button>
+        </div>
     </x-slot>
 
     <div class="space-y-8">
@@ -147,11 +161,17 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <div class="flex items-center justify-end gap-2">
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <a href="{{ route('cetak.bilik', ['id' => $b->id]) }}" target="_blank"
+                                           class="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-xl text-xs transition-colors cursor-pointer"
+                                           title="Cetak Tanda {{ $b->nama_bilik }}">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+
                                         @if($b->isPaired())
                                             <form method="POST" action="{{ route('admin.bilik.reset', $b) }}" onsubmit="return confirm('Putus sesi PC di {{ $b->nama_bilik }} dan generate kode baru?')">
                                                 @csrf
-                                                <button type="submit" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border border-amber-500/20 rounded-xl text-xs font-bold transition-all" title="Reset Sesi &amp; Kode Baru">
+                                                <button type="submit" class="px-2.5 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border border-amber-500/20 rounded-xl text-xs font-bold transition-all" title="Reset Sesi &amp; Kode Baru">
                                                     <i class="fas fa-rotate mr-1"></i> Reset
                                                 </button>
                                             </form>
@@ -160,7 +180,7 @@
                                         <form method="POST" action="{{ route('admin.bilik.destroy', $b) }}" onsubmit="return confirm('Hapus {{ $b->nama_bilik }}?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl text-xs transition-colors" title="Hapus Bilik">
+                                            <button type="submit" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl text-xs transition-colors cursor-pointer" title="Hapus Bilik">
                                                 <i class="fas fa-trash-can"></i>
                                             </button>
                                         </form>

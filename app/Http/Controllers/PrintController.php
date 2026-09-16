@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BilikSuara;
 use App\Models\HakSuara;
 use App\Models\Kelas;
 use Illuminate\Http\Request;
@@ -226,6 +227,31 @@ class PrintController extends Controller
             'tanggal',
             'config'
         ));
+    }
+
+    public function bilik(Request $request)
+    {
+        $query = BilikSuara::query();
+
+        $targetIds = $this->parseIds($request);
+        if (!empty($targetIds)) {
+            $query->whereIn('id', $targetIds);
+        }
+
+        $biliks = $query->orderBy('id')->get();
+        $config = $this->getConfig();
+        $pairingBaseUrl = route('bilik.pairing-form');
+
+        return view('print.bilik', compact('biliks', 'config', 'pairingBaseUrl'));
+    }
+
+    public function rekapBilik(Request $request)
+    {
+        $biliks = BilikSuara::orderBy('id')->get();
+        $config = $this->getConfig();
+        $tanggal = $config['undangan_hari_tanggal'] ?? now()->translatedFormat('l, d F Y');
+
+        return view('print.rekap-bilik', compact('biliks', 'config', 'tanggal'));
     }
 
     private function parseIds(Request $request): array
