@@ -711,11 +711,13 @@
                     <div class="text-left">
                         <p class="text-xs text-slate-400 mb-3">Daftar pemilih yang siap dicetak khusus:</p>
                         ${listHtml}
-                        <div class="grid grid-cols-2 gap-2 pt-2">
-                            <button type="button" onclick="printBasket('kartu'); Swal.close();" class="w-full py-3 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                        <div class="grid grid-cols-2 gap-2.5 pt-2">
+                            <button type="button" onclick="printBasket('kartu'); Swal.close();"
+                                    style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #ffffff !important; font-weight: 700; border-radius: 14px; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; font-size: 13px;">
                                 <i class="fas fa-address-card"></i> Cetak Kartu (${items.length})
                             </button>
-                            <button type="button" onclick="printBasket('undangan'); Swal.close();" class="w-full py-3 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                            <button type="button" onclick="printBasket('undangan'); Swal.close();"
+                                    style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff !important; font-weight: 700; border-radius: 14px; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; font-size: 13px;">
                                 <i class="fas fa-envelope-open-text"></i> Cetak Undangan (${items.length})
                             </button>
                         </div>
@@ -769,7 +771,9 @@
                     <span>Cetak Kartu</span>
                 </button>
 
-                <button type="button" onclick="printBasket('undangan')" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 hover:bg-indigo-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer hover:scale-105">
+                <button type="button" onclick="printBasket('undangan')"
+                        style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff !important;"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 border border-sky-400/40 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer hover:scale-105">
                     <i class="fas fa-envelope-open-text"></i>
                     <span>Cetak Undangan</span>
                 </button>
