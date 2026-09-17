@@ -35,6 +35,27 @@
 </head>
 <body class="ambient-mesh-voting text-slate-100 min-h-screen flex flex-col justify-between p-4 sm:p-6 lg:p-8 selection:bg-indigo-500 selection:text-white antialiased overflow-x-hidden relative ambient-grid">
 
+    {{-- Banner Khusus Admin saat Siaran Publik Ditutup --}}
+    @if(!empty($isClosed))
+        <div class="w-full max-w-[1700px] mx-auto mb-4 p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-mono flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-lock text-amber-400 text-base flex-shrink-0"></i>
+                <span><strong>Pratinjau Khusus Admin:</strong> Siaran Live Count untuk publik saat ini <u>DITUTUP</u>. Anda dapat melihat hasil karena sedang login.</span>
+            </div>
+            <div class="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
+                <a href="{{ route('dashboard') }}" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-[11px] font-bold text-white transition-all">
+                    Panel Admin
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 text-[11px] font-bold transition-all cursor-pointer">
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
+
     {{-- Top Header for Projector --}}
     <header class="w-full max-w-[1700px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel-dark rounded-3xl px-6 sm:px-8 py-4 border border-white/10 shadow-2xl mb-6">
         <div class="flex items-center gap-4">

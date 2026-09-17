@@ -6,18 +6,37 @@
     $schoolName = $appConfig['nama_sekolah'] ?? 'PILKETOS';
 @endphp
 
-<aside class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-slate-900 border-r border-slate-800/80 shadow-2xl z-30">
+{{-- Mobile Backdrop --}}
+<div x-show="sidebarOpen"
+     x-transition:enter="transition-opacity ease-linear duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity ease-linear duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="sidebarOpen = false"
+     class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 lg:hidden"
+     x-cloak></div>
+
+{{-- Sidebar Container --}}
+<aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+       class="fixed inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800/80 shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out lg:z-30">
     {{-- Brand Header --}}
-    <div class="flex items-center gap-3 px-6 h-20 bg-slate-950/60 border-b border-slate-800/80">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center p-2 shadow-lg shadow-indigo-500/20">
-            <img src="{{ $appLogo }}" alt="Logo" class="h-6 w-6 object-contain">
+    <div class="flex items-center justify-between px-6 h-20 bg-slate-950/60 border-b border-slate-800/80">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center p-2 shadow-lg shadow-indigo-500/20 flex-shrink-0">
+                <img src="{{ $appLogo }}" alt="Logo" class="h-6 w-6 object-contain">
+            </div>
+            <div class="min-w-0 flex-1">
+                <h1 class="text-white font-heading font-extrabold text-base tracking-tight leading-none truncate" title="{{ $schoolName }}">
+                    {{ $schoolName }}
+                </h1>
+                <p class="text-[10px] font-medium text-slate-400 mt-1 font-mono">Control Center</p>
+            </div>
         </div>
-        <div class="min-w-0 flex-1">
-            <h1 class="text-white font-heading font-extrabold text-base tracking-tight leading-none truncate" title="{{ $schoolName }}">
-                {{ $schoolName }}
-            </h1>
-            <p class="text-[10px] font-medium text-slate-400 mt-1 font-mono">Control Center</p>
-        </div>
+        <button type="button" @click="sidebarOpen = false" class="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors ml-2">
+            <i class="fas fa-times text-sm"></i>
+        </button>
     </div>
 
     {{-- Nav Links --}}

@@ -34,11 +34,26 @@ class LoginController extends Controller
         }
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Username/Email atau password salah.'], 422);
+            }
             return back()->withErrors(['email' => 'Username/Email atau password salah.'])->withInput();
         }
 
         Auth::login($user);
         $request->session()->regenerate();
+
+        $redirectTo = $request->input('redirect_to');
+        if ($redirectTo && ! str_starts_with($redirectTo, '//') && str_starts_with($redirectTo, '/')) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['success' => true, 'redirect' => $redirectTo]);
+            }
+            return redirect($redirectTo)->with('success', 'Selamat datang, '.$user->nama_lengkap.'!');
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'redirect' => route('dashboard')]);
+        }
 
         return redirect()->route('dashboard')->with('success', 'Selamat datang, '.$user->nama_lengkap.'!');
     }

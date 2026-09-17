@@ -62,16 +62,123 @@
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <a href="{{ url('/') }}"
-                   class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-heading font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all">
-                    <i class="fa-solid fa-bullhorn mr-1.5"></i> Lihat Kandidat
-                </a>
-                <a href="{{ route('login') }}"
                    class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-slate-300 hover:text-white font-heading font-bold text-xs transition-all">
-                    <i class="fa-solid fa-right-to-bracket mr-1.5"></i> Login Petugas
+                    <i class="fa-solid fa-arrow-left mr-1.5"></i> Beranda
                 </a>
+                <button type="button" onclick="openAdminModal()"
+                        class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-heading font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all cursor-pointer">
+                    <i class="fa-solid fa-user-shield mr-1.5"></i> Login Admin / Pengawas
+                </button>
             </div>
         </div>
     </main>
+
+    {{-- ====== MODAL LOGIN ADMIN / PENGAWAS DI HP ====== --}}
+    <div id="admin-login-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-slate-900 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative text-left">
+            <button type="button" onclick="closeAdminModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-lg shadow-inner">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div>
+                    <h3 class="font-heading font-black text-base text-white">Login Petugas / Admin</h3>
+                    <p class="text-[11px] text-slate-400 font-mono">Buka preview Live Count di HP</p>
+                </div>
+            </div>
+
+            <div id="login-error-alert" class="hidden mb-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold"></div>
+
+            <form id="admin-login-form" onsubmit="submitAdminLogin(event)" class="space-y-4">
+                @csrf
+                <input type="hidden" name="redirect_to" value="/live-count">
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Username / Email</label>
+                    <input type="text" id="login-email" name="email" required autofocus
+                           placeholder="admin@gmail.com"
+                           class="w-full px-4 py-3 bg-slate-950 border border-white/10 rounded-2xl text-xs text-white outline-none focus:border-indigo-500 transition-colors">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 font-mono">Password</label>
+                    <input type="password" id="login-password" name="password" required
+                           placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                           class="w-full px-4 py-3 bg-slate-950 border border-white/10 rounded-2xl text-xs text-white outline-none focus:border-indigo-500 transition-colors">
+                </div>
+
+                <button type="submit" id="btn-submit-login"
+                        class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-heading font-bold text-xs tracking-wider shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer transition-all">
+                    <i class="fas fa-unlock"></i>
+                    <span>Masuk &amp; Buka Live Count</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openAdminModal() {
+            const m = document.getElementById('admin-login-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+            setTimeout(() => {
+                document.getElementById('login-email').focus();
+            }, 100);
+        }
+
+        function closeAdminModal() {
+            const m = document.getElementById('admin-login-modal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        async function submitAdminLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-login');
+            const errAlert = document.getElementById('login-error-alert');
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            errAlert.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Memverifikasi...</span>';
+
+            try {
+                const res = await fetch('{{ route('login') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                        redirect_to: '/live-count'
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    window.location.href = data.redirect || '/live-count';
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-unlock"></i> <span>Masuk &amp; Buka Live Count</span>';
+                    errAlert.textContent = data.message || 'Username/Email atau password salah.';
+                    errAlert.classList.remove('hidden');
+                }
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-unlock"></i> <span>Masuk &amp; Buka Live Count</span>';
+                errAlert.textContent = 'Gagal menghubungi server. Periksa koneksi internet.';
+                errAlert.classList.remove('hidden');
+            }
+        }
+    </script>
 
     {{-- Footer --}}
     <footer class="w-full max-w-4xl mx-auto text-center py-4 text-xs text-slate-500 border-t border-white/5">
