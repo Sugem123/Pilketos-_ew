@@ -7,6 +7,33 @@
                 <link rel="preload" as="image" href="{{ asset($calon->url_foto) }}">
             @endif
         @endforeach
+        <style>
+            .candidates-scroll-container::-webkit-scrollbar {
+                height: 10px;
+            }
+            .candidates-scroll-container::-webkit-scrollbar-track {
+                background: rgba(15, 23, 42, 0.85);
+                border-radius: 9999px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+            }
+            .candidates-scroll-osis::-webkit-scrollbar-thumb {
+                background: linear-gradient(90deg, #4f46e5, #6366f1);
+                border-radius: 9999px;
+                box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+            }
+            .candidates-scroll-mpk::-webkit-scrollbar-thumb {
+                background: linear-gradient(90deg, #059669, #10b981);
+                border-radius: 9999px;
+                box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+            }
+            .candidates-scroll-container {
+                scrollbar-width: thin;
+                scrollbar-color: #6366f1 rgba(15, 23, 42, 0.85);
+            }
+            .candidates-scroll-mpk {
+                scrollbar-color: #10b981 rgba(15, 23, 42, 0.85);
+            }
+        </style>
     @endpush
 
     {{-- ====== KIOSK WELCOME & TOKEN ACTIVATION MODAL ====== --}}
@@ -76,7 +103,7 @@
         </div>
     </div>
 
-    <div class="flex flex-col min-h-screen relative overflow-hidden">
+    <div class="flex flex-col min-h-screen relative overflow-x-hidden">
         {{-- Floating Top Bar --}}
         <header class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 z-20">
             <div class="glass-panel-dark rounded-2xl px-6 py-4 flex items-center justify-between shadow-2xl border border-white/10">
@@ -136,7 +163,7 @@
 
         {{-- Main Voting Stage --}}
         <main class="flex-grow flex flex-col justify-center px-4 py-8 lg:py-10 z-10">
-            <div class="mx-auto w-full max-w-7xl">
+            <div class="mx-auto w-full max-w-[1800px] px-2 sm:px-4">
                 <div class="text-center max-w-2xl mx-auto mb-8 lg:mb-10">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">
                         <i class="fa-solid fa-check-to-slot text-[11px]"></i> E-Voting Bilik Suara
@@ -154,15 +181,26 @@
 
                     @if ($calonOsis->isNotEmpty())
                         {{-- ====== SEKSI KETUA OSIS ====== --}}
-                        <section>
-                            <div class="flex items-center gap-3 mb-5">
-                                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-heading font-extrabold uppercase tracking-widest">
-                                    <i class="fa-solid fa-user-tie"></i> Pilihan 1 &mdash; Ketua OSIS
-                                </span>
-                                <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider hidden sm:inline">Pilih salah satu</span>
+                        <section class="w-full">
+                            <div class="flex items-center justify-between gap-3 mb-4 px-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-heading font-extrabold uppercase tracking-widest">
+                                        <i class="fa-solid fa-user-tie"></i> Pilihan 1 &mdash; Ketua OSIS
+                                    </span>
+                                    <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider hidden sm:inline">Pilih salah satu</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" onclick="scrollContainer('osis', -340)" class="w-8 h-8 rounded-xl bg-slate-900 border border-white/10 hover:border-indigo-500 text-slate-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer" title="Geser Kiri">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </button>
+                                    <button type="button" onclick="scrollContainer('osis', 340)" class="w-8 h-8 rounded-xl bg-slate-900 border border-white/10 hover:border-indigo-500 text-slate-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer" title="Geser Kanan">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </button>
+                                </div>
                             </div>
 
-                            <div class="flex flex-wrap lg:flex-nowrap gap-6 lg:gap-8 items-center justify-center">
+                            <div id="scroll-container-osis" class="candidates-scroll-container candidates-scroll-osis w-full overflow-x-auto pb-6 pt-2 scroll-smooth">
+                                <div class="flex flex-nowrap gap-5 lg:gap-6 items-center min-w-max mx-auto px-3">
                                 @php $no = 1; @endphp
                                 @foreach ($calonOsis as $calon)
                                     @php
@@ -171,8 +209,8 @@
                                         $second = $words[1] ?? '';
                                         $third = $words[2] ?? '';
                                     @endphp
-                                    <div id="caketos-container-{{ $calon->id }}" class="caketos-item relative transition-all duration-300">
-                                        <div class="cursor-pointer flex w-[18rem] lg:w-[21rem] group items-center relative">
+                                    <div id="caketos-container-{{ $calon->id }}" class="caketos-item relative transition-all duration-300 flex-shrink-0">
+                                        <div class="cursor-pointer flex w-[17.5rem] lg:w-[19rem] xl:w-[20rem] group items-center relative">
                                             {{-- Candidate Card --}}
                                             <div class="bg-slate-900/90 backdrop-blur-xl z-10 card w-full border-2 border-slate-800 hover:border-indigo-500/60 rounded-3xl shadow-2xl transition-all duration-300 overflow-hidden group relative hover:shadow-indigo-500/10 hover:-translate-y-1.5"
                                                 data-calon-id="{{ $calon->id }}" data-visi="{{ $calon->visi }}"
@@ -272,7 +310,7 @@
                                             </div>
 
                                             {{-- Detail Panel (Slides behind card) --}}
-                                            <div class="detail-panel absolute top-[3%] left-0 w-[18rem] lg:w-[21rem] h-[94%] bg-slate-900/95 backdrop-blur-2xl border-2 border-indigo-500/50 rounded-3xl shadow-2xl overflow-hidden pointer-events-none z-0 text-slate-200"
+                                            <div class="detail-panel absolute top-[3%] left-0 w-[17.5rem] lg:w-[19rem] xl:w-[20rem] h-[94%] bg-slate-900/95 backdrop-blur-2xl border-2 border-indigo-500/50 rounded-3xl shadow-2xl overflow-hidden pointer-events-none z-0 text-slate-200"
                                                 style="transform: translateX(0);">
                                                 <div class="p-5 pl-8 lg:p-6 lg:pl-10 h-full overflow-y-auto space-y-4">
                                                     <div class="border-b border-slate-800 pb-3">
@@ -306,6 +344,7 @@
                                     </div>
                                     @php $no++; @endphp
                                 @endforeach
+                                </div>
                             </div>
                         </section>
                     @else
@@ -317,15 +356,29 @@
 
                     @if ($calonMpk->isNotEmpty())
                         {{-- ====== SEKSI KETUA MPK ====== --}}
-                        <section>
-                            <div class="flex items-center gap-3 mb-5">
-                                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-heading font-extrabold uppercase tracking-widest">
-                                    <i class="fa-solid fa-scale-balanced"></i> Pilihan 2 &mdash; Ketua MPK
-                                </span>
-                                <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider hidden sm:inline">Pilih salah satu</span>
+                        <section class="w-full">
+                            <div class="flex items-center justify-between gap-3 mb-4 px-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-heading font-extrabold uppercase tracking-widest">
+                                        <i class="fa-solid fa-scale-balanced"></i> Pilihan 2 &mdash; Ketua MPK
+                                    </span>
+                                    <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider hidden sm:inline">Pilih salah satu (5 Paslon)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[11px] font-mono text-emerald-400/90 hidden sm:inline-flex items-center gap-1.5 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                                        <i class="fa-solid fa-arrows-left-right text-[10px]"></i> Geser bilik untuk 5 paslon
+                                    </span>
+                                    <button type="button" onclick="scrollContainer('mpk', -350)" class="w-8 h-8 rounded-xl bg-slate-900 border border-white/10 hover:border-emerald-500 text-slate-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer" title="Geser Kiri">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </button>
+                                    <button type="button" onclick="scrollContainer('mpk', 350)" class="w-8 h-8 rounded-xl bg-slate-900 border border-white/10 hover:border-emerald-500 text-slate-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer" title="Geser Kanan">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </button>
+                                </div>
                             </div>
 
-                            <div class="flex flex-wrap lg:flex-nowrap gap-6 lg:gap-8 items-center justify-center">
+                            <div id="scroll-container-mpk" class="candidates-scroll-container candidates-scroll-mpk w-full overflow-x-auto pb-6 pt-2 scroll-smooth">
+                                <div class="flex flex-nowrap gap-5 lg:gap-6 items-center min-w-max mx-auto px-4">
                                 @php $no = 1; @endphp
                                 @foreach ($calonMpk as $calon)
                                     @php
@@ -334,8 +387,8 @@
                                         $second = $words[1] ?? '';
                                         $third = $words[2] ?? '';
                                     @endphp
-                                    <div id="caketos-container-{{ $calon->id }}" class="caketos-item relative transition-all duration-300">
-                                        <div class="cursor-pointer flex w-[18rem] lg:w-[21rem] group items-center relative">
+                                    <div id="caketos-container-{{ $calon->id }}" class="caketos-item relative transition-all duration-300 flex-shrink-0">
+                                        <div class="cursor-pointer flex w-[17.5rem] lg:w-[19rem] xl:w-[20rem] group items-center relative">
                                             {{-- Candidate Card --}}
                                             <div class="bg-slate-900/90 backdrop-blur-xl z-10 card w-full border-2 border-slate-800 hover:border-emerald-500/60 rounded-3xl shadow-2xl transition-all duration-300 overflow-hidden group relative hover:shadow-emerald-500/10 hover:-translate-y-1.5"
                                                 data-calon-id="{{ $calon->id }}" data-visi="{{ $calon->visi }}"
@@ -435,7 +488,7 @@
                                             </div>
 
                                             {{-- Detail Panel (Slides behind card) --}}
-                                            <div class="detail-panel absolute top-[3%] left-0 w-[18rem] lg:w-[21rem] h-[94%] bg-slate-900/95 backdrop-blur-2xl border-2 border-emerald-500/50 rounded-3xl shadow-2xl overflow-hidden pointer-events-none z-0 text-slate-200"
+                                            <div class="detail-panel absolute top-[3%] left-0 w-[17.5rem] lg:w-[19rem] xl:w-[20rem] h-[94%] bg-slate-900/95 backdrop-blur-2xl border-2 border-emerald-500/50 rounded-3xl shadow-2xl overflow-hidden pointer-events-none z-0 text-slate-200"
                                                 style="transform: translateX(0);">
                                                 <div class="p-5 pl-8 lg:p-6 lg:pl-10 h-full overflow-y-auto space-y-4">
                                                     <div class="border-b border-slate-800 pb-3">
@@ -469,6 +522,7 @@
                                     </div>
                                     @php $no++; @endphp
                                 @endforeach
+                                </div>
                             </div>
                         </section>
                     @else
@@ -509,6 +563,13 @@
         const allItems = document.querySelectorAll('.caketos-item');
         let currentlyExpanded = null;
         const activeAnimations = new Map();
+
+        function scrollContainer(type, distance) {
+            const el = document.getElementById('scroll-container-' + type);
+            if (el) {
+                el.scrollBy({ left: distance, behavior: 'smooth' });
+            }
+        }
 
         function ease(t) {
             return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;

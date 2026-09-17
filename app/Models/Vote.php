@@ -14,6 +14,7 @@ class Vote extends Model
     protected $fillable = [
         'id_calon',
         'id_nisn',
+        'tipe_pemilihan',
         'status_verifikasi',
         'catatan_verifikasi',
         'verified_at',

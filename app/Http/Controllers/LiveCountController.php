@@ -49,33 +49,25 @@ class LiveCountController extends Controller
 
         $calons = CalonKetua::with(['kelas', 'kelasWakil1', 'kelasWakil2'])
             ->withCount([
-                'votes as digital_votes' => function ($q) {
-                    $q->where('tipe_pemilihan', 'osis');
-                },
+                'votes as digital_votes',
                 'votes as valid_votes' => function ($q) {
-                    $q->where('tipe_pemilihan', 'osis')->where('status_verifikasi', 'sah');
-                },
-                'votes as mpk_digital_votes' => function ($q) {
-                    $q->where('tipe_pemilihan', 'mpk');
-                },
-                'votes as mpk_valid_votes' => function ($q) {
-                    $q->where('tipe_pemilihan', 'mpk')->where('status_verifikasi', 'sah');
+                    $q->where('status_verifikasi', 'sah');
                 },
             ])
             ->orderBy('nomor')
             ->get();
 
-        $totalOsisVote = Vote::where('tipe_pemilihan', 'osis')->count();
-        $totalMpkVote = Vote::where('tipe_pemilihan', 'mpk')->count();
+        $totalOsisVote = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'osis'))->count();
+        $totalMpkVote = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'mpk'))->count();
 
-        $totalOsisSah = Vote::where('tipe_pemilihan', 'osis')->where('status_verifikasi', 'sah')->count();
-        $totalMpkSah = Vote::where('tipe_pemilihan', 'mpk')->where('status_verifikasi', 'sah')->count();
+        $totalOsisSah = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'osis'))->where('status_verifikasi', 'sah')->count();
+        $totalMpkSah = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'mpk'))->where('status_verifikasi', 'sah')->count();
 
-        $totalOsisTidakSah = Vote::where('tipe_pemilihan', 'osis')->where('status_verifikasi', 'tidak_sah')->count();
-        $totalMpkTidakSah = Vote::where('tipe_pemilihan', 'mpk')->where('status_verifikasi', 'tidak_sah')->count();
+        $totalOsisTidakSah = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'osis'))->where('status_verifikasi', 'tidak_sah')->count();
+        $totalMpkTidakSah = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'mpk'))->where('status_verifikasi', 'tidak_sah')->count();
 
-        $totalOsisPending = Vote::where('tipe_pemilihan', 'osis')->where('status_verifikasi', 'pending')->count();
-        $totalMpkPending = Vote::where('tipe_pemilihan', 'mpk')->where('status_verifikasi', 'pending')->count();
+        $totalOsisPending = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'osis'))->where('status_verifikasi', 'pending')->count();
+        $totalMpkPending = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'mpk'))->where('status_verifikasi', 'pending')->count();
 
         $totalDigitalVote = $totalOsisVote + $totalMpkVote;
         $totalSahVote = $totalOsisSah + $totalMpkSah;
@@ -158,10 +150,10 @@ class LiveCountController extends Controller
             'kelas_wakil_2' => $c->kelasWakil2->name ?? null,
             'kelas' => $c->kelas->name ?? '-',
             'url_foto' => $c->url_foto ? asset($c->url_foto) : null,
-            'votes' => $mode === 'pleno' ? $c->mpk_valid_votes : $c->mpk_digital_votes,
-            'digital_votes' => $c->mpk_digital_votes,
-            'valid_votes' => $c->mpk_valid_votes,
-            'percentage' => $mpkActive > 0 ? round((($mode === 'pleno' ? $c->mpk_valid_votes : $c->mpk_digital_votes) / $mpkActive) * 100, 1) : 0,
+            'votes' => $mode === 'pleno' ? $c->valid_votes : $c->digital_votes,
+            'digital_votes' => $c->digital_votes,
+            'valid_votes' => $c->valid_votes,
+            'percentage' => $mpkActive > 0 ? round((($mode === 'pleno' ? $c->valid_votes : $c->digital_votes) / $mpkActive) * 100, 1) : 0,
         ];
 
         return response()->json([
