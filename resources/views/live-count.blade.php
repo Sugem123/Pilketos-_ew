@@ -77,8 +77,8 @@
         </div>
 
         {{-- Metrics Badges on Header --}}
-        <div class="flex items-center gap-3 sm:gap-6 flex-wrap justify-center">
-            {{-- Mode Switcher: Quick Count vs Pleno Sah --}}
+        <div class="flex items-center gap-2.5 sm:gap-4 flex-wrap justify-center">
+            {{-- Mode Switcher: Quick Count vs Hitung Manual (Pleno) --}}
             <div class="flex items-center p-1 bg-slate-950/80 border border-slate-800 rounded-2xl">
                 <button type="button" id="btn-mode-quick" onclick="switchLiveMode('quick')"
                         class="px-3.5 py-1.5 rounded-xl text-xs font-heading font-extrabold transition-all cursor-pointer bg-indigo-600 text-white shadow-md">
@@ -86,9 +86,17 @@
                 </button>
                 <button type="button" id="btn-mode-pleno" onclick="switchLiveMode('pleno')"
                         class="px-3.5 py-1.5 rounded-xl text-xs font-heading font-extrabold transition-all cursor-pointer text-slate-400 hover:text-white">
-                    Pleno Sah (Final)
+                    Hitung Manual (Pleno)
                 </button>
             </div>
+
+            {{-- Toggle Mode 1 Layar Tanpa Foto vs Mode Foto --}}
+            <button type="button" id="btn-toggle-photo" onclick="togglePhotoDisplay()"
+                    class="px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer bg-slate-900 border border-indigo-500/40 text-indigo-300 hover:text-white flex items-center gap-1.5 shadow-sm"
+                    title="Beralih antara Mode 1 Layar (Tanpa Foto) dan Mode Foto">
+                <i id="icon-toggle-photo" class="fa-solid fa-table-cells-large text-indigo-400"></i>
+                <span id="text-toggle-photo">1 Layar (Tanpa Foto)</span>
+            </button>
 
             {{-- Jeda Sinkronisasi Data (delay antar pengambilan data, diatur admin) --}}
             <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-900/80 border border-slate-800 rounded-2xl">
@@ -118,33 +126,61 @@
     </header>
 
     {{-- Main Live Stage --}}
-    <main class="w-full max-w-[1700px] mx-auto flex-1 flex flex-col justify-center gap-6 z-10">
+    <main class="w-full max-w-[1700px] mx-auto flex-1 flex flex-col justify-start gap-5 z-10">
 
-        {{-- Candidate Showcase: OSIS + MPK --}}
-        <div class="space-y-6">
-            <section>
-                <div class="flex items-center gap-3 mb-3">
-                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-heading font-extrabold uppercase tracking-widest">
-                        <i class="fa-solid fa-user-tie"></i> Ketua OSIS
-                    </span>
-                    <span class="text-[10px] font-mono text-slate-500">Total suara: <strong id="osis-total-badge" class="text-indigo-300">0</strong></span>
+        {{-- Candidate Showcase: OSIS + MPK (Terkelompok Rapi) --}}
+        <div class="space-y-4 sm:space-y-5">
+            {{-- KELOMPOK 1: KETUA OSIS --}}
+            <div class="glass-panel-dark rounded-3xl p-4 sm:p-5 border border-indigo-500/30 shadow-xl bg-slate-900/80">
+                <div class="flex items-center justify-between gap-3 mb-3 pb-2.5 border-b border-white/5">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center justify-center text-xs shadow-inner">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading font-black text-sm sm:text-base text-white tracking-tight uppercase">
+                                KELOMPOK KANDIDAT KETUA OSIS
+                            </h3>
+                            <p class="text-[10px] text-slate-400 font-mono">3 Pasangan Calon &bull; Pemilihan 1</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 font-mono text-xs">
+                        <span class="px-3 py-1 rounded-xl bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-bold">
+                            Total Suara: <strong id="osis-total-badge" class="text-white">0</strong>
+                        </span>
+                    </div>
                 </div>
-                <div id="osis-candidates-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+
+                <div id="osis-candidates-container" class="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4 items-stretch">
                     {{-- Injected dynamically --}}
                 </div>
-            </section>
+            </div>
 
-            <section>
-                <div class="flex items-center gap-3 mb-3">
-                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-heading font-extrabold uppercase tracking-widest">
-                        <i class="fa-solid fa-scale-balanced"></i> Ketua MPK
-                    </span>
-                    <span class="text-[10px] font-mono text-slate-500">Total suara: <strong id="mpk-total-badge" class="text-emerald-300">0</strong></span>
+            {{-- KELOMPOK 2: KETUA MPK --}}
+            <div class="glass-panel-dark rounded-3xl p-4 sm:p-5 border border-emerald-500/30 shadow-xl bg-slate-900/80">
+                <div class="flex items-center justify-between gap-3 mb-3 pb-2.5 border-b border-white/5">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center justify-center text-xs shadow-inner">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading font-black text-sm sm:text-base text-white tracking-tight uppercase">
+                                KELOMPOK KANDIDAT KETUA MPK
+                            </h3>
+                            <p class="text-[10px] text-slate-400 font-mono">5 Pasangan Calon &bull; Pemilihan 2</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 font-mono text-xs">
+                        <span class="px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-bold">
+                            Total Suara: <strong id="mpk-total-badge" class="text-white">0</strong>
+                        </span>
+                    </div>
                 </div>
-                <div id="mpk-candidates-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+
+                <div id="mpk-candidates-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-stretch">
                     {{-- Injected dynamically --}}
                 </div>
-            </section>
+            </div>
         </div>
 
         {{-- Secondary Live Analytics Row (Class tracking + Role Split + Feed) --}}
@@ -234,6 +270,30 @@
     {{-- Live Polling Engine --}}
     <script>
         let currentMode = 'quick';
+        let showPhoto = false; // Default: 1 Layar Tanpa Foto untuk penghitungan rapi & muat 1 layar!
+
+        function togglePhotoDisplay() {
+            showPhoto = !showPhoto;
+            updatePhotoToggleBtn();
+            fetchLiveCount();
+        }
+
+        function updatePhotoToggleBtn() {
+            const btn = document.getElementById('btn-toggle-photo');
+            const icon = document.getElementById('icon-toggle-photo');
+            const txt = document.getElementById('text-toggle-photo');
+            if (!btn) return;
+
+            if (showPhoto) {
+                if (icon) icon.className = 'fa-solid fa-image text-purple-400';
+                if (txt) txt.textContent = 'Mode Foto';
+                btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer bg-slate-900 border border-purple-500/40 text-purple-300 hover:text-white flex items-center gap-1.5 shadow-sm';
+            } else {
+                if (icon) icon.className = 'fa-solid fa-table-cells-large text-indigo-400';
+                if (txt) txt.textContent = '1 Layar (Tanpa Foto)';
+                btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer bg-slate-900 border border-indigo-500/40 text-indigo-300 hover:text-white flex items-center gap-1.5 shadow-sm';
+            }
+        }
 
         function switchLiveMode(mode) {
             currentMode = mode;
@@ -246,6 +306,9 @@
             } else {
                 btnPleno.className = 'px-3.5 py-1.5 rounded-xl text-xs font-heading font-extrabold transition-all cursor-pointer bg-emerald-600 text-white shadow-md';
                 btnQuick.className = 'px-3.5 py-1.5 rounded-xl text-xs font-heading font-extrabold transition-all cursor-pointer text-slate-400 hover:text-white';
+                // Mode Hitung Manual (Pleno) otomatis aktifkan 1 layar tanpa foto
+                showPhoto = false;
+                updatePhotoToggleBtn();
             }
 
             fetchLiveCount();
@@ -306,17 +369,77 @@
             const isMpk = tipe === 'mpk';
             const colorAccent = isMpk ? 'text-emerald-400' : 'text-indigo-400';
             const colorAccentSoft = isMpk ? 'text-emerald-300' : 'text-indigo-300';
-            const colorBoxBg = isMpk ? 'bg-emerald-500/10' : 'bg-indigo-500/10';
+            const colorBoxBg = isMpk ? 'bg-emerald-500/15' : 'bg-indigo-500/15';
             const colorBoxBorder = isMpk ? 'border-emerald-500/30' : 'border-indigo-500/30';
             const colorBar = isMpk ? 'bg-gradient-to-r from-emerald-600 to-emerald-400' : 'bg-gradient-to-r from-indigo-600 to-indigo-400';
             const labelTipe = isMpk ? 'KETUA MPK' : 'KETUA OSIS';
             const maxVotes = Math.max(...candidates.map(c => c.votes), 0);
 
+            if (!showPhoto) {
+                // ====== 1 LAYAR PENGHITUNGAN TANPA FOTO ======
+                container.innerHTML = candidates.map((c) => {
+                    const isLeading = maxVotes > 0 && c.votes === maxVotes;
+                    return `
+                        <div class="relative bg-slate-900/95 backdrop-blur-2xl rounded-2xl border-2 ${isLeading ? 'border-amber-400 shadow-xl shadow-amber-500/15 ring-2 ring-amber-400/20' : 'border-slate-800 shadow-lg'} p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-300">
+                            ${isLeading ? `
+                                <div class="absolute -top-2.5 right-3 z-20 px-2.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-[9px] rounded-full shadow-md flex items-center gap-1 font-heading tracking-wider">
+                                    <i class="fa-solid fa-crown text-[9px]"></i> UNGGUL
+                                </div>
+                            ` : ''}
+
+                            <div>
+                                <div class="flex items-start justify-between gap-2 mb-1.5">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-1.5 mb-0.5">
+                                            <span class="text-[9px] font-bold uppercase tracking-wider ${colorAccent} font-mono">${labelTipe}</span>
+                                            <span class="text-[9px] font-mono font-bold text-slate-400 bg-slate-950 px-1.5 py-0.2 rounded border border-white/5">${c.kelas}</span>
+                                        </div>
+                                        <h3 class="font-heading font-black text-xs sm:text-sm lg:text-base text-white leading-tight truncate mt-0.5" title="${c.nama}">
+                                            ${c.nama}
+                                        </h3>
+                                    </div>
+                                    <div class="w-9 h-9 rounded-xl ${colorBoxBg} ${colorBoxBorder} border flex items-center justify-center font-heading font-black ${colorAccentSoft} text-base flex-shrink-0 shadow-sm">
+                                        0${c.nomor}
+                                    </div>
+                                </div>
+
+                                ${c.nama_wakil_1 || c.nama_wakil_2 ? `
+                                    <div class="pt-1 pb-1 border-t border-white/5 space-y-0.5 text-[10px] text-slate-300 font-mono">
+                                        ${c.nama_wakil_1 ? `<div class="truncate flex items-center justify-between gap-1"><span class="truncate"><span class="text-[8px] font-bold px-1 py-0.2 bg-white/5 ${colorAccentSoft} rounded mr-1">W1</span>${c.nama_wakil_1}</span>${c.kelas_wakil_1 ? `<span class="text-slate-500 font-mono text-[9px]">${c.kelas_wakil_1}</span>` : ''}</div>` : ''}
+                                        ${c.nama_wakil_2 ? `<div class="truncate flex items-center justify-between gap-1"><span class="truncate"><span class="text-[8px] font-bold px-1 py-0.2 bg-white/5 ${colorAccentSoft} rounded mr-1">W2</span>${c.nama_wakil_2}</span>${c.kelas_wakil_2 ? `<span class="text-slate-500 font-mono text-[9px]">${c.kelas_wakil_2}</span>` : ''}</div>` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <div class="pt-2 mt-2 border-t border-white/10 space-y-1.5">
+                                <div class="flex items-baseline justify-between">
+                                    <div>
+                                        <span class="text-[8px] uppercase tracking-wider text-slate-400 font-mono block">Suara</span>
+                                        <span class="font-heading font-black text-xl sm:text-2xl lg:text-3xl font-mono leading-none ${isLeading ? 'text-amber-300' : 'text-white'}">
+                                            ${c.votes}
+                                        </span>
+                                    </div>
+                                    <span class="font-heading font-black text-lg sm:text-xl lg:text-2xl ${isLeading ? 'text-amber-400' : colorAccent} font-mono leading-none">
+                                        ${c.percentage}%
+                                    </span>
+                                </div>
+
+                                <div class="w-full bg-slate-950 rounded-full h-2 border border-slate-800 overflow-hidden p-0.5">
+                                    <div class="h-full rounded-full transition-all duration-700 ${isLeading ? 'bg-gradient-to-r from-amber-500 to-yellow-400' : colorBar}"
+                                         style="width: ${c.percentage}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                return;
+            }
+
+            // Mode Dengan Foto
             container.innerHTML = candidates.map((c) => {
                 const isLeading = maxVotes > 0 && c.votes === maxVotes;
                 return `
                     <div class="relative bg-slate-900/90 backdrop-blur-2xl rounded-3xl border-2 ${isLeading ? 'border-amber-400/90 shadow-2xl shadow-amber-500/10 ring-4 ring-amber-400/20' : 'border-slate-800 shadow-xl'} overflow-hidden transition-all duration-500 flex flex-col justify-between group">
-
                         ${isLeading ? `
                             <div class="absolute top-4 right-4 z-20 px-3 py-1 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-xs rounded-full shadow-lg flex items-center gap-1.5 font-heading tracking-wider animate-bounce">
                                 <i class="fa-solid fa-crown text-[11px]"></i>

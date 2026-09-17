@@ -68,44 +68,157 @@
             </div>
         </div>
 
-        {{-- Comparison Candidate Scores: Quick Count vs Real Count Sah --}}
-        <div class="luxury-card rounded-3xl p-6 sm:p-8">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 border-b border-white/5 pb-4">
+        {{-- ====== PAPAN SKOR PENGHITUNGAN SUARA MANUAL (1 LAYAR - TANPA FOTO) ====== --}}
+        <div class="luxury-card rounded-3xl p-6 sm:p-8 space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-5">
                 <div>
-                    <h2 class="font-heading font-black text-lg sm:text-xl text-white flex items-center gap-2.5">
+                    <h2 class="font-heading font-black text-lg sm:text-2xl text-white flex items-center gap-2.5">
                         <i class="fas fa-scale-balanced text-indigo-400"></i>
-                        <span>Perbandingan Suara Digital vs Hasil Pleno Sah</span>
+                        <span>Papan Rekonsiliasi &amp; Penghitungan Manual (Pleno TPS)</span>
                     </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">Perolehan suara resmi yang disahkan berdasarkan kartu fisik yang terkumpul di TPS</p>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Membandingkan suara tercatat bilik digital dengan kartu fisik yang sah di dalam kotak suara.
+                    </p>
                 </div>
-                <span class="text-xs font-mono font-bold px-3 py-1 bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded-xl self-start sm:self-auto">
-                    Pleno Rekonsiliasi
-                </span>
+                <div class="flex items-center gap-2 self-start sm:self-auto font-mono text-xs">
+                    <span class="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-bold">
+                        <i class="fas fa-check-double mr-1"></i> Mode Pleno Sah
+                    </span>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                @foreach($calons as $c)
-                    <div class="p-5 rounded-2xl bg-slate-900/80 border border-white/5 flex flex-col justify-between hover:border-indigo-500/30 transition-all">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-mono font-bold px-2 py-0.5 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded">
-                                No. 0{{ $c->nomor }}
-                            </span>
-                            <span class="text-xs font-mono text-slate-400 font-bold">Kelas {{ $c->kelas->name ?? '-' }}</span>
-                        </div>
-                        <h4 class="font-heading font-black text-base text-white mb-4 truncate">{{ $c->nama }}</h4>
+            {{-- 1. SEKSI KETUA OSIS (3 PASLON SEJAJAR) --}}
+            <div class="space-y-3">
+                <div class="flex items-center justify-between px-1">
+                    <span class="inline-flex items-center gap-2 text-xs font-heading font-extrabold uppercase tracking-widest text-indigo-400">
+                        <i class="fas fa-user-tie"></i> Kandidat Ketua OSIS (3 Pasangan)
+                    </span>
+                    <span class="text-[11px] font-mono text-slate-400">
+                        Total Suara Bilik: <strong class="text-indigo-300">{{ $totalVoteOsis ?? 0 }}</strong>
+                    </span>
+                </div>
 
-                        <div class="grid grid-cols-2 gap-2.5 pt-3 border-t border-white/5 text-center font-mono">
-                            <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800">
-                                <span class="text-[10px] text-slate-500 uppercase block font-bold">Digital Masuk</span>
-                                <span class="text-lg font-black text-slate-300">{{ $c->digital_votes }}</span>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    @foreach($calonOsis as $c)
+                        <div class="p-4 sm:p-5 rounded-2xl bg-slate-900/90 border border-white/10 hover:border-indigo-500/40 transition-all flex flex-col justify-between shadow-lg">
+                            <div>
+                                <div class="flex items-start justify-between gap-2 mb-2">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono font-black text-xs flex items-center justify-center flex-shrink-0">
+                                                0{{ $c->nomor }}
+                                            </span>
+                                            <span class="text-[11px] font-mono font-bold text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-white/5">
+                                                {{ $c->kelas->name ?? '-' }}
+                                            </span>
+                                        </div>
+                                        <h4 class="font-heading font-black text-sm sm:text-base text-white leading-tight truncate" title="{{ $c->nama }}">
+                                            {{ $c->nama }}
+                                        </h4>
+                                    </div>
+                                </div>
+
+                                @if(!empty($c->nama_wakil_1) || !empty($c->nama_wakil_2))
+                                    <div class="mt-2 pt-2 border-t border-white/5 space-y-1 text-[11px] text-slate-300 font-mono">
+                                        @if(!empty($c->nama_wakil_1))
+                                            <p class="truncate flex items-center gap-1.5">
+                                                <span class="text-[9px] px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-bold">W1</span>
+                                                <span class="truncate">{{ $c->nama_wakil_1 }}</span>
+                                                @if($c->kelasWakil1)
+                                                    <span class="text-slate-500 text-[10px]">({{ $c->kelasWakil1->name }})</span>
+                                                @endif
+                                            </p>
+                                        @endif
+                                        @if(!empty($c->nama_wakil_2))
+                                            <p class="truncate flex items-center gap-1.5">
+                                                <span class="text-[9px] px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-bold">W2</span>
+                                                <span class="truncate">{{ $c->nama_wakil_2 }}</span>
+                                                @if($c->kelasWakil2)
+                                                    <span class="text-slate-500 text-[10px]">({{ $c->kelasWakil2->name }})</span>
+                                                @endif
+                                            </p>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
-                            <div class="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                                <span class="text-[10px] text-emerald-400 uppercase font-bold block">Suara Sah</span>
-                                <span class="text-lg font-black text-emerald-400">{{ $c->valid_votes }}</span>
+
+                            <div class="grid grid-cols-2 gap-2 pt-3 mt-3 border-t border-white/10 text-center font-mono">
+                                <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                                    <span class="text-[9px] uppercase font-bold text-emerald-400 block tracking-wider">Suara Sah (Fisik)</span>
+                                    <span class="text-2xl sm:text-3xl font-black text-emerald-400 leading-none mt-1 block" id="candidate-sah-{{ $c->id }}">{{ $c->valid_votes }}</span>
+                                </div>
+                                <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                                    <span class="text-[9px] uppercase font-bold text-slate-500 block tracking-wider">Digital Bilik</span>
+                                    <span class="text-lg sm:text-xl font-bold text-slate-300 leading-none mt-1.5 block" id="candidate-digital-{{ $c->id }}">{{ $c->digital_votes }}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- 2. SEKSI KETUA MPK (5 PASLON SEJAJAR DALAM 1 BARIS GRID) --}}
+            <div class="space-y-3 pt-3 border-t border-white/10">
+                <div class="flex items-center justify-between px-1">
+                    <span class="inline-flex items-center gap-2 text-xs font-heading font-extrabold uppercase tracking-widest text-emerald-400">
+                        <i class="fas fa-scale-balanced"></i> Kandidat Ketua MPK (5 Pasangan)
+                    </span>
+                    <span class="text-[11px] font-mono text-slate-400">
+                        Total Suara Bilik: <strong class="text-emerald-300">{{ $totalVoteMpk ?? 0 }}</strong>
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    @foreach($calonMpk as $c)
+                        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/90 border border-white/10 hover:border-emerald-500/40 transition-all flex flex-col justify-between shadow-lg">
+                            <div>
+                                <div class="flex items-start justify-between gap-2 mb-1.5">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-1.5 mb-1">
+                                            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono font-black text-xs flex items-center justify-center flex-shrink-0">
+                                                0{{ $c->nomor }}
+                                            </span>
+                                            <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-950 px-1.5 py-0.5 rounded border border-white/5">
+                                                {{ $c->kelas->name ?? '-' }}
+                                            </span>
+                                        </div>
+                                        <h4 class="font-heading font-black text-xs sm:text-sm text-white leading-tight truncate" title="{{ $c->nama }}">
+                                            {{ $c->nama }}
+                                        </h4>
+                                    </div>
+                                </div>
+
+                                @if(!empty($c->nama_wakil_1) || !empty($c->nama_wakil_2))
+                                    <div class="mt-1.5 pt-1.5 border-t border-white/5 space-y-0.5 text-[10px] text-slate-300 font-mono">
+                                        @if(!empty($c->nama_wakil_1))
+                                            <p class="truncate flex items-center gap-1">
+                                                <span class="text-[8px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">W1</span>
+                                                <span class="truncate">{{ $c->nama_wakil_1 }}</span>
+                                            </p>
+                                        @endif
+                                        @if(!empty($c->nama_wakil_2))
+                                            <p class="truncate flex items-center gap-1">
+                                                <span class="text-[8px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">W2</span>
+                                                <span class="truncate">{{ $c->nama_wakil_2 }}</span>
+                                            </p>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-1.5 pt-2.5 mt-2.5 border-t border-white/10 text-center font-mono">
+                                <div class="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                                    <span class="text-[8px] uppercase font-bold text-emerald-400 block tracking-wider">Sah</span>
+                                    <span class="text-xl sm:text-2xl font-black text-emerald-400 leading-none mt-1 block" id="candidate-sah-{{ $c->id }}">{{ $c->valid_votes }}</span>
+                                </div>
+                                <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+                                    <span class="text-[8px] uppercase font-bold text-slate-500 block tracking-wider">Bilik</span>
+                                    <span class="text-base sm:text-lg font-bold text-slate-300 leading-none mt-1 block" id="candidate-digital-{{ $c->id }}">{{ $c->digital_votes }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
 

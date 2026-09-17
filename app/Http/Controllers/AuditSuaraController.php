@@ -33,15 +33,22 @@ class AuditSuaraController extends Controller
         $totalPending = Vote::where('status_verifikasi', 'pending')->count();
 
         // Rekapitulasi perolehan suara per calon (Digital vs Sah Manual)
-        $calons = CalonKetua::withCount([
-            'votes as digital_votes',
-            'votes as valid_votes' => function ($q) {
-                $q->where('status_verifikasi', 'sah');
-            },
-            'votes as invalid_votes' => function ($q) {
-                $q->where('status_verifikasi', 'tidak_sah');
-            },
-        ])->orderBy('nomor')->get();
+        $calons = CalonKetua::with(['kelas', 'kelasWakil1', 'kelasWakil2'])
+            ->withCount([
+                'votes as digital_votes',
+                'votes as valid_votes' => function ($q) {
+                    $q->where('status_verifikasi', 'sah');
+                },
+                'votes as invalid_votes' => function ($q) {
+                    $q->where('status_verifikasi', 'tidak_sah');
+                },
+            ])->orderBy('nomor')->get();
+
+        $calonOsis = $calons->where('tipe', 'osis')->values();
+        $calonMpk = $calons->where('tipe', 'mpk')->values();
+
+        $totalVoteOsis = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'osis'))->count();
+        $totalVoteMpk = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'mpk'))->count();
 
         return view('audit-suara.index', compact(
             'votes',
@@ -49,7 +56,11 @@ class AuditSuaraController extends Controller
             'totalSah',
             'totalTidakSah',
             'totalPending',
-            'calons'
+            'calons',
+            'calonOsis',
+            'calonMpk',
+            'totalVoteOsis',
+            'totalVoteMpk'
         ));
     }
 
@@ -161,15 +172,29 @@ class AuditSuaraController extends Controller
     }
 
     /**
-     * @return array{total: int, sah: int, tidak_sah: int, pending: int}
+     * @return array{total: int, sah: int, tidak_sah: int, pending: int, candidates: array}
      */
     private function getAuditCounts(): array
     {
+        $candidateStats = CalonKetua::withCount([
+            'votes as digital_votes',
+            'votes as valid_votes' => function ($q) {
+                $q->where('status_verifikasi', 'sah');
+            },
+        ])->get()->mapWithKeys(fn ($c) => [
+            $c->id => [
+                'id' => $c->id,
+                'digital' => $c->digital_votes,
+                'valid' => $c->valid_votes,
+            ],
+        ])->toArray();
+
         return [
             'total' => Vote::count(),
             'sah' => Vote::where('status_verifikasi', 'sah')->count(),
             'tidak_sah' => Vote::where('status_verifikasi', 'tidak_sah')->count(),
             'pending' => Vote::where('status_verifikasi', 'pending')->count(),
+            'candidates' => $candidateStats,
         ];
     }
 
