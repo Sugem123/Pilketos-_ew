@@ -4,11 +4,19 @@
 @endphp
 <x-app-layout :page_title="$page_title" :page_description="$page_description">
     <x-slot name="actions">
-        <a href="{{ route('cetak.berita-acara') }}" target="_blank"
-           class="inline-flex items-center gap-2 px-4 py-2.5 luxury-btn-primary text-white rounded-2xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/30">
-            <i class="fas fa-file-signature"></i>
-            <span>Cetak Berita Acara Pleno</span>
-        </a>
+        <div class="flex items-center gap-2.5 flex-wrap">
+            {{-- Live Sync Badge & Indicator --}}
+            <div class="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-emerald-500/30 text-emerald-400 rounded-2xl text-xs font-mono font-bold shadow-md">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>Live Realtime: <strong id="audit-sync-time" class="text-white">--:--:--</strong></span>
+            </div>
+
+            <a href="{{ route('cetak.berita-acara') }}" target="_blank"
+               class="inline-flex items-center gap-2 px-4 py-2.5 luxury-btn-primary text-white rounded-2xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/30">
+                <i class="fas fa-file-signature"></i>
+                <span>Cetak Berita Acara Pleno</span>
+            </a>
+        </div>
     </x-slot>
 
     <div class="space-y-8">
@@ -94,7 +102,7 @@
                         <i class="fas fa-user-tie"></i> Kandidat Ketua OSIS (3 Pasangan)
                     </span>
                     <span class="text-[11px] font-mono text-slate-400">
-                        Total Suara Bilik: <strong class="text-indigo-300">{{ $totalVoteOsis ?? 0 }}</strong>
+                        Total Suara Bilik: <strong id="osis-board-total" class="text-indigo-300">{{ $totalVoteOsis ?? 0 }}</strong>
                     </span>
                 </div>
 
@@ -164,7 +172,7 @@
                         <i class="fas fa-scale-balanced"></i> Kandidat Ketua MPK (5 Pasangan)
                     </span>
                     <span class="text-[11px] font-mono text-slate-400">
-                        Total Suara Bilik: <strong class="text-emerald-300">{{ $totalVoteMpk ?? 0 }}</strong>
+                        Total Suara Bilik: <strong id="mpk-board-total" class="text-emerald-300">{{ $totalVoteMpk ?? 0 }}</strong>
                     </span>
                 </div>
 
@@ -641,8 +649,9 @@
                 <table class="w-full text-left">
                     <thead class="bg-slate-950/60 border-b border-white/5">
                         <tr>
-                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">No</th>
+                            <th class="px-4 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono text-center w-12">No</th>
                             <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Token Kartu</th>
+                            <th class="px-5 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Surat Suara</th>
                             <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Kategori Pemilih</th>
                             <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Waktu Voting</th>
                             <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Status Audit</th>
@@ -651,8 +660,8 @@
                     </thead>
                     <tbody class="divide-y divide-white/5" id="audit-table-body">
                         @forelse($votes as $index => $v)
-                            <tr class="hover:bg-slate-900/50 transition-colors" id="vote-row-{{ $v->hakSuara->token }}">
-                                <td class="px-6 py-4 text-xs font-mono text-slate-500">{{ $index + 1 }}</td>
+                            <tr class="hover:bg-slate-900/50 transition-colors" id="vote-row-{{ $v->id }}">
+                                <td class="px-4 py-4 text-xs font-mono text-slate-500 text-center">{{ $index + 1 }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
                                         <code class="px-3 py-1 bg-slate-950 border border-slate-800 text-amber-400 rounded-xl text-xs font-mono font-black tracking-widest select-all">
@@ -663,6 +672,12 @@
                                         <i class="fas fa-shield-halved text-[9px] text-emerald-400/80"></i>
                                         <span>Identitas Dirahasiakan</span>
                                     </p>
+                                </td>
+                                <td class="px-5 py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-mono font-black rounded-xl uppercase shadow-sm {{ $v->tipe_pemilihan === 'mpk' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30' }}">
+                                        <i class="{{ $v->tipe_pemilihan === 'mpk' ? 'fa-solid fa-scale-balanced' : 'fa-solid fa-user-tie' }} text-[10px]"></i>
+                                        {{ strtoupper($v->tipe_pemilihan) }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4">
                                     @if($v->hakSuara->tipe === 'guru')
@@ -795,6 +810,7 @@
                 overlayKategori: '',
                 overlayDeviceName: '',
                 _overlayTimer: null,
+                _syncInterval: null,
 
                 init() {
                     // Close overlay on Enter
@@ -804,6 +820,91 @@
                             this.closeOverlay();
                         }
                     });
+
+                    // Start realtime live sync auto-refresh
+                    this.startLiveSync();
+                },
+
+                async syncAuditData() {
+                    try {
+                        const res = await fetch('{{ route("audit-suara.live-data") }}');
+                        const data = await res.json();
+                        if (!data.success) return;
+
+                        // 1. Update KPI numbers
+                        if (data.counts) {
+                            this.pendingCount = data.counts.pending;
+                            const elDig = document.getElementById('stat-total-digital');
+                            const elSah = document.getElementById('stat-total-sah');
+                            const elTdk = document.getElementById('stat-total-tidak-sah');
+                            const elPnd = document.getElementById('stat-total-pending');
+                            if (elDig) elDig.textContent = data.counts.total;
+                            if (elSah) elSah.textContent = data.counts.sah;
+                            if (elTdk) elTdk.textContent = data.counts.tidak_sah;
+                            if (elPnd) elPnd.textContent = data.counts.pending;
+                        }
+
+                        // 2. Update Candidate Scoreboards (OSIS & MPK)
+                        if (data.candidates) {
+                            Object.values(data.candidates).forEach(c => {
+                                const sahEl = document.getElementById('candidate-sah-' + c.id);
+                                const digEl = document.getElementById('candidate-digital-' + c.id);
+                                if (sahEl) sahEl.textContent = c.valid;
+                                if (digEl) digEl.textContent = c.digital;
+                            });
+                        }
+
+                        // 3. Update category header badges
+                        const osisTotal = document.getElementById('osis-board-total');
+                        const mpkTotal = document.getElementById('mpk-board-total');
+                        if (osisTotal) osisTotal.textContent = data.total_osis;
+                        if (mpkTotal) mpkTotal.textContent = data.total_mpk;
+
+                        // 4. Update status badges on visible table rows
+                        if (data.recent_votes && data.recent_votes.length) {
+                            data.recent_votes.forEach(rv => {
+                                const badgeContainer = document.getElementById('badge-status-' + rv.id);
+                                if (badgeContainer) {
+                                    if (rv.status === 'sah') {
+                                        badgeContainer.innerHTML = `
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-full">
+                                                <i class="fa-solid fa-circle-check text-[11px]"></i> SAH
+                                            </span>
+                                            ${rv.catatan ? `<p class="text-[10px] text-slate-400 mt-1 max-w-xs truncate">${rv.catatan}</p>` : ''}
+                                        `;
+                                    } else if (rv.status === 'tidak_sah') {
+                                        badgeContainer.innerHTML = `
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold rounded-full">
+                                                <i class="fa-solid fa-ban text-[11px]"></i> TIDAK SAH
+                                            </span>
+                                            ${rv.catatan ? `<p class="text-[10px] text-slate-400 mt-1 max-w-xs truncate">${rv.catatan}</p>` : ''}
+                                        `;
+                                    } else {
+                                        badgeContainer.innerHTML = `
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold rounded-full">
+                                                <i class="fa-solid fa-hourglass text-[11px]"></i> PENDING
+                                            </span>
+                                        `;
+                                    }
+                                }
+                            });
+                        }
+
+                        // 5. Update timestamp
+                        const syncTime = document.getElementById('audit-sync-time');
+                        if (syncTime) syncTime.textContent = data.updated_at || '--:--:--';
+
+                    } catch (e) {
+                        console.error('Audit live sync error:', e);
+                    }
+                },
+
+                startLiveSync() {
+                    if (this._syncInterval) clearInterval(this._syncInterval);
+                    this.syncAuditData();
+                    this._syncInterval = setInterval(() => {
+                        this.syncAuditData();
+                    }, 3000); // Polling otomatis setiap 3 detik
                 },
 
                 setMode(mode) {
@@ -1087,6 +1188,7 @@
                         this.showVerdict('tidak_sah', token, 'Kesalahan komunikasi dengan server.', '', fromDevice);
                     } finally {
                         this.processing = false;
+                        this.syncAuditData();
                     }
                 },
 

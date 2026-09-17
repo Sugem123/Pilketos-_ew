@@ -92,6 +92,7 @@ Route::middleware(['auth', 'desktop'])->prefix('admin')->group(function () {
 
         // Audit Suara Manual & Rekonsiliasi TPS
         Route::get('/audit-suara', [AuditSuaraController::class, 'index'])->name('audit-suara.index');
+        Route::get('/audit-suara/live-data', [AuditSuaraController::class, 'liveData'])->name('audit-suara.live-data');
         Route::get('/audit-suara/remote-session', [AuditSuaraController::class, 'createRemoteSession'])->name('audit-suara.create-remote');
         Route::get('/audit-suara/remote-poll/{session}', [AuditSuaraController::class, 'remotePoll'])->name('audit-suara.remote-poll');
         Route::post('/audit-suara/device-action', [AuditSuaraController::class, 'deviceAction'])->name('audit-suara.device-action');

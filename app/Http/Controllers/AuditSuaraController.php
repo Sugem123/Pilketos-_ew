@@ -71,13 +71,14 @@ class AuditSuaraController extends Controller
             'catatan' => 'nullable|string|max:255',
         ]);
 
-        $vote->update([
+        // Verifikasi fisik kartu berlaku serentak untuk kedua pemilihan (OSIS & MPK) milik pemilih ini
+        Vote::where('id_nisn', $vote->id_nisn)->update([
             'status_verifikasi' => $request->status,
             'catatan_verifikasi' => $request->catatan,
             'verified_at' => $request->status !== 'pending' ? now() : null,
         ]);
 
-        return back()->with('success', "Status verifikasi token {$vote->hakSuara->token} diperbarui menjadi ".strtoupper($request->status));
+        return back()->with('success', "Status verifikasi kartu token {$vote->hakSuara->token} (OSIS & MPK) diperbarui menjadi ".strtoupper($request->status));
     }
 
     /**
@@ -108,9 +109,9 @@ class AuditSuaraController extends Controller
         }
 
         // Token exists but voter never voted (no vote record)
-        $vote = Vote::where('id_nisn', $hakSuara->id)->first();
+        $votes = Vote::where('id_nisn', $hakSuara->id)->get();
 
-        if (! $vote) {
+        if ($votes->isEmpty()) {
             return response()->json([
                 'success' => false,
                 'verdict' => 'tidak_sah',
@@ -119,20 +120,22 @@ class AuditSuaraController extends Controller
             ]);
         }
 
-        // Already verified before (not pending)
-        if ($vote->status_verifikasi !== 'pending') {
+        // Already verified before (none pending)
+        $pendingVotes = $votes->where('status_verifikasi', 'pending');
+        if ($pendingVotes->isEmpty()) {
+            $firstStatus = $votes->first()->status_verifikasi ?? 'sah';
             return response()->json([
                 'success' => true,
                 'verdict' => 'sudah',
-                'message' => "Token \"{$tokenInput}\" sudah diverifikasi sebelumnya sebagai: ".strtoupper($vote->status_verifikasi),
-                'status' => $vote->status_verifikasi,
+                'message' => "Token \"{$tokenInput}\" sudah diverifikasi sebelumnya sebagai: ".strtoupper($firstStatus),
+                'status' => $firstStatus,
                 'kategori' => $hakSuara->tipe === 'guru' ? 'Guru / Tendik' : ($hakSuara->kelas->name ?? 'Siswa'),
                 'counts' => $this->getAuditCounts(),
             ]);
         }
 
-        // Token valid + voted + still pending → mark SAH
-        $vote->update([
+        // Token valid + voted + pending → mark ALL votes (both OSIS & MPK) as SAH!
+        Vote::where('id_nisn', $hakSuara->id)->update([
             'status_verifikasi' => 'sah',
             'catatan_verifikasi' => 'Kartu fisik ditemukan di kotak suara',
             'verified_at' => now(),
@@ -141,7 +144,7 @@ class AuditSuaraController extends Controller
         return response()->json([
             'success' => true,
             'verdict' => 'sah',
-            'message' => "Token \"{$tokenInput}\" — Suara SAH!",
+            'message' => "Token \"{$tokenInput}\" — Suara OSIS & MPK SAH!",
             'token' => $tokenInput,
             'status' => 'sah',
             'kategori' => $hakSuara->tipe === 'guru' ? 'Guru / Tendik' : ($hakSuara->kelas->name ?? 'Siswa'),
@@ -168,6 +171,51 @@ class AuditSuaraController extends Controller
             'message' => "{$hangusCount} suara yang belum diverifikasi telah dihanguskan (tidak sah).",
             'hangus_count' => $hangusCount,
             'counts' => $this->getAuditCounts(),
+        ]);
+    }
+
+    public function liveData(Request $request): JsonResponse
+    {
+        $calons = CalonKetua::withCount([
+            'votes as digital_votes',
+            'votes as valid_votes' => function ($q) {
+                $q->where('status_verifikasi', 'sah');
+            },
+            'votes as invalid_votes' => function ($q) {
+                $q->where('status_verifikasi', 'tidak_sah');
+            },
+        ])->orderBy('nomor')->get();
+
+        $candidateStats = $calons->mapWithKeys(fn ($c) => [
+            $c->id => [
+                'id' => $c->id,
+                'digital' => $c->digital_votes,
+                'valid' => $c->valid_votes,
+            ],
+        ])->toArray();
+
+        $totalVoteOsis = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'osis'))->count();
+        $totalVoteMpk = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'mpk'))->count();
+
+        $recentVotes = Vote::with('hakSuara.kelas')
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get()
+            ->map(fn ($v) => [
+                'id' => $v->id,
+                'token' => $v->hakSuara->token ?? '',
+                'status' => $v->status_verifikasi,
+                'catatan' => $v->catatan_verifikasi,
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'counts' => $this->getAuditCounts(),
+            'candidates' => $candidateStats,
+            'total_osis' => $totalVoteOsis,
+            'total_mpk' => $totalVoteMpk,
+            'recent_votes' => $recentVotes,
+            'updated_at' => now()->format('H:i:s'),
         ]);
     }
 
