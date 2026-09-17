@@ -821,8 +821,89 @@
                         }
                     });
 
+                    // Restore pairing session jika sebelumnya pernah aktif
+                    const savedSession = sessionStorage.getItem('pilketos_audit_pairing_session');
+                    if (savedSession) {
+                        this.pairingSession = savedSession;
+                        this.startRemotePolling();
+                    }
+
+                    // Auto-focus ke input token
+                    this.$nextTick(() => {
+                        this.$refs.tokenInput?.focus();
+                    });
+
                     // Start realtime live sync auto-refresh
                     this.startLiveSync();
+                },
+
+                applyAuditCounts(counts) {
+                    if (!counts) return;
+
+                    if (counts.pending !== undefined) {
+                        this.pendingCount = counts.pending;
+                    }
+
+                    const elDig = document.getElementById('stat-total-digital');
+                    const elSah = document.getElementById('stat-total-sah');
+                    const elTdk = document.getElementById('stat-total-tidak-sah');
+                    const elPnd = document.getElementById('stat-total-pending');
+                    if (elDig && counts.total !== undefined) elDig.textContent = counts.total;
+                    if (elSah && counts.sah !== undefined) elSah.textContent = counts.sah;
+                    if (elTdk && counts.tidak_sah !== undefined) elTdk.textContent = counts.tidak_sah;
+                    if (elPnd && counts.pending !== undefined) elPnd.textContent = counts.pending;
+
+                    const osisTotal = document.getElementById('osis-board-total');
+                    const mpkTotal = document.getElementById('mpk-board-total');
+                    if (osisTotal && counts.total_osis !== undefined) osisTotal.textContent = counts.total_osis;
+                    if (mpkTotal && counts.total_mpk !== undefined) mpkTotal.textContent = counts.total_mpk;
+
+                    if (counts.candidates) {
+                        Object.values(counts.candidates).forEach(c => {
+                            const sahEl = document.getElementById('candidate-sah-' + c.id);
+                            const digEl = document.getElementById('candidate-digital-' + c.id);
+                            if (sahEl && c.valid !== undefined) {
+                                if (sahEl.textContent != c.valid) {
+                                    sahEl.textContent = c.valid;
+                                    sahEl.classList.add('scale-125', 'text-yellow-300');
+                                    setTimeout(() => sahEl.classList.remove('scale-125', 'text-yellow-300'), 500);
+                                }
+                            }
+                            if (digEl && c.digital !== undefined) digEl.textContent = c.digital;
+                        });
+                    }
+                },
+
+                updateTableRowsForToken(token, status, catatan = '') {
+                    if (!token) return;
+                    const rows = document.querySelectorAll(`tr[data-token="${token}"]`);
+                    rows.forEach(row => {
+                        row.classList.remove('bg-slate-900/50', 'bg-emerald-950/40', 'bg-rose-950/40');
+                        if (status === 'sah') {
+                            row.classList.add('bg-emerald-950/40');
+                        } else if (status === 'tidak_sah') {
+                            row.classList.add('bg-rose-950/40');
+                        }
+
+                        const badgeCell = row.querySelector('.status-badge-cell') || row.querySelector('td:nth-child(6)');
+                        if (badgeCell) {
+                            if (status === 'sah') {
+                                badgeCell.innerHTML = `
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-full">
+                                        <i class="fa-solid fa-circle-check text-[11px]"></i> SAH
+                                    </span>
+                                    <p class="text-[10px] text-slate-400 mt-1 max-w-xs truncate">${catatan || 'Kartu fisik ada di kotak suara'}</p>
+                                `;
+                            } else if (status === 'tidak_sah') {
+                                badgeCell.innerHTML = `
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold rounded-full">
+                                        <i class="fa-solid fa-ban text-[11px]"></i> TIDAK SAH
+                                    </span>
+                                    <p class="text-[10px] text-slate-400 mt-1 max-w-xs truncate">${catatan || 'Kartu fisik tidak ditemukan di kotak'}</p>
+                                `;
+                            }
+                        }
+                    });
                 },
 
                 async syncAuditData() {
@@ -831,72 +912,24 @@
                         const data = await res.json();
                         if (!data.success) return;
 
-                        // 1. Update KPI numbers
+                        // 1. Update semua angka dan skor kandidat
                         if (data.counts) {
-                            this.pendingCount = data.counts.pending;
-                            const elDig = document.getElementById('stat-total-digital');
-                            const elSah = document.getElementById('stat-total-sah');
-                            const elTdk = document.getElementById('stat-total-tidak-sah');
-                            const elPnd = document.getElementById('stat-total-pending');
-                            if (elDig) elDig.textContent = data.counts.total;
-                            if (elSah) elSah.textContent = data.counts.sah;
-                            if (elTdk) elTdk.textContent = data.counts.tidak_sah;
-                            if (elPnd) elPnd.textContent = data.counts.pending;
+                            this.applyAuditCounts(data.counts);
                         }
 
-                        // 2. Update Candidate Scoreboards (OSIS & MPK)
-                        if (data.candidates) {
-                            Object.values(data.candidates).forEach(c => {
-                                const sahEl = document.getElementById('candidate-sah-' + c.id);
-                                const digEl = document.getElementById('candidate-digital-' + c.id);
-                                if (sahEl) sahEl.textContent = c.valid;
-                                if (digEl) digEl.textContent = c.digital;
-                            });
-                        }
-
-                        // 3. Update category header badges
-                        const osisTotal = document.getElementById('osis-board-total');
-                        const mpkTotal = document.getElementById('mpk-board-total');
-                        if (osisTotal) osisTotal.textContent = data.total_osis;
-                        if (mpkTotal) mpkTotal.textContent = data.total_mpk;
-
-                        // 4. Update status badges on visible table rows
-                        if (data.recent_votes && data.recent_votes.length) {
-                            data.recent_votes.forEach(rv => {
-                                const badgeContainer = document.getElementById('badge-status-' + rv.id);
-                                if (badgeContainer) {
-                                    if (rv.status === 'sah') {
-                                        badgeContainer.innerHTML = `
-                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-full">
-                                                <i class="fa-solid fa-circle-check text-[11px]"></i> SAH
-                                            </span>
-                                            ${rv.catatan ? `<p class="text-[10px] text-slate-400 mt-1 max-w-xs truncate">${rv.catatan}</p>` : ''}
-                                        `;
-                                    } else if (rv.status === 'tidak_sah') {
-                                        badgeContainer.innerHTML = `
-                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold rounded-full">
-                                                <i class="fa-solid fa-ban text-[11px]"></i> TIDAK SAH
-                                            </span>
-                                            ${rv.catatan ? `<p class="text-[10px] text-slate-400 mt-1 max-w-xs truncate">${rv.catatan}</p>` : ''}
-                                        `;
-                                    } else {
-                                        badgeContainer.innerHTML = `
-                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold rounded-full">
-                                                <i class="fa-solid fa-hourglass text-[11px]"></i> PENDING
-                                            </span>
-                                        `;
-                                    }
-                                }
-                            });
-                        }
-
-                        // 5. Update timestamp
+                        // 2. Update waktu sinkron
                         const syncTime = document.getElementById('audit-sync-time');
                         if (syncTime) syncTime.textContent = data.updated_at || '--:--:--';
 
-                    } catch (e) {
-                        console.error('Audit live sync error:', e);
-                    }
+                        // 3. Update baris-baris tabel terbaru secara live
+                        if (data.recent_votes && data.recent_votes.length) {
+                            data.recent_votes.forEach(rv => {
+                                if (rv.token) {
+                                    this.updateTableRowsForToken(rv.token, rv.status, rv.catatan);
+                                }
+                            });
+                        }
+                    } catch (e) { }
                 },
 
                 startLiveSync() {
@@ -904,7 +937,7 @@
                     this.syncAuditData();
                     this._syncInterval = setInterval(() => {
                         this.syncAuditData();
-                    }, 3000); // Polling otomatis setiap 3 detik
+                    }, 2500); // Polling otomatis setiap 2.5 detik
                 },
 
                 setMode(mode) {
@@ -929,6 +962,7 @@
                             if (data.success) {
                                 this.pairingSession = data.session_id;
                                 this.pairingUrl = data.url;
+                                sessionStorage.setItem('pilketos_audit_pairing_session', data.session_id);
 
                                 this.$nextTick(() => {
                                     const qrEl = document.getElementById('pairing-qr-canvas');
@@ -1173,22 +1207,24 @@
                             fromDevice
                         );
 
-                        // Update counts
+                        // 3. Update semua angka dan skor kandidat OSIS & MPK SEKETIKA!
                         if (data.counts) {
-                            this.pendingCount = data.counts.pending;
-                            document.getElementById('stat-total-sah').textContent = data.counts.sah;
-                            document.getElementById('stat-total-tidak-sah').textContent = data.counts.tidak_sah;
-                            document.getElementById('stat-total-pending').textContent = data.counts.pending;
+                            this.applyAuditCounts(data.counts);
                         }
 
-                        // Clear input
+                        // 4. Update baris tabel audit untuk token ini SEKETIKA!
+                        this.updateTableRowsForToken(token, data.status || data.verdict, data.message);
+
+                        // 5. Kosongkan input dan fokus kembali
                         this.tokenValue = '';
 
                     } catch (err) {
                         this.showVerdict('tidak_sah', token, 'Kesalahan komunikasi dengan server.', '', fromDevice);
                     } finally {
                         this.processing = false;
-                        this.syncAuditData();
+                        this.$nextTick(() => {
+                            this.$refs.tokenInput?.focus();
+                        });
                     }
                 },
 
@@ -1203,9 +1239,9 @@
                     // Play sound effect
                     this.playSound(verdict);
 
-                    // Auto-close after 3.5 seconds
+                    // Auto-close setelah 1.8 detik (agar tidak menghalangi pemindaian cepat berikutnya)
                     clearTimeout(this._overlayTimer);
-                    this._overlayTimer = setTimeout(() => this.closeOverlay(), 3500);
+                    this._overlayTimer = setTimeout(() => this.closeOverlay(), 1800);
                 },
 
                 closeOverlay() {

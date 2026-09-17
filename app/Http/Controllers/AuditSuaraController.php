@@ -237,11 +237,16 @@ class AuditSuaraController extends Controller
             ],
         ])->toArray();
 
+        $totalVoteOsis = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'osis'))->count();
+        $totalVoteMpk = Vote::whereHas('calon', fn ($q) => $q->where('tipe', 'mpk'))->count();
+
         return [
             'total' => Vote::count(),
             'sah' => Vote::where('status_verifikasi', 'sah')->count(),
             'tidak_sah' => Vote::where('status_verifikasi', 'tidak_sah')->count(),
             'pending' => Vote::where('status_verifikasi', 'pending')->count(),
+            'total_osis' => $totalVoteOsis,
+            'total_mpk' => $totalVoteMpk,
             'candidates' => $candidateStats,
         ];
     }
