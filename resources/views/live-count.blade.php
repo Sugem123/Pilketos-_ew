@@ -265,8 +265,13 @@
             try {
                 const res = await fetch(`{{ route('live-count.data') }}?mode=${currentMode}`);
                 const data = await res.json();
+                if (data.closed) {
+                    window.location.reload();
+                    return;
+                }
                 renderLiveDashboard(data);
-                document.getElementById('last-sync-time').textContent = data.updated_at;
+                const syncEl = document.getElementById('last-sync-time');
+                if (syncEl) syncEl.textContent = data.updated_at || '--:--:--';
             } catch (err) {
                 console.error('Failed to sync live data:', err);
             }
